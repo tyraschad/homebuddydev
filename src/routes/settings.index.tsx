@@ -1,19 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Palette, Type, Volume2, Contrast, ChevronRight, Check } from "lucide-react";
+import { ArrowLeft, Palette, Type, Volume2, Contrast, Check } from "lucide-react";
 import { useState } from "react";
 import { useSettings } from "@/lib/settings-store";
 
 export const Route = createFileRoute("/settings/")({
   component: SettingsPage,
-  head: () => ({
-    meta: [{ title: "Settings — Albert" }],
-  }),
+  head: () => ({ meta: [{ title: "Settings — Albert" }] }),
 });
 
 const GREEN = "#2F8F4E";
 
 function SettingsPage() {
-  const { theme, appearance, textSize } = useSettings();
+  const { theme, appearance, setAppearance, textSize, setTextSize } = useSettings();
   const [tts, setTts] = useState(false);
   const [hc, setHc] = useState(true);
 
@@ -25,13 +23,20 @@ function SettingsPage() {
     display: "flex",
     alignItems: "center",
     gap: 16,
-    cursor: "pointer",
-    textAlign: "left",
     width: "100%",
     color: theme.text,
     fontFamily: "inherit",
     lineHeight: 1.5,
     textDecoration: "none",
+    boxSizing: "border-box",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    flex: 1,
+    fontFamily: "'Trebuchet MS', sans-serif",
+    fontWeight: 700,
+    fontSize: 18,
+    color: theme.text,
   };
 
   return (
@@ -130,49 +135,110 @@ function SettingsPage() {
           gap: 16,
         }}
       >
-        <Link to="/settings/appearance" style={tileStyle}>
+        <div style={tileStyle}>
           <Palette size={20} strokeWidth={2} color={theme.text} />
-          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <span style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text }}>
-              Appearance
-            </span>
-            <span style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>
-              {appearance === "dark" ? "Dark" : "Light"}
-            </span>
-          </div>
-          <ChevronRight size={16} strokeWidth={2} color={theme.text} />
-        </Link>
+          <span style={labelStyle}>Appearance</span>
+          <Segment
+            leftLabel="Light"
+            rightLabel="Dark"
+            isRight={appearance === "dark"}
+            onChange={(r) => setAppearance(r ? "dark" : "light")}
+            theme={theme}
+          />
+        </div>
 
-        <Link to="/settings/text-size" style={tileStyle}>
+        <div style={tileStyle}>
           <Type size={20} strokeWidth={2} color={theme.text} />
-          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <span style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text }}>
-              Text size
-            </span>
-            <span style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>
-              {textSize === "large" ? "Large" : "Medium"}
-            </span>
-          </div>
-          <ChevronRight size={16} strokeWidth={2} color={theme.text} />
-        </Link>
+          <span style={labelStyle}>Text size</span>
+          <Segment
+            leftLabel="M"
+            rightLabel="L"
+            isRight={textSize === "large"}
+            onChange={(r) => setTextSize(r ? "large" : "medium")}
+            theme={theme}
+          />
+        </div>
 
-        <button type="button" onClick={() => setTts((v) => !v)} style={tileStyle} aria-pressed={tts}>
+        <button type="button" onClick={() => setTts((v) => !v)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={tts}>
           <Volume2 size={20} strokeWidth={2} color={theme.text} />
-          <span style={{ flex: 1, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text }}>
-            Text to speech
-          </span>
+          <span style={labelStyle}>Text to speech</span>
           <ToggleDot on={tts} />
         </button>
 
-        <button type="button" onClick={() => setHc((v) => !v)} style={tileStyle} aria-pressed={hc}>
+        <button type="button" onClick={() => setHc((v) => !v)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={hc}>
           <Contrast size={20} strokeWidth={2} color={theme.text} />
-          <span style={{ flex: 1, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text }}>
-            High contrast mode
-          </span>
+          <span style={labelStyle}>High contrast mode</span>
           <ToggleDot on={hc} />
         </button>
       </div>
     </main>
+  );
+}
+
+function Segment({
+  leftLabel,
+  rightLabel,
+  isRight,
+  onChange,
+  theme,
+}: {
+  leftLabel: string;
+  rightLabel: string;
+  isRight: boolean;
+  onChange: (right: boolean) => void;
+  theme: { bg: string; card: string; text: string; border: string };
+}) {
+  const width = 140;
+  const height = 40;
+  const halfW = width / 2;
+  return (
+    <button
+      type="button"
+      onClick={(e) => { e.stopPropagation(); onChange(!isRight); }}
+      style={{
+        position: "relative",
+        width,
+        height,
+        borderRadius: 12,
+        background: theme.bg,
+        border: `1.5px solid ${theme.border}`,
+        padding: 3,
+        cursor: "pointer",
+        flexShrink: 0,
+      }}
+      aria-pressed={isRight}
+    >
+      <span
+        style={{
+          position: "absolute",
+          top: 3,
+          left: isRight ? halfW : 3,
+          width: halfW - 3,
+          height: height - 6,
+          borderRadius: 9,
+          background: theme.text,
+          transition: "left 200ms ease",
+        }}
+      />
+      <span
+        style={{
+          position: "relative",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          height: "100%",
+          fontFamily: "'Trebuchet MS', sans-serif",
+          fontWeight: 700,
+          fontSize: 14,
+        }}
+      >
+        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: isRight ? theme.text : theme.card }}>
+          {leftLabel}
+        </span>
+        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: isRight ? theme.card : theme.text }}>
+          {rightLabel}
+        </span>
+      </span>
+    </button>
   );
 }
 
