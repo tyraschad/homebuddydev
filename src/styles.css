@@ -64,8 +64,8 @@
 :root {
   --radius: 1.25rem;
   --font-serif: "Lora", Georgia, "Times New Roman", serif;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --background: oklch(0.96 0.003 250);
+  --foreground: oklch(0.２0 0.02 250);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
