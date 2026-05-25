@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Settings, Mic, Phone, X } from "lucide-react";
+import { useSettings } from "@/lib/settings-store";
 
 
 export const Route = createFileRoute("/")({
@@ -15,25 +16,14 @@ export const Route = createFileRoute("/")({
 
 type Overlay = "chat" | "call" | null;
 
-const INK = "#1A1A2E";
-const MUTED = "#6B6860";
-
 function formatDate(d: Date) {
-  return d.toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 function formatDay(d: Date) {
   return d.toLocaleDateString("en-US", { weekday: "long" });
 }
 function formatTime(d: Date) {
-  return d.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 }
 function greeting(d: Date) {
   const h = d.getHours();
@@ -43,6 +33,7 @@ function greeting(d: Date) {
 }
 
 function Index() {
+  const { theme, sizes } = useSettings();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
 
@@ -62,17 +53,16 @@ function Index() {
       style={{
         width: "100%",
         height: "100vh",
-        background: "#F2F2EF",
+        background: theme.bg,
         padding: 16,
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
         boxSizing: "border-box",
-        color: INK,
+        color: theme.text,
         lineHeight: 1.5,
       }}
     >
-      {/* Header */}
       <header
         style={{
           display: "flex",
@@ -87,7 +77,7 @@ function Index() {
             fontFamily: "'Trebuchet MS', sans-serif",
             fontWeight: 700,
             fontSize: 24,
-            color: INK,
+            color: theme.text,
             margin: 0,
           }}
         >
@@ -101,7 +91,7 @@ function Index() {
             gap: 8,
             background: "transparent",
             border: "none",
-            color: INK,
+            color: theme.text,
             fontFamily: "'Trebuchet MS', sans-serif",
             fontWeight: 700,
             fontSize: 16,
@@ -109,39 +99,23 @@ function Index() {
             textDecoration: "none",
           }}
         >
-          <Settings size={24} strokeWidth={1.5} color={INK} />
+          <Settings size={24} strokeWidth={1.5} color={theme.text} />
           <span>Settings</span>
         </Link>
-
       </header>
 
-      {/* Main */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          gap: 16,
-          overflow: "hidden",
-        }}
-      >
-        {/* Left 50% */}
+      <div style={{ flex: 1, display: "flex", gap: 16, overflow: "hidden" }}>
         <Column width="50%">
-          <CardBox height="calc(30% - 8px)" padding={16} center>
-            <div
-              style={{
-                fontFamily: "Verdana, sans-serif",
-                fontSize: 12,
-                color: MUTED,
-              }}
-            >
+          <CardBox height="calc(30% - 8px)" padding={16} center theme={theme}>
+            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: sizes.date, color: theme.muted }}>
               {dateStr}
             </div>
             <div
               style={{
                 fontFamily: "Georgia, serif",
                 fontWeight: 700,
-                fontSize: 44,
-                color: INK,
+                fontSize: sizes.day,
+                color: theme.text,
                 lineHeight: 1.1,
                 marginTop: 4,
               }}
@@ -152,8 +126,8 @@ function Index() {
               style={{
                 fontFamily: "Georgia, serif",
                 fontWeight: 700,
-                fontSize: 40,
-                color: INK,
+                fontSize: sizes.time,
+                color: theme.text,
                 lineHeight: 1.1,
                 marginTop: 2,
               }}
@@ -162,36 +136,16 @@ function Index() {
             </div>
           </CardBox>
 
-          <CardBox
-            onClick={() => setOverlay("chat")}
-            height="calc(70% - 8px)"
-            padding={30}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                height: "100%",
-                width: "100%",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 20,
-                  marginTop: 24,
-                }}
-              >
-                <Mic size={90} strokeWidth={2} color={INK} />
+          <CardBox onClick={() => setOverlay("chat")} height="calc(70% - 8px)" padding={30} theme={theme}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", width: "100%" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, marginTop: 24 }}>
+                <Mic size={90} strokeWidth={2} color={theme.text} />
                 <div
                   style={{
                     fontFamily: "'Trebuchet MS', sans-serif",
                     fontWeight: 700,
                     fontSize: 24,
-                    color: INK,
+                    color: theme.text,
                     textAlign: "center",
                   }}
                 >
@@ -209,41 +163,33 @@ function Index() {
                   width: "100%",
                 }}
               >
-                <ActionBtn>Change TV Input</ActionBtn>
-                <ActionBtn>Go to Netflix</ActionBtn>
-                <ActionBtn>Turn on Washer</ActionBtn>
+                <ActionBtn theme={theme} fontSize={sizes.button}>Change TV Input</ActionBtn>
+                <ActionBtn theme={theme} fontSize={sizes.button}>Go to Netflix</ActionBtn>
+                <ActionBtn theme={theme} fontSize={sizes.button}>Turn on Washer</ActionBtn>
               </div>
             </div>
           </CardBox>
         </Column>
 
-        {/* Right 50% */}
         <Column width="50%">
-          <CardBox height="calc(55% - 8px)" padding={20}>
+          <CardBox height="calc(55% - 8px)" padding={20} theme={theme}>
             <h2
               style={{
                 fontFamily: "'Trebuchet MS', sans-serif",
                 fontWeight: 700,
-                fontSize: 18,
-                color: INK,
+                fontSize: sizes.heading,
+                color: theme.text,
                 margin: 0,
               }}
             >
               Today's Reminders
             </h2>
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <p
                 style={{
                   fontFamily: "Verdana, sans-serif",
-                  fontSize: 28,
-                  color: INK,
+                  fontSize: sizes.body,
+                  color: theme.text,
                   textAlign: "center",
                   margin: 0,
                 }}
@@ -253,11 +199,7 @@ function Index() {
             </div>
           </CardBox>
 
-          <CardBox
-            onClick={() => setOverlay("call")}
-            height="calc(45% - 8px)"
-            padding={20}
-          >
+          <CardBox onClick={() => setOverlay("call")} height="calc(45% - 8px)" padding={20} theme={theme}>
             <div
               style={{
                 display: "flex",
@@ -268,13 +210,13 @@ function Index() {
                 height: "100%",
               }}
             >
-              <Phone size={50} strokeWidth={2} color={INK} />
+              <Phone size={50} strokeWidth={2} color={theme.text} />
               <div
                 style={{
                   fontFamily: "'Trebuchet MS', sans-serif",
                   fontWeight: 700,
                   fontSize: 20,
-                  color: INK,
+                  color: theme.text,
                 }}
               >
                 Make a call
@@ -288,6 +230,7 @@ function Index() {
         <OverlayView
           title={overlay === "chat" ? "Ask Albert a Question" : "Make a Call"}
           onClose={() => setOverlay(null)}
+          theme={theme}
         >
           {overlay === "chat" ? (
             <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -297,13 +240,13 @@ function Index() {
                 placeholder="Type or tap the mic to speak…"
                 style={{
                   width: "100%",
-                  border: `1.5px solid ${INK}`,
+                  border: `1.5px solid ${theme.border}`,
                   borderRadius: 6,
                   padding: "10px 16px",
                   fontFamily: "Verdana, sans-serif",
                   fontSize: 18,
-                  color: INK,
-                  background: "#fff",
+                  color: theme.text,
+                  background: theme.card,
                   outline: "none",
                   boxSizing: "border-box",
                 }}
@@ -320,15 +263,7 @@ function Index() {
 
 function Column({ width, children }: { width: string; children: React.ReactNode }) {
   return (
-    <div
-      style={{
-        width,
-        display: "flex",
-        flexDirection: "column",
-        gap: 16,
-        overflow: "hidden",
-      }}
-    >
+    <div style={{ width, display: "flex", flexDirection: "column", gap: 16, overflow: "hidden" }}>
       {children}
     </div>
   );
@@ -340,19 +275,21 @@ function CardBox({
   height = "48%",
   padding = 20,
   center = false,
+  theme,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   height?: string;
   padding?: number;
   center?: boolean;
+  theme: { bg: string; card: string; text: string; border: string };
 }) {
   const style: React.CSSProperties = {
     height,
     flexShrink: 0,
     overflow: "hidden",
-    background: "#FFFFFF",
-    border: `1.5px solid ${INK}`,
+    background: theme.card,
+    border: `1.5px solid ${theme.border}`,
     borderRadius: 8,
     padding,
     boxSizing: "border-box",
@@ -362,7 +299,7 @@ function CardBox({
     alignItems: center ? "center" : undefined,
     justifyContent: center ? "center" : undefined,
     cursor: onClick ? "pointer" : "default",
-    color: INK,
+    color: theme.text,
     fontFamily: "inherit",
     width: "100%",
   };
@@ -376,7 +313,15 @@ function CardBox({
   return <div style={style}>{children}</div>;
 }
 
-function ActionBtn({ children }: { children: React.ReactNode }) {
+function ActionBtn({
+  children,
+  theme,
+  fontSize,
+}: {
+  children: React.ReactNode;
+  theme: { card: string; text: string; border: string };
+  fontSize: number;
+}) {
   return (
     <button
       type="button"
@@ -384,10 +329,10 @@ function ActionBtn({ children }: { children: React.ReactNode }) {
       style={{
         fontFamily: "'Trebuchet MS', sans-serif",
         fontWeight: 700,
-        fontSize: 14,
-        color: INK,
-        background: "#FFFFFF",
-        border: `1.5px solid ${INK}`,
+        fontSize,
+        color: theme.text,
+        background: theme.card,
+        border: `1.5px solid ${theme.border}`,
         borderRadius: 6,
         padding: "0 16px",
         cursor: "pointer",
@@ -408,10 +353,12 @@ function OverlayView({
   title,
   children,
   onClose,
+  theme,
 }: {
   title: string;
   children: React.ReactNode;
   onClose: () => void;
+  theme: { card: string; text: string; border: string; overlay: string };
 }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -429,7 +376,7 @@ function OverlayView({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.5)",
+        background: theme.overlay,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -441,8 +388,8 @@ function OverlayView({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#FFFFFF",
-          border: `1.5px solid ${INK}`,
+          background: theme.card,
+          border: `1.5px solid ${theme.border}`,
           borderRadius: 8,
           padding: 20,
           width: "100%",
@@ -451,24 +398,17 @@ function OverlayView({
           display: "flex",
           flexDirection: "column",
           boxSizing: "border-box",
-          color: INK,
+          color: theme.text,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 16,
-          }}
-        >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <h2
             style={{
               margin: 0,
               fontFamily: "'Trebuchet MS', sans-serif",
               fontWeight: 700,
               fontSize: 20,
-              color: INK,
+              color: theme.text,
             }}
           >
             {title}
@@ -482,10 +422,10 @@ function OverlayView({
               border: "none",
               cursor: "pointer",
               padding: 4,
-              color: INK,
+              color: theme.text,
             }}
           >
-            <X size={24} strokeWidth={1.5} color={INK} />
+            <X size={24} strokeWidth={1.5} color={theme.text} />
           </button>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
