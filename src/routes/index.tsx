@@ -319,12 +319,14 @@ function Column({ width, children }: { width: string; children: React.ReactNode 
 function CardBox({
   children,
   onClick,
+  height = "48%",
 }: {
   children: React.ReactNode;
   onClick?: () => void;
+  height?: string;
 }) {
   const style: React.CSSProperties = {
-    height: "48%",
+    height,
     flexShrink: 0,
     overflow: "hidden",
     background: "#FFFFFF",
@@ -338,6 +340,7 @@ function CardBox({
     cursor: onClick ? "pointer" : "default",
     color: INK,
     fontFamily: "inherit",
+    width: "100%",
   };
   if (onClick) {
     return (
