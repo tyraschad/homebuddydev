@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Settings, Mic, Phone, X } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
+import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 
 
 export const Route = createFileRoute("/")({
@@ -226,35 +227,11 @@ function Index() {
         </Column>
       </div>
 
-      {overlay && (
-        <OverlayView
-          title={overlay === "chat" ? "Ask Albert a Question" : "Make a Call"}
-          onClose={() => setOverlay(null)}
-          theme={theme}
-        >
-          {overlay === "chat" ? (
-            <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-              <div style={{ flex: 1, minHeight: 200 }} />
-              <input
-                type="text"
-                placeholder="Type or tap the mic to speak…"
-                style={{
-                  width: "100%",
-                  border: `1.5px solid ${theme.border}`,
-                  borderRadius: 6,
-                  padding: "10px 16px",
-                  fontFamily: "Verdana, sans-serif",
-                  fontSize: 18,
-                  color: theme.text,
-                  background: theme.card,
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
-          ) : (
-            <div style={{ flex: 1, minHeight: 200 }} />
-          )}
+      {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
+
+      {overlay === "call" && (
+        <OverlayView title="Make a Call" onClose={() => setOverlay(null)} theme={theme}>
+          <div style={{ flex: 1, minHeight: 200 }} />
         </OverlayView>
       )}
     </main>
