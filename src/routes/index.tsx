@@ -93,8 +93,8 @@ function Index() {
         >
           {greet}, Albert
         </h1>
-        <button
-          type="button"
+        <Link
+          to="/settings"
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -106,11 +106,13 @@ function Index() {
             fontWeight: 700,
             fontSize: 16,
             cursor: "pointer",
+            textDecoration: "none",
           }}
         >
           <Settings size={24} strokeWidth={1.5} color={INK} />
           <span>Settings</span>
-        </button>
+        </Link>
+
       </header>
 
       {/* Main */}
