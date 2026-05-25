@@ -123,7 +123,7 @@ function Index() {
       >
         {/* Left 35% */}
         <Column width="35%">
-          <CardBox>
+          <CardBox height="calc(45% - 8px)">
             <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: MUTED }}>
               {dateStr}
             </div>
@@ -153,7 +153,7 @@ function Index() {
             </div>
           </CardBox>
 
-          <CardBox onClick={() => setOverlay("chat")}>
+          <CardBox onClick={() => setOverlay("chat")} height="calc(55% - 8px)">
             <div
               style={{
                 display: "flex",
@@ -164,23 +164,11 @@ function Index() {
                 justifyContent: "center",
               }}
             >
+              <Mic size={70} strokeWidth={2} color={INK} />
               <div
                 style={{
-                  width: 96,
-                  height: 96,
-                  borderRadius: "50%",
-                  border: `2px solid ${INK}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <Mic size={60} strokeWidth={2} color={INK} />
-              </div>
-              <div
-                style={{
-                  fontFamily: "Verdana, sans-serif",
+                  fontFamily: "'Trebuchet MS', sans-serif",
+                  fontWeight: 700,
                   fontSize: 20,
                   color: INK,
                   textAlign: "center",
@@ -191,18 +179,24 @@ function Index() {
               <div
                 style={{
                   display: "flex",
-                  flexWrap: "wrap",
-                  justifyContent: "center",
-                  gap: 8,
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 10,
+                  width: "100%",
                 }}
               >
-                <ActionBtn>Change TV Input</ActionBtn>
-                <ActionBtn>Go to Netflix</ActionBtn>
-                <ActionBtn>Turn on Washer</ActionBtn>
+                <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                  <ActionBtn>Change TV Input</ActionBtn>
+                  <ActionBtn>Go to Netflix</ActionBtn>
+                </div>
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <ActionBtn>Turn on Washer</ActionBtn>
+                </div>
               </div>
             </div>
           </CardBox>
         </Column>
+
 
         {/* Right 65% */}
         <Column width="65%">
