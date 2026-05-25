@@ -4,7 +4,7 @@ export type AppearanceMode = "light" | "dark";
 export type TextSize = "medium" | "large";
 
 export const lightTheme = {
-  bg: "#F5F0E8",
+  bg: "#FFFFFF",
   card: "#FFFFFF",
   text: "#1A1A2E",
   muted: "#6B6860",
