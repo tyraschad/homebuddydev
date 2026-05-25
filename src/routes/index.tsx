@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Settings, Mic, Phone, X } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
+import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 
 
 export const Route = createFileRoute("/")({
