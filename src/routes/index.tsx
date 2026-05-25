@@ -42,7 +42,6 @@ function greeting(d: Date) {
 }
 
 function Index() {
-  // Avoid SSR/client hydration mismatch: render time-dependent strings only on client.
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
 
@@ -79,6 +78,7 @@ function Index() {
           alignItems: "center",
           justifyContent: "space-between",
           marginBottom: 16,
+          flexShrink: 0,
         }}
       >
         <h1
@@ -121,20 +121,26 @@ function Index() {
           overflow: "hidden",
         }}
       >
-        {/* Left 35% */}
-        <Column width="35%">
-          <CardBox height="calc(45% - 8px)">
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: MUTED }}>
+        {/* Left 50% */}
+        <Column width="50%">
+          <CardBox height="calc(30% - 8px)" padding={16} center>
+            <div
+              style={{
+                fontFamily: "Verdana, sans-serif",
+                fontSize: 12,
+                color: MUTED,
+              }}
+            >
               {dateStr}
             </div>
             <div
               style={{
                 fontFamily: "Georgia, serif",
                 fontWeight: 700,
-                fontSize: 56,
+                fontSize: 44,
                 color: INK,
                 lineHeight: 1.1,
-                marginTop: 8,
+                marginTop: 4,
               }}
             >
               {dayStr}
@@ -143,69 +149,79 @@ function Index() {
               style={{
                 fontFamily: "Georgia, serif",
                 fontWeight: 700,
-                fontSize: 48,
+                fontSize: 40,
                 color: INK,
                 lineHeight: 1.1,
-                marginTop: 4,
+                marginTop: 2,
               }}
             >
               {timeStr}
             </div>
           </CardBox>
 
-          <CardBox onClick={() => setOverlay("chat")} height="calc(55% - 8px)">
+          <CardBox
+            onClick={() => setOverlay("chat")}
+            height="calc(70% - 8px)"
+            padding={30}
+          >
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 12,
                 height: "100%",
-                justifyContent: "center",
+                width: "100%",
               }}
             >
-              <Mic size={70} strokeWidth={2} color={INK} />
-              <div
-                style={{
-                  fontFamily: "'Trebuchet MS', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 20,
-                  color: INK,
-                  textAlign: "center",
-                }}
-              >
-                Tap to Ask a Question
-              </div>
               <div
                 style={{
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 10,
+                  gap: 20,
+                  marginTop: 24,
+                }}
+              >
+                <Mic size={90} strokeWidth={2} color={INK} />
+                <div
+                  style={{
+                    fontFamily: "'Trebuchet MS', sans-serif",
+                    fontWeight: 700,
+                    fontSize: 24,
+                    color: INK,
+                    textAlign: "center",
+                  }}
+                >
+                  Tap to Ask a Question
+                </div>
+              </div>
+              <div style={{ flex: 1, minHeight: 24 }} />
+              <div
+                style={{
+                  display: "flex",
+                  gap: 16,
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                  marginBottom: 20,
                   width: "100%",
                 }}
               >
-                <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-                  <ActionBtn>Change TV Input</ActionBtn>
-                  <ActionBtn>Go to Netflix</ActionBtn>
-                </div>
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                  <ActionBtn>Turn on Washer</ActionBtn>
-                </div>
+                <ActionBtn>Change TV Input</ActionBtn>
+                <ActionBtn>Go to Netflix</ActionBtn>
+                <ActionBtn>Turn on Washer</ActionBtn>
               </div>
             </div>
           </CardBox>
         </Column>
 
-
-        {/* Right 65% */}
-        <Column width="65%">
-          <CardBox height="calc(60% - 8px)">
+        {/* Right 50% */}
+        <Column width="50%">
+          <CardBox height="calc(55% - 8px)" padding={20}>
             <h2
               style={{
                 fontFamily: "'Trebuchet MS', sans-serif",
                 fontWeight: 700,
-                fontSize: 20,
+                fontSize: 18,
                 color: INK,
                 margin: 0,
               }}
@@ -223,7 +239,7 @@ function Index() {
               <p
                 style={{
                   fontFamily: "Verdana, sans-serif",
-                  fontSize: 24,
+                  fontSize: 28,
                   color: INK,
                   textAlign: "center",
                   margin: 0,
@@ -234,7 +250,11 @@ function Index() {
             </div>
           </CardBox>
 
-          <CardBox onClick={() => setOverlay("call")} height="calc(40% - 8px)">
+          <CardBox
+            onClick={() => setOverlay("call")}
+            height="calc(45% - 8px)"
+            padding={20}
+          >
             <div
               style={{
                 display: "flex",
@@ -250,7 +270,7 @@ function Index() {
                 style={{
                   fontFamily: "'Trebuchet MS', sans-serif",
                   fontWeight: 700,
-                  fontSize: 18,
+                  fontSize: 20,
                   color: INK,
                 }}
               >
@@ -258,7 +278,6 @@ function Index() {
               </div>
             </div>
           </CardBox>
-
         </Column>
       </div>
 
@@ -316,10 +335,14 @@ function CardBox({
   children,
   onClick,
   height = "48%",
+  padding = 20,
+  center = false,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   height?: string;
+  padding?: number;
+  center?: boolean;
 }) {
   const style: React.CSSProperties = {
     height,
@@ -328,11 +351,13 @@ function CardBox({
     background: "#FFFFFF",
     border: `1.5px solid ${INK}`,
     borderRadius: 8,
-    padding: 20,
+    padding,
     boxSizing: "border-box",
     display: "flex",
     flexDirection: "column",
-    textAlign: "left",
+    textAlign: center ? "center" : "left",
+    alignItems: center ? "center" : undefined,
+    justifyContent: center ? "center" : undefined,
     cursor: onClick ? "pointer" : "default",
     color: INK,
     fontFamily: "inherit",
@@ -361,9 +386,14 @@ function ActionBtn({ children }: { children: React.ReactNode }) {
         background: "#FFFFFF",
         border: `1.5px solid ${INK}`,
         borderRadius: 6,
-        padding: "10px 16px",
+        padding: "0 16px",
         cursor: "pointer",
         lineHeight: 1.5,
+        height: 48,
+        minWidth: 150,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       {children}
