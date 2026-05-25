@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Settings, Mic, Phone, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -15,6 +14,9 @@ export const Route = createFileRoute("/")({
 
 type Overlay = "chat" | "call" | null;
 
+const INK = "#1A1A2E";
+const MUTED = "#6B6860";
+
 function formatDate(d: Date) {
   return d.toLocaleDateString("en-GB", {
     day: "numeric",
@@ -26,13 +28,11 @@ function formatDay(d: Date) {
   return d.toLocaleDateString("en-US", { weekday: "long" });
 }
 function formatTime(d: Date) {
-  return d
-    .toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })
-    .replace(/\s/, " ");
+  return d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
 }
 function greeting(d: Date) {
   const h = d.getHours();
@@ -42,162 +42,337 @@ function greeting(d: Date) {
 }
 
 function Index() {
-  const [now, setNow] = useState(() => new Date());
+  // Avoid SSR/client hydration mismatch: render time-dependent strings only on client.
+  const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
 
   useEffect(() => {
+    setNow(new Date());
     const t = setInterval(() => setNow(new Date()), 1000 * 15);
     return () => clearInterval(t);
   }, []);
 
+  const dateStr = now ? formatDate(now) : "";
+  const dayStr = now ? formatDay(now) : "";
+  const timeStr = now ? formatTime(now) : "";
+  const greet = now ? greeting(now) : "Hello";
+
   return (
-    <main className="min-h-screen bg-background text-foreground p-6 md:p-10">
+    <main
+      style={{
+        width: "100%",
+        height: "100vh",
+        background: "#F2F2EF",
+        padding: 16,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        boxSizing: "border-box",
+        color: INK,
+        lineHeight: 1.5,
+      }}
+    >
       {/* Header */}
-      <header className="flex items-center justify-between mb-6 md:mb-8 px-2">
-        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
-          {greeting(now)}, Albert
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
+        <h1
+          style={{
+            fontFamily: "'Trebuchet MS', sans-serif",
+            fontWeight: 700,
+            fontSize: 24,
+            color: INK,
+            margin: 0,
+          }}
+        >
+          {greet}, Albert
         </h1>
         <button
           type="button"
-          className="flex items-center gap-2 text-lg md:text-xl text-foreground/80 hover:text-foreground transition-colors"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            background: "transparent",
+            border: "none",
+            color: INK,
+            fontFamily: "'Trebuchet MS', sans-serif",
+            fontWeight: 700,
+            fontSize: 16,
+            cursor: "pointer",
+          }}
         >
-          <Settings className="size-6" strokeWidth={1.5} />
+          <Settings size={24} strokeWidth={1.5} color={INK} />
           <span>Settings</span>
         </button>
       </header>
 
-      {/* Two columns */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-5 md:gap-6">
-        {/* Left column 40% */}
-        <div className="md:col-span-2 flex flex-col gap-5 md:gap-6">
-          <Card className="flex flex-col items-center justify-center text-center py-10 min-h-[220px]">
-            <p className="text-sm md:text-base text-muted-foreground">
-              {formatDate(now)}
-            </p>
-            <p
-              className="font-serif font-bold text-foreground leading-none mt-3 text-6xl md:text-7xl"
-              style={{ fontFamily: "var(--font-serif)" }}
+      {/* Main */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          gap: 16,
+          overflow: "hidden",
+        }}
+      >
+        {/* Left 35% */}
+        <Column width="35%">
+          <CardBox>
+            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: MUTED }}>
+              {dateStr}
+            </div>
+            <div
+              style={{
+                fontFamily: "Georgia, serif",
+                fontWeight: 700,
+                fontSize: 56,
+                color: INK,
+                lineHeight: 1.1,
+                marginTop: 8,
+              }}
             >
-              {formatDay(now)}
-            </p>
-            <p className="font-bold text-5xl md:text-6xl mt-4 tracking-tight">
-              {formatTime(now)}
-            </p>
-          </Card>
+              {dayStr}
+            </div>
+            <div
+              style={{
+                fontFamily: "Georgia, serif",
+                fontWeight: 700,
+                fontSize: 48,
+                color: INK,
+                lineHeight: 1.1,
+                marginTop: 4,
+              }}
+            >
+              {timeStr}
+            </div>
+          </CardBox>
 
-          <ClickableCard onClick={() => setOverlay("chat")}>
-            <div className="flex flex-col items-center text-center py-6">
-              <div className="size-28 md:size-32 rounded-full border-2 border-foreground/70 flex items-center justify-center">
-                <Mic className="size-14 md:size-16" strokeWidth={1.5} />
+          <CardBox onClick={() => setOverlay("chat")}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 12,
+                height: "100%",
+                justifyContent: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: "50%",
+                  border: `2px solid ${INK}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Mic size={60} strokeWidth={2} color={INK} />
               </div>
-              <p className="mt-5 text-xl md:text-2xl font-medium">
+              <div
+                style={{
+                  fontFamily: "Verdana, sans-serif",
+                  fontSize: 20,
+                  color: INK,
+                  textAlign: "center",
+                }}
+              >
                 Tap to Ask a Question
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <OutlineButton>Change TV Input</OutlineButton>
-                <OutlineButton>Go to Netflix</OutlineButton>
-                <OutlineButton>Turn on Washer</OutlineButton>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                <ActionBtn>Change TV Input</ActionBtn>
+                <ActionBtn>Go to Netflix</ActionBtn>
+                <ActionBtn>Turn on Washer</ActionBtn>
               </div>
             </div>
-          </ClickableCard>
-        </div>
+          </CardBox>
+        </Column>
 
-        {/* Right column 60% */}
-        <div className="md:col-span-3 flex flex-col gap-5 md:gap-6">
-          <Card className="min-h-[220px] flex flex-col">
-            <h2 className="text-xl md:text-2xl font-semibold text-foreground">
+        {/* Right 65% */}
+        <Column width="65%">
+          <CardBox>
+            <h2
+              style={{
+                fontFamily: "'Trebuchet MS', sans-serif",
+                fontWeight: 700,
+                fontSize: 20,
+                color: INK,
+                margin: 0,
+              }}
+            >
               Today's Reminders
             </h2>
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-3xl md:text-4xl text-foreground/90 text-center">
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: "Verdana, sans-serif",
+                  fontSize: 24,
+                  color: INK,
+                  textAlign: "center",
+                  margin: 0,
+                }}
+              >
                 You're all clear for today
               </p>
             </div>
-          </Card>
+          </CardBox>
 
-          <ClickableCard onClick={() => setOverlay("call")}>
-            <div className="flex flex-col items-center justify-center text-center py-12">
-              <Phone className="size-20 md:size-24" strokeWidth={1.5} />
-              <p className="mt-5 text-2xl md:text-3xl font-medium">Make a call</p>
+          <CardBox onClick={() => setOverlay("call")}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+                height: "100%",
+              }}
+            >
+              <Phone size={60} strokeWidth={2} color={INK} />
+              <div
+                style={{
+                  fontFamily: "Verdana, sans-serif",
+                  fontSize: 24,
+                  color: INK,
+                }}
+              >
+                Make a call
+              </div>
             </div>
-          </ClickableCard>
-        </div>
+          </CardBox>
+        </Column>
       </div>
 
-      {/* Overlays */}
       {overlay && (
-        <Overlay
+        <OverlayView
           title={overlay === "chat" ? "Ask Albert a Question" : "Make a Call"}
           onClose={() => setOverlay(null)}
         >
           {overlay === "chat" ? (
-            <div className="flex flex-col h-full">
-              <div className="flex-1 min-h-[260px]" />
-              <div className="border-t border-border pt-4">
-                <input
-                  type="text"
-                  placeholder="Type or tap the mic to speak…"
-                  className="w-full rounded-2xl border border-border bg-background px-5 py-4 text-lg outline-none focus:ring-2 focus:ring-foreground/20"
-                />
-              </div>
+            <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+              <div style={{ flex: 1, minHeight: 200 }} />
+              <input
+                type="text"
+                placeholder="Type or tap the mic to speak…"
+                style={{
+                  width: "100%",
+                  border: `1.5px solid ${INK}`,
+                  borderRadius: 6,
+                  padding: "10px 16px",
+                  fontFamily: "Verdana, sans-serif",
+                  fontSize: 18,
+                  color: INK,
+                  background: "#fff",
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+              />
             </div>
           ) : (
-            <div className="min-h-[320px]" />
+            <div style={{ flex: 1, minHeight: 200 }} />
           )}
-        </Overlay>
+        </OverlayView>
       )}
     </main>
   );
 }
 
-function Card({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+function Column({ width, children }: { width: string; children: React.ReactNode }) {
   return (
     <div
-      className={`bg-card text-card-foreground rounded-3xl border border-border p-6 md:p-8 ${className}`}
+      style={{
+        width,
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        overflow: "hidden",
+      }}
     >
       {children}
     </div>
   );
 }
 
-function ClickableCard({
+function CardBox({
   children,
   onClick,
 }: {
   children: React.ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
 }) {
+  const style: React.CSSProperties = {
+    height: "48%",
+    flexShrink: 0,
+    overflow: "hidden",
+    background: "#FFFFFF",
+    border: `1.5px solid ${INK}`,
+    borderRadius: 8,
+    padding: 20,
+    boxSizing: "border-box",
+    display: "flex",
+    flexDirection: "column",
+    textAlign: "left",
+    cursor: onClick ? "pointer" : "default",
+    color: INK,
+    fontFamily: "inherit",
+  };
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} style={style}>
+        {children}
+      </button>
+    );
+  }
+  return <div style={style}>{children}</div>;
+}
+
+function ActionBtn({ children }: { children: React.ReactNode }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      className="bg-card text-card-foreground rounded-3xl border border-border p-6 md:p-8 text-left transition-colors hover:bg-muted/50 active:bg-muted focus:outline-none focus:ring-2 focus:ring-foreground/20"
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        fontFamily: "'Trebuchet MS', sans-serif",
+        fontWeight: 700,
+        fontSize: 14,
+        color: INK,
+        background: "#FFFFFF",
+        border: `1.5px solid ${INK}`,
+        borderRadius: 6,
+        padding: "10px 16px",
+        cursor: "pointer",
+        lineHeight: 1.5,
+      }}
     >
       {children}
     </button>
   );
 }
 
-function OutlineButton({ children }: { children: React.ReactNode }) {
-  return (
-    <Button
-      variant="outline"
-      type="button"
-      onClick={(e) => e.stopPropagation()}
-      className="rounded-full border-foreground/40 bg-card text-foreground hover:bg-muted text-base md:text-lg px-5 py-5"
-    >
-      {children}
-    </Button>
-  );
-}
-
-function Overlay({
+function OverlayView({
   title,
   children,
   onClose,
@@ -216,27 +391,74 @@ function Overlay({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-6"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+        zIndex: 50,
+        boxSizing: "border-box",
+      }}
     >
       <div
-        className="bg-card text-card-foreground rounded-3xl border border-border w-full max-w-2xl p-6 md:p-8 relative"
         onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#FFFFFF",
+          border: `1.5px solid ${INK}`,
+          borderRadius: 8,
+          padding: 20,
+          width: "100%",
+          maxWidth: 640,
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          boxSizing: "border-box",
+          color: INK,
+        }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl md:text-3xl font-semibold">{title}</h2>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 16,
+          }}
+        >
+          <h2
+            style={{
+              margin: 0,
+              fontFamily: "'Trebuchet MS', sans-serif",
+              fontWeight: 700,
+              fontSize: 20,
+              color: INK,
+            }}
+          >
+            {title}
+          </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-full p-2 hover:bg-muted transition-colors"
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              padding: 4,
+              color: INK,
+            }}
           >
-            <X className="size-6" strokeWidth={1.5} />
+            <X size={24} strokeWidth={1.5} color={INK} />
           </button>
         </div>
-        {children}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+          {children}
+        </div>
       </div>
     </div>
   );
