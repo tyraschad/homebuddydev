@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Settings, Mic, Phone, X } from "lucide-react";
+
 
 export const Route = createFileRoute("/")({
   component: Index,
