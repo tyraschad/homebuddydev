@@ -200,7 +200,7 @@ function Index() {
 
         {/* Right 65% */}
         <Column width="65%">
-          <CardBox>
+          <CardBox height="calc(60% - 8px)">
             <h2
               style={{
                 fontFamily: "'Trebuchet MS', sans-serif",
@@ -234,7 +234,7 @@ function Index() {
             </div>
           </CardBox>
 
-          <CardBox onClick={() => setOverlay("call")}>
+          <CardBox onClick={() => setOverlay("call")} height="calc(40% - 8px)">
             <div
               style={{
                 display: "flex",
@@ -245,11 +245,12 @@ function Index() {
                 height: "100%",
               }}
             >
-              <Phone size={60} strokeWidth={2} color={INK} />
+              <Phone size={50} strokeWidth={2} color={INK} />
               <div
                 style={{
-                  fontFamily: "Verdana, sans-serif",
-                  fontSize: 24,
+                  fontFamily: "'Trebuchet MS', sans-serif",
+                  fontWeight: 700,
+                  fontSize: 18,
                   color: INK,
                 }}
               >
@@ -257,6 +258,7 @@ function Index() {
               </div>
             </div>
           </CardBox>
+
         </Column>
       </div>
 
