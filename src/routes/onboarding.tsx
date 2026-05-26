@@ -14,7 +14,7 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 const GREEN = "#2F8F4E";
-const STORAGE_KEY = "homebuddy.onboarding.v1";
+const STORAGE_KEY = "homebuddy.onboarding.v2";
 const TOTAL = 10;
 
 type Condition =
