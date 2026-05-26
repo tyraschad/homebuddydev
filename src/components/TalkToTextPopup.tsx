@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
-import { X, Mic, Keyboard, Send, Microwave, Clock, Phone } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { X, Mic, Keyboard, Send, Sparkles, Clock, Phone, HelpCircle } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
+import { useCarer } from "@/lib/carer-store";
 
 type Action = { icon: React.ReactNode; label: string };
 
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const { theme, sizes, cardBorder, inputBorder, buttonBorder, highContrast } = useSettings();
+  const { reminders, elder } = useCarer();
   const [recording, setRecording] = useState(false);
   const [text, setText] = useState("");
 
@@ -17,11 +19,52 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const actions: Action[] = [
-    { icon: <Microwave size={24} strokeWidth={2} color={theme.text} />, label: "Heat food for 30 seconds" },
-    { icon: <Clock size={24} strokeWidth={2} color={theme.text} />, label: "Set cooking time" },
-    { icon: <Phone size={24} strokeWidth={2} color={theme.text} />, label: "Call Sarah" },
-  ];
+  const actions: Action[] = useMemo(() => {
+    const result: Action[] = [];
+    // 1. Upcoming reminders today (sorted by time)
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const todays = reminders
+      .flatMap((r) => r.times.map((t) => ({ name: r.name, time: t })))
+      .map((x) => {
+        const [h, m] = x.time.split(":").map(Number);
+        return { ...x, mins: (h || 0) * 60 + (m || 0) };
+      })
+      .sort((a, b) => Math.abs(a.mins - nowMin) - Math.abs(b.mins - nowMin));
+    for (const r of todays) {
+      if (result.length >= 3) break;
+      result.push({
+        icon: <Clock size={24} strokeWidth={2} color={theme.text} />,
+        label: `${r.name} at ${r.time}`,
+      });
+    }
+    // 2. Device questions
+    for (const d of elder.devices) {
+      if (result.length >= 3) break;
+      const q = d.questions[0];
+      if (q) {
+        result.push({
+          icon: <HelpCircle size={24} strokeWidth={2} color={theme.text} />,
+          label: q,
+        });
+      }
+    }
+    // 3. Contacts fallback
+    for (const c of elder.contacts) {
+      if (result.length >= 3) break;
+      result.push({
+        icon: <Phone size={24} strokeWidth={2} color={theme.text} />,
+        label: `Call ${c.name.split(" ")[0]}`,
+      });
+    }
+    if (result.length === 0) {
+      result.push({
+        icon: <Sparkles size={24} strokeWidth={2} color={theme.text} />,
+        label: "Ask me anything",
+      });
+    }
+    return result;
+  }, [reminders, elder, theme.text]);
 
   const circleBg = theme.bg === "#FFFFFF" ? "#1A1A2E" : "#E8E8E8";
   const circleIcon = theme.bg === "#FFFFFF" ? "#FFFFFF" : "#1A1A2E";

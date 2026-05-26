@@ -148,6 +148,7 @@ export function CarerProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem(ELDER_KEY);
       localStorage.removeItem(REMINDERS_KEY);
       localStorage.removeItem("homebuddy.onboarding.v2");
+      localStorage.removeItem("homebuddy.onboarding.completed.v1");
       localStorage.removeItem("homebuddy.tour.completed.v1");
     } catch {}
     setElderState({ ...defaultElder, conditions: [], contacts: [], notes: "", devices: [], name: "" });

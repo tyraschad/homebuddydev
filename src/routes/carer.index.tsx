@@ -189,7 +189,7 @@ function CarerPortal() {
       {/* HEADER */}
       <header ref={headerRef} style={headerStyle}>
         <div style={{ justifySelf: "start" }}>
-          <Link to="/" style={{ ...btnSecondary, display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
+          <Link to="/elder" style={{ ...btnSecondary, display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
             <ArrowLeft size={18} /> View Elder Screen
           </Link>
         </div>
