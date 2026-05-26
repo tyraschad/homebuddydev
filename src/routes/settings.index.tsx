@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Palette, Type, Volume2, Contrast, Check } from "lucide-react";
-import { useState } from "react";
+
 import { useSettings } from "@/lib/settings-store";
 
 export const Route = createFileRoute("/settings/")({
