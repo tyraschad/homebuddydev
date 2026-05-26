@@ -47,9 +47,11 @@ type Ctx = {
   appearance: AppearanceMode;
   textSize: TextSize;
   highContrast: boolean;
+  announcementsEnabled: boolean;
   setAppearance: (m: AppearanceMode) => void;
   setTextSize: (s: TextSize) => void;
   setHighContrast: (v: boolean) => void;
+  setAnnouncementsEnabled: (v: boolean) => void;
   theme: Theme;
   sizes: Sizes;
   cardBorder: string;
@@ -57,6 +59,7 @@ type Ctx = {
   inputBorder: string;
   hcStrongColor: string;
 };
+
 
 const SettingsContext = createContext<Ctx | null>(null);
 
