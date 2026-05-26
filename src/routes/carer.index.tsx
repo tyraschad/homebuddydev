@@ -511,9 +511,9 @@ function WeekView({ date, reminders, onOpen, theme, appearance, gridLine }: {
 }
 
 
-function MonthView({ date, reminders, onPickDay, theme, gridLine }: {
+function MonthView({ date, reminders, onPickDay, theme, appearance, gridLine }: {
   date: Date; reminders: Reminder[]; onPickDay: (d: Date) => void;
-  theme: ThemeT; gridLine: string;
+  theme: ThemeT; appearance: "light" | "dark"; gridLine: string;
 }) {
   const first = new Date(date.getFullYear(), date.getMonth(), 1);
   const startOffset = (first.getDay() + 6) % 7;
@@ -523,6 +523,8 @@ function MonthView({ date, reminders, onPickDay, theme, gridLine }: {
   for (let i = 1; i <= daysInMonth; i++) cells.push(new Date(date.getFullYear(), date.getMonth(), i));
   while (cells.length % 7 !== 0) cells.push(null);
   const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const todayStr = ymd(new Date());
+  const todayBg = appearance === "dark" ? "#2A3A4A" : "#F0F4FF";
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", fontWeight: 700,
@@ -537,13 +539,17 @@ function MonthView({ date, reminders, onPickDay, theme, gridLine }: {
           if (!c) return <div key={i} style={{ background: theme.bg, minHeight: 80,
             border: `1px solid ${gridLine}`, marginLeft: -1, marginTop: -1 }} />;
           const dayReminders = reminders.filter((r) => appliesOn(r, c));
+          const isTodayCell = ymd(c) === todayStr;
           return (
             <button key={i} onClick={() => onPickDay(c)} style={{
-              background: theme.card, border: `1px solid ${gridLine}`, marginLeft: -1, marginTop: -1,
+              background: isTodayCell ? todayBg : theme.card,
+              border: isTodayCell ? `2px solid ${GREEN}` : `1px solid ${gridLine}`,
+              marginLeft: -1, marginTop: -1,
               minHeight: 80, padding: 8, textAlign: "left", color: theme.text, cursor: "pointer",
-              display: "flex", flexDirection: "column", gap: 6,
+              display: "flex", flexDirection: "column", gap: 6, position: "relative",
             }}>
-              <span style={{ fontWeight: 700, fontSize: 14 }}>{c.getDate()}</span>
+              <span style={{ fontWeight: isTodayCell ? 700 : 700, fontSize: 14,
+                color: isTodayCell ? GREEN : theme.text }}>{c.getDate()}</span>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                 {dayReminders.slice(0, 6).map((r, idx) => (
                   <span key={r.id + idx} style={{
@@ -552,7 +558,13 @@ function MonthView({ date, reminders, onPickDay, theme, gridLine }: {
                 ))}
                 {dayReminders.length > 6 && <span style={{ fontSize: 11, color: theme.muted }}>+{dayReminders.length - 6}</span>}
               </div>
+              {isTodayCell && (
+                <span style={{ position: "absolute", bottom: 4, right: 6, fontSize: 8,
+                  fontWeight: 700, color: GREEN, textTransform: "uppercase", letterSpacing: 0.5,
+                  fontFamily: "'Trebuchet MS', sans-serif" }}>today</span>
+              )}
             </button>
+
           );
         })}
       </div>
