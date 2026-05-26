@@ -82,36 +82,50 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
   const suggestions: Suggestion[] = useMemo(() => {
     const result: Suggestion[] = [];
-    const now = new Date();
+    const truncate = (s: string, n = 40) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
+
+    // Top 2 questions from primary (first) device
+    const primary = elder.devices[0];
+    if (primary) {
+      for (const q of primary.questions.slice(0, 2)) {
+        result.push({
+          icon: <HelpCircle size={18} strokeWidth={2} color={theme.text} />,
+          label: truncate(q),
+          device: primary,
+        });
+      }
+    }
+
+    // Next upcoming reminder (strictly future)
+    const now = new Date(nowTick);
     const nowMin = now.getHours() * 60 + now.getMinutes();
-    const todays = reminders
-      .flatMap((r) => r.times.map((t) => ({ r, t })))
-      .map((x) => {
-        const [h, m] = x.t.split(":").map(Number);
-        return { ...x, mins: (h || 0) * 60 + (m || 0) };
-      })
-      .sort((a, b) => Math.abs(a.mins - nowMin) - Math.abs(b.mins - nowMin));
-    for (const x of todays) {
-      if (result.length >= 3) break;
+    const upcoming = reminders
+      .flatMap((r) => r.times.map((t) => {
+        const [h, m] = t.split(":").map(Number);
+        return { r, t, mins: (h || 0) * 60 + (m || 0) };
+      }))
+      .filter((x) => x.mins > nowMin)
+      .sort((a, b) => a.mins - b.mins)[0];
+    if (upcoming) {
+      const diff = upcoming.mins - nowMin;
+      let time: string;
+      if (diff < 1) time = "Now";
+      else if (diff < 60) time = `${diff} minute${diff === 1 ? "" : "s"}`;
+      else {
+        const h = Math.floor(diff / 60); const m = diff % 60;
+        time = m === 0 ? `${h} hour${h === 1 ? "" : "s"}` : `${h}h ${m}m`;
+      }
       result.push({
-        icon: <Clock size={24} strokeWidth={2} color={theme.text} />,
-        label: `${x.r.name} at ${x.t}`,
-        reminder: x.r,
-        time: x.t,
+        icon: <Clock size={18} strokeWidth={2} color={theme.text} />,
+        label: truncate(`${upcoming.r.name} in ${time}`),
+        reminder: upcoming.r,
+        time: upcoming.t,
       });
     }
-    for (const d of elder.devices) {
-      if (result.length >= 3) break;
-      const q = d.questions[0];
-      if (q) result.push({ icon: <HelpCircle size={24} strokeWidth={2} color={theme.text} />, label: q, device: d });
-    }
-    for (const c of elder.contacts) {
-      if (result.length >= 3) break;
-      result.push({ icon: <Phone size={24} strokeWidth={2} color={theme.text} />, label: `Call ${c.name.split(" ")[0]}` });
-    }
-    if (result.length === 0) result.push({ icon: <Sparkles size={24} strokeWidth={2} color={theme.text} />, label: "Ask me anything" });
+
+    if (result.length === 0) result.push({ icon: <Sparkles size={18} strokeWidth={2} color={theme.text} />, label: "Ask me anything" });
     return result;
-  }, [reminders, elder, theme.text]);
+  }, [reminders, elder.devices, theme.text, nowTick]);
 
   const matchDevice = (q: string): Device | null => {
     const lower = q.toLowerCase();
