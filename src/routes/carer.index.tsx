@@ -48,18 +48,50 @@ function iconForType(type: ReminderType, size = 18, color = "currentColor") {
   }
 }
 
-// Reminder applies on a given date based on its repeatSchedule
+const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAY_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+// Reminder applies on a given date based on its schedule
 function appliesOn(r: Reminder, d: Date) {
-  const day = d.getDay(); // 0 Sun ... 6 Sat
+  if (r.repeats === false) {
+    return r.oneTimeDate === ymd(d);
+  }
+  const day = d.getDay(); // 0 Sun .. 6 Sat
   switch (r.repeatSchedule) {
     case "Daily": return true;
     case "Weekdays": return day >= 1 && day <= 5;
-    case "Weekends": return day === 0 || day === 6;
-    case "Weekly": return true; // simplified
-    case "Monthly": return d.getDate() === 1; // simplified
+    case "Weekly": return r.weekday == null ? true : day === r.weekday;
+    case "Monthly": return (r.monthlyDates ?? []).includes(d.getDate());
+    case "Custom": return (r.customDays ?? []).includes(day);
     default: return true;
   }
 }
+
+function formatSchedule(r: Reminder) {
+  if (r.repeats === false) {
+    if (!r.oneTimeDate) return "Does not repeat";
+    const d = new Date(r.oneTimeDate + "T00:00:00");
+    return `Once on ${d.toLocaleDateString("en-US", { month: "long", day: "numeric" })}`;
+  }
+  switch (r.repeatSchedule) {
+    case "Daily": return "Daily";
+    case "Weekdays": return "Weekdays (Mon-Fri)";
+    case "Weekly":
+      return `Weekly on ${WEEKDAY_LONG[r.weekday ?? 1]}`;
+    case "Monthly": {
+      const dates = (r.monthlyDates ?? []).slice().sort((a, b) => a - b);
+      if (!dates.length) return "Monthly";
+      return `Monthly on ${dates.map(ordinal).join(", ")}`;
+    }
+    case "Custom": {
+      const days = (r.customDays ?? []).slice().sort((a, b) => a - b);
+      if (!days.length) return "Custom";
+      return `Custom (${days.map((d) => WEEKDAY_SHORT[d]).join(", ")})`;
+    }
+    default: return r.repeatSchedule;
+  }
+}
+
 
 function CarerPortal() {
   const { theme, cardBorder, buttonBorder, inputBorder, appearance } = useSettings();
