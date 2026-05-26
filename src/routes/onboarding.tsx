@@ -597,31 +597,29 @@ function suggestRecommendations(conditions: Condition[]) {
 }
 
 // ---------- Reminders Page ----------
-function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSecondary, inputStyle, h1, muted, onNext }: any) {
-  const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<OnbReminder>({
-    id: "", type: "medication", name: "", time: "08:00", repeatSchedule: "Daily", notes: "",
+function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSecondary, h1, muted, onNext }: any) {
+  const [picking, setPicking] = useState(false);
+  const [editing, setEditing] = useState<Reminder | null>(null);
+
+  const blankReminder = (type: ReminderType): Reminder => ({
+    id: uid(), type, name: "",
+    timesPerDay: 1, times: ["08:00"],
+    repeats: true, repeatSchedule: "Daily",
+    elderId: "elder-1",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
-  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const startAdd = () => {
-    setDraft({ id: "", type: "medication", name: "", time: "08:00", repeatSchedule: "Daily", notes: "" });
-    setEditingId(null); setOpen(true);
+  const onSave = (r: Reminder) => {
+    const list = data.reminders as Reminder[];
+    const exists = list.some((x) => x.id === r.id);
+    update({ reminders: exists ? list.map((x) => (x.id === r.id ? r : x)) : [...list, r] });
+    setEditing(null);
   };
-  const startEdit = (r: OnbReminder) => { setDraft(r); setEditingId(r.id); setOpen(true); };
-
-  const save = () => {
-    if (!draft.name.trim()) return;
-    const list = data.reminders as OnbReminder[];
-    if (editingId) {
-      update({ reminders: list.map((r) => (r.id === editingId ? { ...draft, id: editingId } : r)) });
-    } else {
-      update({ reminders: [...list, { ...draft, id: uid() }] });
-    }
-    setOpen(false);
+  const onDelete = (r: Reminder) => {
+    update({ reminders: (data.reminders as Reminder[]).filter((x) => x.id !== r.id) });
+    setEditing(null);
   };
-
-  const del = (id: string) => update({ reminders: (data.reminders as OnbReminder[]).filter((r) => r.id !== id) });
 
   return (
     <div>
@@ -635,65 +633,37 @@ function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSe
         {data.reminders.length === 0 ? (
           <div style={{ ...muted, textAlign: "center", padding: 16 }}>No reminders yet</div>
         ) : (
-          (data.reminders as OnbReminder[]).map((r) => (
+          (data.reminders as Reminder[]).map((r) => (
             <div key={r.id} style={{ ...card, display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ flex: 1, color: theme.text, fontSize: 14 }}>
-                <strong>{r.time}</strong> · {r.name} · <span style={{ color: theme.muted }}>{r.repeatSchedule}</span>
+                <strong>{r.times[0]}</strong> · {r.name} · <span style={{ color: theme.muted }}>{r.repeats === false ? "Does not repeat" : r.repeatSchedule}</span>
               </div>
-              <button type="button" onClick={() => startEdit(r)} style={iconBtn(theme)} aria-label="Edit"><Edit size={16} /></button>
-              <button type="button" onClick={() => del(r.id)} style={iconBtn(theme)} aria-label="Delete"><Trash2 size={16} /></button>
+              <button type="button" onClick={() => setEditing(r)} style={iconBtn(theme)} aria-label="Edit"><Edit size={16} /></button>
+              <button type="button" onClick={() => onDelete(r)} style={iconBtn(theme)} aria-label="Delete"><Trash2 size={16} /></button>
             </div>
           ))
         )}
       </div>
 
-      <button type="button" onClick={startAdd} style={{ ...btnSecondary, marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8 }}>
+      <button type="button" onClick={() => setPicking(true)} style={{ ...btnSecondary, marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8 }}>
         <Plus size={16} /> Add a reminder
       </button>
 
-      {open && (
-        <Modal onClose={() => setOpen(false)} theme={theme} card={card}>
-          <h2 style={{ ...h1, fontSize: 22, marginTop: 0 }}>{editingId ? "Edit reminder" : "Add a reminder"}</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <Field label="Category">
-              <select style={inputStyle} value={draft.type}
-                onChange={(e) => setDraft({ ...draft, type: e.target.value as ReminderType })}>
-                <option value="medication">Medication</option>
-                <option value="appointment">Appointment</option>
-                <option value="activity">Activity</option>
-                <option value="other">Other</option>
-              </select>
-            </Field>
-            <Field label="Name">
-              <input style={inputStyle} value={draft.name}
-                onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="e.g., Aspirin" />
-            </Field>
-            <Field label="Time">
-              <input type="time" style={inputStyle} value={draft.time}
-                onChange={(e) => setDraft({ ...draft, time: e.target.value })} />
-            </Field>
-            <Field label="Repeat">
-              <select style={inputStyle} value={draft.repeatSchedule}
-                onChange={(e) => setDraft({ ...draft, repeatSchedule: e.target.value })}>
-                <option>Daily</option>
-                <option>Weekdays</option>
-                <option>Weekly</option>
-                <option>Monthly</option>
-                <option value="Once">Does not repeat</option>
-              </select>
-            </Field>
-            <Field label="Notes (optional)">
-              <textarea style={{ ...inputStyle, minHeight: 64 }} value={draft.notes || ""}
-                onChange={(e) => setDraft({ ...draft, notes: e.target.value })} />
-            </Field>
-          </div>
-          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-            <button type="button" disabled={!draft.name.trim()} onClick={save} style={btnPrimary(!draft.name.trim())}>
-              Save reminder
-            </button>
-            <button type="button" onClick={() => setOpen(false)} style={btnSecondary}>Cancel</button>
-          </div>
-        </Modal>
+      {picking && (
+        <CategoryPicker
+          onClose={() => setPicking(false)}
+          onPick={(t) => { setPicking(false); setEditing(blankReminder(t)); }}
+        />
+      )}
+
+      {editing && (
+        <ReminderForm
+          initial={editing}
+          existing={(data.reminders as Reminder[]).some((x) => x.id === editing.id)}
+          onClose={() => setEditing(null)}
+          onSave={onSave}
+          onDelete={onDelete}
+        />
       )}
 
       <div style={{ marginTop: 32 }}>
@@ -702,6 +672,7 @@ function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSe
     </div>
   );
 }
+
 
 // ---------- Devices Page ----------
 function DevicesPage({ data, update, theme, card, btnPrimary, btnSecondary, inputStyle, h1, muted, cardBorder, buttonBorder, onNext }: any) {
