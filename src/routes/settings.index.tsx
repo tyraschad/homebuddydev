@@ -114,7 +114,7 @@ function SettingsPage() {
         <div
           style={{
             background: theme.card,
-            border: `1.5px solid ${theme.border}`,
+            border: cardBorder,
             borderRadius: 8,
             padding: 16,
             fontFamily: "Verdana, sans-serif",
