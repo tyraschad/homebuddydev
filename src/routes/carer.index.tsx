@@ -97,7 +97,7 @@ function formatSchedule(r: Reminder) {
 
 function CarerPortal() {
   const { theme, cardBorder, buttonBorder, inputBorder, appearance } = useSettings();
-  const { elder, reminders, addReminder, updateReminder, deleteReminder } = useCarer();
+  const { elder, setElder, reminders, addReminder, updateReminder, deleteReminder } = useCarer();
 
   const [view, setView] = useState<ViewMode>("day");
   const [cursor, setCursor] = useState<Date | null>(null);
