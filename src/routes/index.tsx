@@ -17,11 +17,16 @@ export const Route = createFileRoute("/")({
 
 type Overlay = "chat" | "call" | null;
 
-function formatDate(d: Date) {
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+function ordinalSuffix(n: number) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
-function formatDay(d: Date) {
-  return d.toLocaleDateString("en-US", { weekday: "long" });
+function formatDateDay(d: Date) {
+  const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
+  const monthName = d.toLocaleDateString("en-US", { month: "long" });
+  const date = d.getDate();
+  return `${dayName}, ${monthName} ${ordinalSuffix(date)}`;
 }
 function formatTime(d: Date) {
   return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
@@ -34,20 +39,22 @@ function greeting(d: Date) {
 }
 
 function Index() {
-  const { theme, sizes } = useSettings();
+  const { theme, sizes, textSize } = useSettings();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
 
   useEffect(() => {
     setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000 * 15);
+    const t = setInterval(() => setNow(new Date()), 1000 * 60);
     return () => clearInterval(t);
   }, []);
 
-  const dateStr = now ? formatDate(now) : "";
-  const dayStr = now ? formatDay(now) : "";
+  const dateDayStr = now ? formatDateDay(now) : "";
   const timeStr = now ? formatTime(now) : "";
   const greet = now ? greeting(now) : "Hello";
+
+  const line1Size = textSize === "large" ? 34 : 28;
+  const line2Size = textSize === "large" ? 53 : 44;
 
   return (
     <main
