@@ -154,89 +154,94 @@ function ElderHome() {
 
         <Column width="50%">
           <CardBox flex={1} padding={16} theme={theme}>
-            <h2 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: sizes.heading, color: theme.text, margin: 0, marginBottom: 12 }}>
-              Today's Reminders
-            </h2>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", minHeight: 0 }}>
-              {items.length === 0 ? (
-                <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, textAlign: "center", margin: "auto" }}>
-                  No reminders scheduled today
-                </p>
-              ) : upcoming.length === 0 ? (
-                <>
-                  <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text, textAlign: "center", marginTop: 0, marginBottom: 16 }}>
-                    All reminders completed today! Great job!
+            <div style={{ position: "relative", display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+              <h2 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text, margin: 0, marginBottom: 12, paddingRight: 72 }}>
+                Today's Reminders
+              </h2>
+              <button
+                type="button"
+                onClick={() => setOverlay("call")}
+                aria-label="Make a call"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  background: "#6BA24A",
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  zIndex: 5,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                  transition: "background 0.2s, box-shadow 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#5A8F3D";
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.25)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#6BA24A";
+                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+                }}
+              >
+                <Phone size={24} strokeWidth={2} color="#FFFFFF" />
+              </button>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", minHeight: 0 }}>
+                {items.length === 0 ? (
+                  <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, textAlign: "center", margin: "auto" }}>
+                    No reminders scheduled today
                   </p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {completed.map((i) => (
-                      <CompletedRow key={i.key} label={i.label} color={completedColor} />
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {upcoming.map((i) => (
-                      <div
-                        key={i.key}
-                        style={{
-                          fontFamily: "Verdana, sans-serif",
-                          fontSize: 18,
-                          fontWeight: 700,
-                          color: theme.text,
-                          opacity: 1,
-                          transition: "all 0.3s ease",
-                        }}
-                      >
-                        {i.label}
-                      </div>
-                    ))}
-                  </div>
-                  {completed.length > 0 && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 16 }}>
+                ) : upcoming.length === 0 ? (
+                  <>
+                    <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text, textAlign: "center", marginTop: 0, marginBottom: 16 }}>
+                      All reminders completed today! Great job!
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {completed.map((i) => (
                         <CompletedRow key={i.key} label={i.label} color={completedColor} />
                       ))}
                     </div>
-                  )}
-                </>
-              )}
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {upcoming.map((i) => (
+                        <div
+                          key={i.key}
+                          style={{
+                            fontFamily: "Verdana, sans-serif",
+                            fontSize: 18,
+                            fontWeight: 700,
+                            color: theme.text,
+                            opacity: 1,
+                            transition: "all 0.3s ease",
+                          }}
+                        >
+                          {i.label}
+                        </div>
+                      ))}
+                    </div>
+                    {completed.length > 0 && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 16 }}>
+                        {completed.map((i) => (
+                          <CompletedRow key={i.key} label={i.label} color={completedColor} />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </CardBox>
         </Column>
       </div>
 
-      <button
-        type="button"
-        onClick={() => setOverlay("call")}
-        aria-label="Make a call"
-        style={{
-          position: "absolute",
-          bottom: 24,
-          right: 24,
-          width: 64,
-          height: 64,
-          borderRadius: "50%",
-          background: theme.card,
-          border: `1.5px solid ${theme.border}`,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          color: theme.text,
-          zIndex: 20,
-        }}
-      >
-        <Phone size={28} strokeWidth={2} color={theme.text} />
-      </button>
-
       {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
-      {overlay === "call" && (
-        <OverlayView title="Make a Call" onClose={() => setOverlay(null)} theme={theme}>
-          <div style={{ flex: 1, minHeight: 200 }} />
-        </OverlayView>
-      )}
+      {overlay === "call" && <CallPopup onClose={() => setOverlay(null)} theme={theme} />}
     </main>
   );
 }
