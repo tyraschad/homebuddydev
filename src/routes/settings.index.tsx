@@ -17,7 +17,7 @@ function SettingsPage() {
 
   const tileStyle: React.CSSProperties = {
     background: theme.card,
-    border: `1.5px solid ${theme.border}`,
+    border: cardBorder,
     borderRadius: 8,
     padding: 20,
     display: "flex",
