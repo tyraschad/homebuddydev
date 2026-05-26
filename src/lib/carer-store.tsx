@@ -10,12 +10,12 @@ export type Reminder = {
   dose?: number;
   timesPerDay: number;
   times: string[];
-  repeats?: boolean; // true if recurring; false = one-time
-  repeatSchedule: string; // "Daily" | "Weekly" | "Monthly" | "Weekdays" | "Custom"
-  weekday?: number; // 0=Sun..6=Sat (for Weekly)
-  monthlyDates?: number[]; // 1..31 (for Monthly)
-  customDays?: number[]; // 0=Sun..6=Sat (for Custom)
-  oneTimeDate?: string; // YYYY-MM-DD when repeats=false
+  repeats?: boolean;
+  repeatSchedule: string;
+  weekday?: number;
+  monthlyDates?: number[];
+  customDays?: number[];
+  oneTimeDate?: string;
   photo?: string;
   notes?: string;
   elderId: string;
@@ -26,24 +26,34 @@ export type Reminder = {
 
 export type Contact = { id: string; name: string; phone: string };
 
+export type Device = {
+  id: string;
+  name: string;
+  photo?: string;
+  questions: string[];
+};
+
 export type ElderProfile = {
   id: string;
   name: string;
-  dob: string; // YYYY-MM-DD
+  dob: string;
   avatar?: string;
   conditions: string[];
   contacts: Contact[];
   notes: string;
   context: string;
+  devices: Device[];
 };
 
 type Ctx = {
   elder: ElderProfile;
   setElder: (e: ElderProfile) => void;
   reminders: Reminder[];
+  setReminders: (rs: Reminder[]) => void;
   addReminder: (r: Reminder) => void;
   updateReminder: (r: Reminder) => void;
   deleteReminder: (id: string) => void;
+  resetAll: () => void;
 };
 
 const defaultElder: ElderProfile = {
@@ -56,7 +66,8 @@ const defaultElder: ElderProfile = {
     { id: "c2", name: "Dr. Patel", phone: "+44 20 7946 0011" },
   ],
   notes: "Prefers tea in the morning. Hard of hearing on the left side.",
-  context: "Lives alone in a ground-floor flat. Carer visits twice a day.",
+  context: "",
+  devices: [],
 };
 
 const defaultReminders: Reminder[] = [
@@ -106,14 +117,18 @@ const REMINDERS_KEY = "carer.reminders";
 
 export function CarerProvider({ children }: { children: ReactNode }) {
   const [elder, setElderState] = useState<ElderProfile>(defaultElder);
-  const [reminders, setReminders] = useState<Reminder[]>(defaultReminders);
+  const [reminders, setRemindersState] = useState<Reminder[]>(defaultReminders);
 
   useEffect(() => {
     try {
       const e = localStorage.getItem(ELDER_KEY);
-      if (e) setElderState(JSON.parse(e));
+      if (e) {
+        const parsed = JSON.parse(e);
+        // Back-compat: ensure devices field exists
+        setElderState({ ...defaultElder, ...parsed, devices: parsed.devices ?? [] });
+      }
       const r = localStorage.getItem(REMINDERS_KEY);
-      if (r) setReminders(JSON.parse(r));
+      if (r) setRemindersState(JSON.parse(r));
     } catch {}
   }, []);
 
@@ -121,16 +136,26 @@ export function CarerProvider({ children }: { children: ReactNode }) {
     setElderState(e);
     try { localStorage.setItem(ELDER_KEY, JSON.stringify(e)); } catch {}
   };
-  const persist = (list: Reminder[]) => {
-    setReminders(list);
+  const setReminders = (list: Reminder[]) => {
+    setRemindersState(list);
     try { localStorage.setItem(REMINDERS_KEY, JSON.stringify(list)); } catch {}
   };
-  const addReminder = (r: Reminder) => persist([...reminders, r]);
-  const updateReminder = (r: Reminder) => persist(reminders.map((x) => (x.id === r.id ? r : x)));
-  const deleteReminder = (id: string) => persist(reminders.filter((x) => x.id !== id));
+  const addReminder = (r: Reminder) => setReminders([...reminders, r]);
+  const updateReminder = (r: Reminder) => setReminders(reminders.map((x) => (x.id === r.id ? r : x)));
+  const deleteReminder = (id: string) => setReminders(reminders.filter((x) => x.id !== id));
+  const resetAll = () => {
+    try {
+      localStorage.removeItem(ELDER_KEY);
+      localStorage.removeItem(REMINDERS_KEY);
+      localStorage.removeItem("homebuddy.onboarding.v2");
+      localStorage.removeItem("homebuddy.tour.completed.v1");
+    } catch {}
+    setElderState({ ...defaultElder, conditions: [], contacts: [], notes: "", devices: [], name: "" });
+    setRemindersState([]);
+  };
 
   return (
-    <CarerContext.Provider value={{ elder, setElder, reminders, addReminder, updateReminder, deleteReminder }}>
+    <CarerContext.Provider value={{ elder, setElder, reminders, setReminders, addReminder, updateReminder, deleteReminder, resetAll }}>
       {children}
     </CarerContext.Provider>
   );
