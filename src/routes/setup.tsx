@@ -1,8 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Route as OnboardingRoute } from "./onboarding";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-// /setup is an alias for /onboarding using the same component.
+// /setup is an alias for /onboarding.
 export const Route = createFileRoute("/setup")({
-  component: OnboardingRoute.options.component!,
-  head: () => ({ meta: [{ title: "HomeBuddy Setup" }] }),
+  beforeLoad: () => { throw redirect({ to: "/onboarding" }); },
 });
