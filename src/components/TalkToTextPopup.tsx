@@ -273,7 +273,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       style={{
         position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 16, zIndex: 50, boxSizing: "border-box",
+        padding: 16, zIndex: 2000, boxSizing: "border-box",
       }}
     >
       <style>{`
