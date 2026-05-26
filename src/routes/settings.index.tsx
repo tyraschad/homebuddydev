@@ -11,8 +11,9 @@ export const Route = createFileRoute("/settings/")({
 const GREEN = "#2F8F4E";
 
 function SettingsPage() {
-  const { theme, appearance, setAppearance, textSize, setTextSize, highContrast, setHighContrast, cardBorder } = useSettings();
-  const [tts, setTts] = useState(false);
+  const { theme, appearance, setAppearance, textSize, setTextSize, highContrast, setHighContrast, announcementsEnabled, setAnnouncementsEnabled, cardBorder } = useSettings();
+
+
 
 
   const tileStyle: React.CSSProperties = {
