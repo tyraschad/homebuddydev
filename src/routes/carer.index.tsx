@@ -169,12 +169,8 @@ function CarerPortal() {
             {headerDate}
           </div>
         </div>
-        <div style={{ justifySelf: "end" }}>
-          <Link to="/carer/settings" style={{ color: theme.text, fontSize: 14, textDecoration: "underline",
-            fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
-            Carer Portal Settings
-          </Link>
-        </div>
+        <div style={{ justifySelf: "end" }} />
+
       </header>
 
       {/* BOX 2: ELDER PROFILE CARD (white) */}
