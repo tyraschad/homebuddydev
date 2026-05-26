@@ -92,6 +92,7 @@ function CarerPortal() {
   const [cursor, setCursor] = useState<Date | null>(null);
   const [profileOpen, setProfileOpen] = useState(true);
   const [icOpen, setIcOpen] = useState(true);
+  const [expandedDevices, setExpandedDevices] = useState<Set<string>>(new Set());
   const [headerDate, setHeaderDate] = useState("");
 
   useEffect(() => {
