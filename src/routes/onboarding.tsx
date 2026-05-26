@@ -887,10 +887,10 @@ function PhoneNumbersPage({ data, update, elderName, theme, card, btnPrimary, bt
       <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, marginTop: 24, marginBottom: 8 }}>Emergency</h3>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <EmergencyRow label="Emergency Services" phone="911" visible={data.emergencyVisible.ems}
-          onToggle={(v) => update({ emergencyVisible: { ...data.emergencyVisible, ems: v } })}
+          onToggle={(v: boolean) => update({ emergencyVisible: { ...data.emergencyVisible, ems: v } })}
           card={card} theme={theme} />
         <EmergencyRow label="Poison Control" phone="1-800-222-1222" visible={data.emergencyVisible.poison}
-          onToggle={(v) => update({ emergencyVisible: { ...data.emergencyVisible, poison: v } })}
+          onToggle={(v: boolean) => update({ emergencyVisible: { ...data.emergencyVisible, poison: v } })}
           card={card} theme={theme} />
       </div>
 
