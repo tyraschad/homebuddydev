@@ -221,7 +221,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             alignItems: "center",
             gap: 12,
             background: theme.card,
-            border: `1.5px solid ${theme.border}`,
+            border: inputBorder,
             borderRadius: 20,
             padding: 16,
             boxSizing: "border-box",
