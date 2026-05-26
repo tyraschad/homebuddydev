@@ -441,7 +441,7 @@ function Onboarding() {
         {/* ===== PAGE 7B: INSTRUCTION CONTEXT (DEVICES) — step 8 ===== */}
         {data.step === 8 && (
           <DevicesPage
-            data={data} update={update}
+            data={data} update={update} elderName={elderName}
             theme={theme} card={card} btnPrimary={btnPrimary} btnSecondary={btnSecondary}
             inputStyle={inputStyle} h1={h1} muted={muted}
             cardBorder={cardBorder} buttonBorder={buttonBorder}
