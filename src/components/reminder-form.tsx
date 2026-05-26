@@ -199,10 +199,13 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
 
           <RepeatScheduleField r={r} setR={setR} errors={errors} />
 
+          <AnnouncementTimesField r={r} setR={setR} />
+
           <div>
             <label style={labelStyle}>Notes</label>
             <textarea value={r.notes ?? ""} onChange={(e) => setR({ ...r, notes: e.target.value })} />
           </div>
+
         </div>
 
         <div style={{ display: "grid", gap: 10, marginTop: 20 }}>
