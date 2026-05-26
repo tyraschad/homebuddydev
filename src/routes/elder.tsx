@@ -210,6 +210,50 @@ function ElderHome() {
 
       {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
       {overlay === "call" && <CallPopup onClose={() => setOverlay(null)} theme={theme} />}
+
+      {/* Floating Phone Button */}
+      <button
+        type="button"
+        onClick={() => setOverlay("call")}
+        aria-label="Make a call"
+        style={{
+          position: "fixed",
+          bottom: 16,
+          right: 16,
+          width: 56,
+          height: 56,
+          borderRadius: "50%",
+          background: "#6BA24A",
+          border: "none",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          zIndex: 1000,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          transition: "background 0.2s, box-shadow 0.2s, transform 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#5A8F3D";
+          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.25)";
+          e.currentTarget.style.transform = "scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "#6BA24A";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+          e.currentTarget.style.transform = "scale(1)";
+        }}
+      >
+        <Phone size={24} strokeWidth={2} color="#FFFFFF" />
+      </button>
+      <style>{`
+        @media (max-width: 1199px) {
+          .fab-phone { bottom: 12px !important; right: 12px !important; }
+        }
+        @media (max-width: 767px) {
+          .fab-phone { width: 48px !important; height: 48px !important; bottom: 12px !important; right: 12px !important; }
+        }
+      `}</style>
     </main>
   );
 }
