@@ -84,19 +84,55 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     const result: Suggestion[] = [];
     const truncate = (s: string, n = 40) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
 
-    // Top 2 questions from primary (first) device
-    const primary = elder.devices[0];
-    if (primary) {
-      for (const q of primary.questions.slice(0, 2)) {
-        result.push({
-          icon: <HelpCircle size={18} strokeWidth={2} color={theme.text} />,
-          label: truncate(q),
-          device: primary,
-        });
+    // ---- Device relevance scoring (Frequency 50% + Time 30% + Health 20%) ----
+    const devices = elder.devices.filter((d) => d.questions && d.questions.length > 0);
+    if (devices.length > 0) {
+      const maxAccess = Math.max(1, ...devices.map((d) => d.accessCount ?? 0));
+      const period = currentTimePeriod(new Date(nowTick));
+      const timeCats = timeCategoryDevices(period);
+      const conditions = (elder.conditions || []).map((c) => c.toLowerCase());
+      const hasLowVision = conditions.some((c) => c.includes("vision") || c.includes("blind"));
+      const hasHearing = conditions.some((c) => c.includes("hear"));
+      const hasCognitive = conditions.some((c) => c.includes("cogni") || c.includes("dementia") || c.includes("memory"));
+
+      const healthScore = (d: Device) => {
+        const n = d.name.toLowerCase();
+        let matches = 0; let possible = 0;
+        if (hasLowVision) { possible++; if (/remote|phone|tv|button|large/.test(n)) matches++; }
+        if (hasHearing) { possible++; if (/tv|hearing|volume|speaker|phone/.test(n)) matches++; }
+        if (hasCognitive) { possible++; if (/pill|medic|alarm|simple/.test(n)) matches++; }
+        if (possible === 0) return 50;
+        const ratio = matches / possible;
+        return ratio === 1 ? 100 : ratio > 0 ? 75 : 50;
+      };
+
+      const scored = devices.map((d) => {
+        const cat = d.category ?? inferDeviceCategory(d.name);
+        const freq = ((d.accessCount ?? 0) / maxAccess) * 100;
+        const timeBase = timeCats.includes(cat) ? 100 : 50;
+        const time = timeCats.includes(cat) ? Math.min(100, freq * 1.3 + 30) : Math.max(0, freq - 20) || timeBase;
+        // Simpler & per-spec: time score is just category match
+        const timeScore = timeCats.includes(cat) ? 100 : 50;
+        const health = healthScore(d);
+        const score = freq * 0.5 + timeScore * 0.3 + health * 0.2;
+        return { d, score };
+      }).sort((a, b) => b.score - a.score);
+
+      const pick = scored.slice(0, 2);
+      // If only 1 device, take its top 2 questions
+      if (pick.length === 1) {
+        for (const q of pick[0].d.questions.slice(0, 2)) {
+          result.push({ icon: <HelpCircle size={18} strokeWidth={2} color={theme.text} />, label: truncate(q), device: pick[0].d });
+        }
+      } else {
+        for (const { d } of pick) {
+          const q = d.questions[0];
+          if (q) result.push({ icon: <HelpCircle size={18} strokeWidth={2} color={theme.text} />, label: truncate(q), device: d });
+        }
       }
     }
 
-    // Next upcoming reminder (strictly future)
+    // ---- Next upcoming reminder ----
     const now = new Date(nowTick);
     const nowMin = now.getHours() * 60 + now.getMinutes();
     const upcoming = reminders
@@ -125,7 +161,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
     if (result.length === 0) result.push({ icon: <Sparkles size={18} strokeWidth={2} color={theme.text} />, label: "Ask me anything" });
     return result;
-  }, [reminders, elder.devices, theme.text, nowTick]);
+  }, [reminders, elder.devices, elder.conditions, theme.text, nowTick]);
 
   const matchDevice = (q: string): Device | null => {
     const lower = q.toLowerCase();
