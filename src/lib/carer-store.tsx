@@ -185,6 +185,10 @@ export function CarerProvider({ children }: { children: ReactNode }) {
   const addReminder = (r: Reminder) => setReminders([...reminders, r]);
   const updateReminder = (r: Reminder) => setReminders(reminders.map((x) => (x.id === r.id ? r : x)));
   const deleteReminder = (id: string) => setReminders(reminders.filter((x) => x.id !== id));
+  const bumpDeviceAccess = (deviceId: string) => {
+    const devices = elder.devices.map((d) => d.id === deviceId ? { ...d, accessCount: (d.accessCount ?? 0) + 1 } : d);
+    setElder({ ...elder, devices });
+  };
   const resetAll = () => {
     try {
       localStorage.removeItem(ELDER_KEY);
