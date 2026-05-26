@@ -411,7 +411,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 /* ---------------- VIEWS ---------------- */
 
-type ThemeT = { text: string; bg: string; card: string; muted: string };
+
 
 function ReminderBlock({ r, time, onClick, appearance }: {
   r: Reminder; time: string; onClick: () => void; appearance: "light" | "dark";
