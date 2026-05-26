@@ -237,6 +237,7 @@ function CardBox({
   children,
   onClick,
   height = "48%",
+  flex,
   padding = 20,
   center = false,
   theme,
@@ -244,14 +245,17 @@ function CardBox({
   children: React.ReactNode;
   onClick?: () => void;
   height?: string;
+  flex?: number;
   padding?: number;
   center?: boolean;
   theme: { bg: string; card: string; text: string; border: string };
 }) {
   const { cardBorder } = useSettings();
   const style: React.CSSProperties = {
-    height,
-    flexShrink: 0,
+    height: flex ? "100%" : height,
+    flex: flex ?? undefined,
+    flexShrink: flex ? 1 : 0,
+    minHeight: flex ? 0 : undefined,
     overflow: "hidden",
     background: theme.card,
     border: cardBorder,
