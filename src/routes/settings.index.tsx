@@ -63,7 +63,7 @@ function SettingsPage() {
         }}
       >
         <Link
-          to="/"
+          to="/elder"
           style={{
             display: "inline-flex",
             alignItems: "center",

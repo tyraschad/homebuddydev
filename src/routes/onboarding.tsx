@@ -210,7 +210,10 @@ function Onboarding() {
       addReminder({ ...r, elderId: newElder.id });
     });
 
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem("homebuddy.onboarding.completed.v1", "1");
+    } catch {}
   };
 
 
@@ -484,7 +487,7 @@ function Onboarding() {
               <button type="button" onClick={() => { handleFinish(); navigate({ to: "/carer" }); }} style={{ ...btnPrimary(), width: "100%" }}>
                 View your portal
               </button>
-              <button type="button" onClick={() => { handleFinish(); navigate({ to: "/" }); }} style={{ ...btnSecondary, width: "100%", height: 48 }}>
+              <button type="button" onClick={() => { handleFinish(); navigate({ to: "/elder" }); }} style={{ ...btnSecondary, width: "100%", height: 48 }}>
                 View the screen {elderName} will see
               </button>
             </div>
