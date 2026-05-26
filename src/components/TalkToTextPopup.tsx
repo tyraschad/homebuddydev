@@ -31,7 +31,13 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const [view, setView] = useState<View>({ kind: "default" });
   const [voiceOn, setVoiceOn] = useState(true);
   const [speaking, setSpeaking] = useState(false);
+  const [nowTick, setNowTick] = useState(() => Date.now());
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
