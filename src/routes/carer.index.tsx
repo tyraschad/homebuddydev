@@ -12,7 +12,7 @@ import {
 import {
   GREEN, RED, WEEKDAY_SHORT, WEEKDAY_LONG,
   ymd, uid, ordinal, iconForType,
-  Modal, CategoryPicker, NumberStepper, ReminderForm,
+  ModalShell as Modal, CategoryPicker, NumberStepper, ReminderForm,
 } from "@/components/reminder-form";
 
 
