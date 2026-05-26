@@ -725,7 +725,10 @@ function DevicesPage({ data, update, theme, card, btnPrimary, btnSecondary, inpu
   return (
     <div>
       <h1 style={h1}>Instruction Context</h1>
-      <p style={muted}>Add the devices they use at home so HomeBuddy can give clear, step-by-step help.</p>
+      <p style={muted}>Photograph devices in their home. We'll identify them and create helpful shortcuts for common questions.</p>
+      <p style={{ ...muted, marginTop: 12 }}>
+        When {elderName} asks a question via voice or text, HomeBuddy will use these devices to provide specific, helpful instructions. For example, if they ask "How do I change the channel?", HomeBuddy knows they have a TV remote and can guide them step-by-step.
+      </p>
 
       <div style={{ ...card, marginTop: 16 }}>
         {!photo ? (
