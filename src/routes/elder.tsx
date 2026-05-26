@@ -44,16 +44,48 @@ function toMinutes(t: string) {
 }
 
 function ElderHome() {
-  const { theme, appearance, textSize } = useSettings();
-  const { reminders } = useCarer();
+  const { theme, appearance, textSize, announcementsEnabled } = useSettings();
+  const { reminders, elder } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
 
   useEffect(() => {
     setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000 * 30);
+    const t = setInterval(() => setNow(new Date()), 1000 * 20);
     return () => clearInterval(t);
   }, []);
+
+  // Announcement scheduler: speak reminders aloud at configured offsets.
+  const announcedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!now || !announcementsEnabled) return;
+    const today = now.toISOString().slice(0, 10);
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    reminders.forEach((r) => {
+      const offsets = r.announcementOffsets ?? DEFAULT_ANNOUNCEMENT_OFFSETS;
+      r.times.forEach((t) => {
+        const targetMin = toMinutes(t);
+        offsets.forEach((off) => {
+          const announceMin = targetMin - off;
+          // Fire if within current minute and not too late (e.g. user just opened the app)
+          if (nowMin === announceMin) {
+            const key = `${today}|${r.id}|${t}|${off}`;
+            if (announcedRef.current.has(key)) return;
+            announcedRef.current.add(key);
+            const text = buildAnnouncement(elder.name || "there", r.name, off, t);
+            speak({ data: { text } })
+              .then((res) => {
+                const audio = new Audio(`data:${res.mime};base64,${res.audio}`);
+                audio.play().catch(() => {});
+              })
+              .catch(() => {});
+          }
+        });
+      });
+    });
+  }, [now, reminders, announcementsEnabled, elder.name]);
+
+
 
   const dateDayStr = now ? formatDateDay(now) : "";
   const timeStr = now ? formatTime(now) : "";
