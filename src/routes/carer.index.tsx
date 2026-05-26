@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Fragment, useState, type CSSProperties } from "react";
+import { Fragment, useEffect, useState, type CSSProperties } from "react";
 import {
   ArrowLeft, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, X,
   Pill, Stethoscope, Activity, HelpCircle, Edit, Trash2, AlertTriangle, Minus,
@@ -68,6 +68,11 @@ function CarerPortal() {
   const [view, setView] = useState<ViewMode>("day");
   const [cursor, setCursor] = useState<Date>(new Date());
   const [profileOpen, setProfileOpen] = useState(true);
+  const [headerDate, setHeaderDate] = useState("");
+
+  useEffect(() => {
+    setHeaderDate(new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }));
+  }, []);
 
   const [pickCategoryOpen, setPickCategoryOpen] = useState(false);
   const [editing, setEditing] = useState<Reminder | null>(null); // form modal
@@ -123,7 +128,7 @@ function CarerPortal() {
             {elder.name}'s Care Plan
           </h1>
           <div style={{ fontSize: 14, color: theme.muted, marginTop: 4 }}>
-            {today.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            {headerDate}
           </div>
         </div>
         <div style={{ justifySelf: "end" }}>

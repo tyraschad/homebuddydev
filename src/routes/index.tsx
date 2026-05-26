@@ -17,11 +17,16 @@ export const Route = createFileRoute("/")({
 
 type Overlay = "chat" | "call" | null;
 
-function formatDate(d: Date) {
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+function ordinalSuffix(n: number) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
-function formatDay(d: Date) {
-  return d.toLocaleDateString("en-US", { weekday: "long" });
+function formatDateDay(d: Date) {
+  const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
+  const monthName = d.toLocaleDateString("en-US", { month: "long" });
+  const date = d.getDate();
+  return `${dayName}, ${monthName} ${ordinalSuffix(date)}`;
 }
 function formatTime(d: Date) {
   return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
@@ -34,20 +39,22 @@ function greeting(d: Date) {
 }
 
 function Index() {
-  const { theme, sizes } = useSettings();
+  const { theme, sizes, textSize } = useSettings();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
 
   useEffect(() => {
     setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000 * 15);
+    const t = setInterval(() => setNow(new Date()), 1000 * 60);
     return () => clearInterval(t);
   }, []);
 
-  const dateStr = now ? formatDate(now) : "";
-  const dayStr = now ? formatDay(now) : "";
+  const dateDayStr = now ? formatDateDay(now) : "";
   const timeStr = now ? formatTime(now) : "";
   const greet = now ? greeting(now) : "Hello";
+
+  const line1Size = textSize === "large" ? 34 : 28;
+  const line2Size = textSize === "large" ? 53 : 44;
 
   return (
     <main
@@ -107,37 +114,33 @@ function Index() {
 
       <div style={{ flex: 1, display: "flex", gap: 16, overflow: "hidden" }}>
         <Column width="50%">
-          <CardBox height="calc(30% - 8px)" padding={16} center theme={theme}>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: sizes.date, color: theme.muted }}>
-              {dateStr}
-            </div>
+          <CardBox height="auto" padding={24} center theme={theme}>
             <div
               style={{
                 fontFamily: "Georgia, serif",
                 fontWeight: 700,
-                fontSize: sizes.day,
+                fontSize: line1Size,
                 color: theme.text,
-                lineHeight: 1.1,
-                marginTop: 4,
+                lineHeight: 1.3,
+                marginBottom: 8,
               }}
             >
-              {dayStr}
+              {dateDayStr}
             </div>
             <div
               style={{
                 fontFamily: "Georgia, serif",
                 fontWeight: 700,
-                fontSize: sizes.time,
+                fontSize: line2Size,
                 color: theme.text,
-                lineHeight: 1.1,
-                marginTop: 2,
+                lineHeight: 1.2,
               }}
             >
               {timeStr}
             </div>
           </CardBox>
 
-          <CardBox onClick={() => setOverlay("chat")} height="calc(70% - 8px)" padding={30} theme={theme}>
+          <CardBox onClick={() => setOverlay("chat")} flex={1} padding={30} theme={theme}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, height: "100%", width: "100%" }}>
               <Mic size={90} strokeWidth={2} color={theme.text} />
               <div
@@ -234,6 +237,7 @@ function CardBox({
   children,
   onClick,
   height = "48%",
+  flex,
   padding = 20,
   center = false,
   theme,
@@ -241,14 +245,17 @@ function CardBox({
   children: React.ReactNode;
   onClick?: () => void;
   height?: string;
+  flex?: number;
   padding?: number;
   center?: boolean;
   theme: { bg: string; card: string; text: string; border: string };
 }) {
   const { cardBorder } = useSettings();
   const style: React.CSSProperties = {
-    height,
-    flexShrink: 0,
+    height: flex ? "100%" : height,
+    flex: flex ?? undefined,
+    flexShrink: flex ? 1 : 0,
+    minHeight: flex ? 0 : undefined,
     overflow: "hidden",
     background: theme.card,
     border: cardBorder,
