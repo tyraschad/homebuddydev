@@ -114,37 +114,33 @@ function Index() {
 
       <div style={{ flex: 1, display: "flex", gap: 16, overflow: "hidden" }}>
         <Column width="50%">
-          <CardBox height="calc(30% - 8px)" padding={16} center theme={theme}>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: sizes.date, color: theme.muted }}>
-              {dateStr}
-            </div>
+          <CardBox height="auto" padding={24} center theme={theme}>
             <div
               style={{
                 fontFamily: "Georgia, serif",
                 fontWeight: 700,
-                fontSize: sizes.day,
+                fontSize: line1Size,
                 color: theme.text,
-                lineHeight: 1.1,
-                marginTop: 4,
+                lineHeight: 1.3,
+                marginBottom: 8,
               }}
             >
-              {dayStr}
+              {dateDayStr}
             </div>
             <div
               style={{
                 fontFamily: "Georgia, serif",
                 fontWeight: 700,
-                fontSize: sizes.time,
+                fontSize: line2Size,
                 color: theme.text,
-                lineHeight: 1.1,
-                marginTop: 2,
+                lineHeight: 1.2,
               }}
             >
               {timeStr}
             </div>
           </CardBox>
 
-          <CardBox onClick={() => setOverlay("chat")} height="calc(70% - 8px)" padding={30} theme={theme}>
+          <CardBox onClick={() => setOverlay("chat")} flex={1} padding={30} theme={theme}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, height: "100%", width: "100%" }}>
               <Mic size={90} strokeWidth={2} color={theme.text} />
               <div
