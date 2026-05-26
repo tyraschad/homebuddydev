@@ -240,12 +240,17 @@ function CarerPortal() {
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => shiftCursor(view, cursor, setCursor, -1)} style={iconBtn(theme, buttonBorder)}><ChevronLeft size={18} /></button>
+          <button onClick={() => cursor && shiftCursor(view, cursor, setCursor, -1)} style={iconBtn(theme, buttonBorder)}><ChevronLeft size={18} /></button>
           <span style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, minWidth: 180, textAlign: "center" }}>
-            {labelForCursor(view, cursor)}
+            {cursor ? labelForCursor(view, cursor) : ""}
+            {view === "day" && isToday && (
+              <span style={{ marginLeft: 8, fontFamily: "Verdana, sans-serif", fontSize: 14, color: GREEN, fontWeight: 700 }}>
+                — Today
+              </span>
+            )}
           </span>
-          <button onClick={() => shiftCursor(view, cursor, setCursor, 1)} style={iconBtn(theme, buttonBorder)}><ChevronRight size={18} /></button>
-          {!isToday && (
+          <button onClick={() => cursor && shiftCursor(view, cursor, setCursor, 1)} style={iconBtn(theme, buttonBorder)}><ChevronRight size={18} /></button>
+          {cursor && !isToday && (
             <button onClick={() => setCursor(new Date())} style={{
               background: "transparent", color: "#2563EB", border: "none", padding: "6px 8px",
               fontSize: 14, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
@@ -260,10 +265,11 @@ function CarerPortal() {
 
       {/* BOX 4: CALENDAR (white card) */}
       <section style={whiteCard}>
-        {view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={() => setPickCategoryOpen(true)} theme={theme} appearance={appearance} gridLine={gridLine} />}
-        {view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
-        {view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => { setCursor(d); setView("day"); }} theme={theme} gridLine={gridLine} />}
-        {view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
+        {cursor && view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={() => setPickCategoryOpen(true)} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {cursor && view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {cursor && view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => setDayPopup(d)} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {cursor && view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
+
       </section>
 
 
