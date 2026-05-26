@@ -314,7 +314,8 @@ function CompletedRow({ label, color }: { label: string; color: string }) {
     <div
       style={{
         fontFamily: "Verdana, sans-serif",
-        fontSize: 12,
+        fontSize: 16,
+
         fontWeight: 400,
         color,
         opacity: 0.6,
