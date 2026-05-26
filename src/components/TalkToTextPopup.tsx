@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { X, Mic, Keyboard, Send, Sparkles, Clock, Phone, HelpCircle, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
-import { useCarer, type Device, type Reminder } from "@/lib/carer-store";
+import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
 import { generateSteps, answerQuestion, speak } from "@/lib/talk.functions";
 
