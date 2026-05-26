@@ -188,6 +188,7 @@ function Segment({
   onChange: (right: boolean) => void;
   theme: { bg: string; card: string; text: string; border: string };
 }) {
+  const { buttonBorder } = useSettings();
   const width = 140;
   const height = 40;
   const halfW = width / 2;
@@ -201,7 +202,7 @@ function Segment({
         height,
         borderRadius: 12,
         background: theme.bg,
-        border: `1.5px solid ${theme.border}`,
+        border: buttonBorder,
         padding: 3,
         cursor: "pointer",
         flexShrink: 0,
