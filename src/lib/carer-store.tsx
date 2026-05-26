@@ -36,7 +36,43 @@ export type Device = {
   name: string;
   photo?: string;
   questions: string[];
+  accessCount?: number;
+  category?: DeviceCategory;
 };
+
+export type DeviceCategory = "kitchen" | "health" | "bathroom" | "entertainment" | "household" | "communication" | "bedroom" | "emergency" | "other";
+
+export function inferDeviceCategory(name: string): DeviceCategory {
+  const n = name.toLowerCase();
+  if (/microwave|oven|stove|coffee|kettle|blender|fridge|toaster|kitchen/.test(n)) return "kitchen";
+  if (/pill|medic|hearing aid|glucose|blood pressure|thermometer|inhaler/.test(n)) return "health";
+  if (/shower|sink|mirror|bathroom|toilet|tap|faucet/.test(n)) return "bathroom";
+  if (/tv|television|remote|tablet|stream|radio|speaker|music/.test(n)) return "entertainment";
+  if (/vacuum|washing|dryer|iron|thermostat|heater/.test(n)) return "household";
+  if (/phone|doorbell|intercom|alert|button/.test(n)) return "communication";
+  if (/lamp|light|alarm clock|fan|bed/.test(n)) return "bedroom";
+  if (/emergency|panic|sos/.test(n)) return "emergency";
+  return "other";
+}
+
+const TIME_CATEGORIES: Record<"morning" | "afternoon" | "evening" | "night", DeviceCategory[]> = {
+  morning: ["kitchen", "health", "bathroom"],
+  afternoon: ["entertainment", "household", "communication"],
+  evening: ["entertainment", "bedroom", "kitchen"],
+  night: ["bedroom", "bathroom", "emergency", "communication"],
+};
+
+export function currentTimePeriod(d = new Date()): "morning" | "afternoon" | "evening" | "night" {
+  const h = d.getHours();
+  if (h >= 6 && h < 12) return "morning";
+  if (h >= 12 && h < 18) return "afternoon";
+  if (h >= 18 && h < 22) return "evening";
+  return "night";
+}
+
+export function timeCategoryDevices(period: ReturnType<typeof currentTimePeriod>) {
+  return TIME_CATEGORIES[period];
+}
 
 export type ElderProfile = {
   id: string;
@@ -58,6 +94,7 @@ type Ctx = {
   addReminder: (r: Reminder) => void;
   updateReminder: (r: Reminder) => void;
   deleteReminder: (id: string) => void;
+  bumpDeviceAccess: (deviceId: string) => void;
   resetAll: () => void;
 };
 
@@ -148,6 +185,10 @@ export function CarerProvider({ children }: { children: ReactNode }) {
   const addReminder = (r: Reminder) => setReminders([...reminders, r]);
   const updateReminder = (r: Reminder) => setReminders(reminders.map((x) => (x.id === r.id ? r : x)));
   const deleteReminder = (id: string) => setReminders(reminders.filter((x) => x.id !== id));
+  const bumpDeviceAccess = (deviceId: string) => {
+    const devices = elder.devices.map((d) => d.id === deviceId ? { ...d, accessCount: (d.accessCount ?? 0) + 1 } : d);
+    setElder({ ...elder, devices });
+  };
   const resetAll = () => {
     try {
       localStorage.removeItem(ELDER_KEY);
@@ -161,7 +202,7 @@ export function CarerProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CarerContext.Provider value={{ elder, setElder, reminders, setReminders, addReminder, updateReminder, deleteReminder, resetAll }}>
+    <CarerContext.Provider value={{ elder, setElder, reminders, setReminders, addReminder, updateReminder, deleteReminder, bumpDeviceAccess, resetAll }}>
       {children}
     </CarerContext.Provider>
   );
