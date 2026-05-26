@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { SettingsProvider } from "@/lib/settings-store";
+import { CarerProvider } from "@/lib/carer-store";
 
 function NotFoundComponent() {
   return (
@@ -118,7 +119,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <SettingsProvider>
-        <Outlet />
+        <CarerProvider>
+          <Outlet />
+        </CarerProvider>
       </SettingsProvider>
     </QueryClientProvider>
   );
