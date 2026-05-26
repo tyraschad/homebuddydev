@@ -208,15 +208,7 @@ function Onboarding() {
     setElder(newElder);
 
     data.reminders.forEach((r) => {
-      const rem: Reminder = {
-        id: r.id, type: r.type, name: r.name,
-        timesPerDay: 1, times: [r.time || "08:00"],
-        repeats: r.repeatSchedule !== "Once",
-        repeatSchedule: r.repeatSchedule === "Once" ? "Daily" : r.repeatSchedule,
-        notes: r.notes, elderId: newElder.id,
-        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-      };
-      addReminder(rem);
+      addReminder({ ...r, elderId: newElder.id });
     });
 
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
