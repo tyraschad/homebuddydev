@@ -42,7 +42,7 @@ function toMinutes(t: string) {
 }
 
 function ElderHome() {
-  const { theme, appearance, sizes, textSize } = useSettings();
+  const { theme, appearance, textSize } = useSettings();
   const { reminders } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
