@@ -38,7 +38,7 @@ function greeting(d: Date) {
   return "Good Evening";
 }
 
-function Index() {
+function ElderHome() {
   const { theme, sizes, textSize } = useSettings();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);

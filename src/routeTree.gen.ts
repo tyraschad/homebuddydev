@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ElderRouteImport } from './routes/elder'
 import { Route as CarerRouteImport } from './routes/carer'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings.index'
@@ -33,6 +34,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ElderRoute = ElderRouteImport.update({
+  id: '/elder',
+  path: '/elder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarerRoute = CarerRouteImport.update({
@@ -74,6 +80,7 @@ const CarerSettingsRoute = CarerSettingsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/carer': typeof CarerRouteWithChildren
+  '/elder': typeof ElderRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRouteWithChildren
   '/setup': typeof SetupRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/elder': typeof ElderRoute
   '/onboarding': typeof OnboardingRoute
   '/setup': typeof SetupRoute
   '/carer/settings': typeof CarerSettingsRoute
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/carer': typeof CarerRouteWithChildren
+  '/elder': typeof ElderRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRouteWithChildren
   '/setup': typeof SetupRoute
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/carer'
+    | '/elder'
     | '/onboarding'
     | '/settings'
     | '/setup'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/elder'
     | '/onboarding'
     | '/setup'
     | '/carer/settings'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/carer'
+    | '/elder'
     | '/onboarding'
     | '/settings'
     | '/setup'
@@ -146,6 +158,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CarerRoute: typeof CarerRouteWithChildren
+  ElderRoute: typeof ElderRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRouteWithChildren
   SetupRoute: typeof SetupRoute
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/elder': {
+      id: '/elder'
+      path: '/elder'
+      fullPath: '/elder'
+      preLoaderRoute: typeof ElderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/carer': {
@@ -257,6 +277,7 @@ const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CarerRoute: CarerRouteWithChildren,
+  ElderRoute: ElderRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRouteWithChildren,
   SetupRoute: SetupRoute,
