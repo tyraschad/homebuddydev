@@ -841,7 +841,7 @@ function ViewReminderModal({ reminder, onClose, onEdit, onDelete }: {
       </div>
       <div style={{ marginTop: 16, display: "grid", gap: 8 }}>
         <div style={{ fontWeight: 700, fontSize: 16 }}>{reminder.times[0]}</div>
-        <div style={{ color: theme.muted, fontSize: 14 }}>Repeats: {reminder.repeatSchedule}</div>
+        <div style={{ color: theme.muted, fontSize: 14 }}>{formatSchedule(reminder)}</div>
         {reminder.times.length > 1 && (
           <div style={{ color: theme.muted, fontSize: 14 }}>All times: {reminder.times.join(", ")}</div>
         )}
