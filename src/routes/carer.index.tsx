@@ -128,7 +128,7 @@ function CarerPortal() {
             {elder.name}'s Care Plan
           </h1>
           <div style={{ fontSize: 14, color: theme.muted, marginTop: 4 }}>
-            {today.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            {headerDate}
           </div>
         </div>
         <div style={{ justifySelf: "end" }}>
