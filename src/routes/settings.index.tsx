@@ -160,11 +160,12 @@ function SettingsPage() {
           />
         </div>
 
-        <button type="button" onClick={() => setTts((v) => !v)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={tts}>
+        <button type="button" onClick={() => setAnnouncementsEnabled(!announcementsEnabled)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={announcementsEnabled}>
           <Volume2 size={20} strokeWidth={2} color={theme.text} />
-          <span style={labelStyle}>Text to speech</span>
-          <ToggleDot on={tts} />
+          <span style={labelStyle}>Reminder Announcements</span>
+          <ToggleDot on={announcementsEnabled} />
         </button>
+
 
         <button type="button" onClick={() => setHighContrast(!highContrast)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={highContrast}>
           <Contrast size={20} strokeWidth={2} color={theme.text} />
