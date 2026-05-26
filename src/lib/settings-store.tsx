@@ -46,10 +46,16 @@ export type Sizes = typeof mediumSizes;
 type Ctx = {
   appearance: AppearanceMode;
   textSize: TextSize;
+  highContrast: boolean;
   setAppearance: (m: AppearanceMode) => void;
   setTextSize: (s: TextSize) => void;
+  setHighContrast: (v: boolean) => void;
   theme: Theme;
   sizes: Sizes;
+  cardBorder: string;
+  buttonBorder: string;
+  inputBorder: string;
+  hcStrongColor: string;
 };
 
 const SettingsContext = createContext<Ctx | null>(null);
@@ -57,6 +63,7 @@ const SettingsContext = createContext<Ctx | null>(null);
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [appearance, setAppearanceState] = useState<AppearanceMode>("light");
   const [textSize, setTextSizeState] = useState<TextSize>("medium");
+  const [highContrast, setHighContrastState] = useState<boolean>(true);
 
   useEffect(() => {
     try {
@@ -64,6 +71,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       if (a === "light" || a === "dark") setAppearanceState(a);
       const t = localStorage.getItem("textSize");
       if (t === "medium" || t === "large") setTextSizeState(t);
+      const h = localStorage.getItem("highContrast");
+      if (h === "true" || h === "false") setHighContrastState(h === "true");
     } catch {}
   }, []);
 
@@ -75,12 +84,36 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setTextSizeState(s);
     try { localStorage.setItem("textSize", s); } catch {}
   };
+  const setHighContrast = (v: boolean) => {
+    setHighContrastState(v);
+    try { localStorage.setItem("highContrast", String(v)); } catch {}
+  };
 
   const theme = appearance === "dark" ? darkTheme : lightTheme;
   const sizes = textSize === "large" ? largeSizes : mediumSizes;
 
+  const hcStrongColor = appearance === "dark" ? "#E8E8E8" : "#1A1A2E";
+  const cardBorder = highContrast ? `2.5px solid ${hcStrongColor}` : `1.5px solid ${theme.border}`;
+  const buttonBorder = highContrast ? `2px solid ${hcStrongColor}` : `1.5px solid ${theme.border}`;
+  const inputBorder = highContrast ? `2px solid ${hcStrongColor}` : `1.5px solid ${theme.border}`;
+
   return (
-    <SettingsContext.Provider value={{ appearance, textSize, setAppearance, setTextSize, theme, sizes }}>
+    <SettingsContext.Provider
+      value={{
+        appearance,
+        textSize,
+        highContrast,
+        setAppearance,
+        setTextSize,
+        setHighContrast,
+        theme,
+        sizes,
+        cardBorder,
+        buttonBorder,
+        inputBorder,
+        hcStrongColor,
+      }}
+    >
       {children}
     </SettingsContext.Provider>
   );

@@ -11,13 +11,13 @@ export const Route = createFileRoute("/settings/")({
 const GREEN = "#2F8F4E";
 
 function SettingsPage() {
-  const { theme, appearance, setAppearance, textSize, setTextSize } = useSettings();
+  const { theme, appearance, setAppearance, textSize, setTextSize, highContrast, setHighContrast, cardBorder } = useSettings();
   const [tts, setTts] = useState(false);
-  const [hc, setHc] = useState(true);
+
 
   const tileStyle: React.CSSProperties = {
     background: theme.card,
-    border: `1.5px solid ${theme.border}`,
+    border: cardBorder,
     borderRadius: 8,
     padding: 20,
     display: "flex",
@@ -114,7 +114,7 @@ function SettingsPage() {
         <div
           style={{
             background: theme.card,
-            border: `1.5px solid ${theme.border}`,
+            border: cardBorder,
             borderRadius: 8,
             padding: 16,
             fontFamily: "Verdana, sans-serif",
@@ -165,10 +165,10 @@ function SettingsPage() {
           <ToggleDot on={tts} />
         </button>
 
-        <button type="button" onClick={() => setHc((v) => !v)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={hc}>
+        <button type="button" onClick={() => setHighContrast(!highContrast)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={highContrast}>
           <Contrast size={20} strokeWidth={2} color={theme.text} />
           <span style={labelStyle}>High contrast mode</span>
-          <ToggleDot on={hc} />
+          <ToggleDot on={highContrast} />
         </button>
       </div>
     </main>
@@ -188,6 +188,7 @@ function Segment({
   onChange: (right: boolean) => void;
   theme: { bg: string; card: string; text: string; border: string };
 }) {
+  const { buttonBorder } = useSettings();
   const width = 140;
   const height = 40;
   const halfW = width / 2;
@@ -201,7 +202,7 @@ function Segment({
         height,
         borderRadius: 12,
         background: theme.bg,
-        border: `1.5px solid ${theme.border}`,
+        border: buttonBorder,
         padding: 3,
         cursor: "pointer",
         flexShrink: 0,

@@ -5,7 +5,7 @@ import { useSettings } from "@/lib/settings-store";
 type Action = { icon: React.ReactNode; label: string };
 
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
-  const { theme, sizes } = useSettings();
+  const { theme, sizes, cardBorder, inputBorder, buttonBorder, highContrast } = useSettings();
   const [recording, setRecording] = useState(false);
   const [text, setText] = useState("");
 
@@ -68,7 +68,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         style={{
           position: "relative",
           background: theme.card,
-          border: `1.5px solid ${theme.border}`,
+          border: cardBorder,
           borderRadius: 12,
           padding: 30,
           width: "90%",
@@ -196,12 +196,12 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                 gap: 10,
                 background: theme.card,
                 color: theme.text,
-                border: `1.5px solid ${theme.border}`,
+                border: buttonBorder,
                 borderRadius: 20,
                 padding: "12px 20px",
                 height: 48,
                 fontFamily: "'Trebuchet MS', sans-serif",
-                fontWeight: 700,
+                fontWeight: highContrast ? 800 : 700,
                 fontSize: 14,
                 cursor: "pointer",
                 lineHeight: 1.2,
@@ -221,7 +221,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             alignItems: "center",
             gap: 12,
             background: theme.card,
-            border: `1.5px solid ${theme.border}`,
+            border: inputBorder,
             borderRadius: 20,
             padding: 16,
             boxSizing: "border-box",
