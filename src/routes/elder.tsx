@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Settings, Mic, Phone, X } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import { useCarer } from "@/lib/carer-store";
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
-
 
 export const Route = createFileRoute("/elder")({
   component: ElderHome,
@@ -26,8 +25,7 @@ function ordinalSuffix(n: number) {
 function formatDateDay(d: Date) {
   const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
   const monthName = d.toLocaleDateString("en-US", { month: "long" });
-  const date = d.getDate();
-  return `${dayName}, ${monthName} ${ordinalSuffix(date)}`;
+  return `${dayName}, ${monthName} ${ordinalSuffix(d.getDate())}`;
 }
 function formatTime(d: Date) {
   return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
@@ -38,16 +36,20 @@ function greeting(d: Date) {
   if (h < 18) return "Good Afternoon";
   return "Good Evening";
 }
+function toMinutes(t: string) {
+  const [h, m] = t.split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
 
 function ElderHome() {
-  const { theme, sizes, textSize } = useSettings();
+  const { theme, appearance, sizes, textSize } = useSettings();
   const { reminders } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
 
   useEffect(() => {
     setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000 * 60);
+    const t = setInterval(() => setNow(new Date()), 1000 * 30);
     return () => clearInterval(t);
   }, []);
 
@@ -57,6 +59,31 @@ function ElderHome() {
 
   const line1Size = textSize === "large" ? 34 : 28;
   const line2Size = textSize === "large" ? 53 : 44;
+
+  const items = useMemo(() => {
+    const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
+    const list: { key: string; time: string; label: string; completed: boolean; minutes: number }[] = [];
+    reminders.forEach((r) => {
+      r.times.forEach((t) => {
+        const min = toMinutes(t);
+        const detail = r.type === "medication" && r.dose ? ` - ${r.dose} pill${r.dose > 1 ? "s" : ""}` : "";
+        list.push({
+          key: r.id + t,
+          time: t,
+          label: `${t} ${r.name}${detail}`,
+          completed: nowMin >= 0 && nowMin >= min,
+          minutes: min,
+        });
+      });
+    });
+    list.sort((a, b) => a.minutes - b.minutes);
+    return list;
+  }, [reminders, now]);
+
+  const upcoming = items.filter((i) => !i.completed);
+  const completed = items.filter((i) => i.completed);
+
+  const completedColor = appearance === "dark" ? "#B0B0B0" : "#6B6860";
 
   return (
     <main
@@ -71,6 +98,7 @@ function ElderHome() {
         boxSizing: "border-box",
         color: theme.text,
         lineHeight: 1.5,
+        position: "relative",
       }}
     >
       <header
@@ -82,15 +110,7 @@ function ElderHome() {
           flexShrink: 0,
         }}
       >
-        <h1
-          style={{
-            fontFamily: "'Trebuchet MS', sans-serif",
-            fontWeight: 700,
-            fontSize: 24,
-            color: theme.text,
-            margin: 0,
-          }}
-        >
+        <h1 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text, margin: 0 }}>
           {greet}, Albert
         </h1>
         <Link
@@ -99,13 +119,10 @@ function ElderHome() {
             display: "inline-flex",
             alignItems: "center",
             gap: 8,
-            background: "transparent",
-            border: "none",
             color: theme.text,
             fontFamily: "'Trebuchet MS', sans-serif",
             fontWeight: 700,
             fontSize: 16,
-            cursor: "pointer",
             textDecoration: "none",
           }}
         >
@@ -117,27 +134,10 @@ function ElderHome() {
       <div style={{ flex: 1, display: "flex", gap: 16, overflow: "hidden" }}>
         <Column width="50%">
           <CardBox height="auto" padding={24} center theme={theme}>
-            <div
-              style={{
-                fontFamily: "Georgia, serif",
-                fontWeight: 700,
-                fontSize: line1Size,
-                color: theme.text,
-                lineHeight: 1.3,
-                marginBottom: 8,
-              }}
-            >
+            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: theme.text, lineHeight: 1.3, marginBottom: 8 }}>
               {dateDayStr}
             </div>
-            <div
-              style={{
-                fontFamily: "Georgia, serif",
-                fontWeight: 700,
-                fontSize: line2Size,
-                color: theme.text,
-                lineHeight: 1.2,
-              }}
-            >
+            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: theme.text, lineHeight: 1.2 }}>
               {timeStr}
             </div>
           </CardBox>
@@ -145,88 +145,117 @@ function ElderHome() {
           <CardBox onClick={() => setOverlay("chat")} flex={1} padding={30} theme={theme}>
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, height: "100%", width: "100%" }}>
               <Mic size={90} strokeWidth={2} color={theme.text} />
-              <div
-                style={{
-                  fontFamily: "'Trebuchet MS', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 24,
-                  color: theme.text,
-                  textAlign: "center",
-                }}
-              >
+              <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text, textAlign: "center" }}>
                 Tap to Ask a Question
               </div>
             </div>
           </CardBox>
-
         </Column>
 
         <Column width="50%">
-          <CardBox height="calc(55% - 8px)" padding={20} theme={theme}>
-            <h2
-              style={{
-                fontFamily: "'Trebuchet MS', sans-serif",
-                fontWeight: 700,
-                fontSize: sizes.heading,
-                color: theme.text,
-                margin: 0,
-              }}
-            >
+          <CardBox flex={1} padding={16} theme={theme}>
+            <h2 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: sizes.heading, color: theme.text, margin: 0, marginBottom: 12 }}>
               Today's Reminders
             </h2>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, marginTop: 12, overflowY: "auto" }}>
-              {reminders.length === 0 ? (
-                <p style={{ fontFamily: "Verdana, sans-serif", fontSize: sizes.body, color: theme.text, textAlign: "center", margin: "auto" }}>
-                  No reminders scheduled
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", minHeight: 0 }}>
+              {items.length === 0 ? (
+                <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, textAlign: "center", margin: "auto" }}>
+                  No reminders scheduled today
                 </p>
+              ) : upcoming.length === 0 ? (
+                <>
+                  <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text, textAlign: "center", marginTop: 0, marginBottom: 16 }}>
+                    All reminders completed today! Great job!
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {completed.map((i) => (
+                      <CompletedRow key={i.key} label={i.label} color={completedColor} />
+                    ))}
+                  </div>
+                </>
               ) : (
-                reminders.flatMap((r) =>
-                  r.times.map((t) => (
-                    <div key={r.id + t} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", border: `1.5px solid ${theme.border}`, borderRadius: 6, fontFamily: "Verdana, sans-serif", fontSize: sizes.body, color: theme.text }}>
-                      <span style={{ fontWeight: 700 }}>{r.name}</span>
-                      <span>{t}</span>
+                <>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {upcoming.map((i) => (
+                      <div
+                        key={i.key}
+                        style={{
+                          fontFamily: "Verdana, sans-serif",
+                          fontSize: 18,
+                          fontWeight: 700,
+                          color: theme.text,
+                          opacity: 1,
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        {i.label}
+                      </div>
+                    ))}
+                  </div>
+                  {completed.length > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 16 }}>
+                      {completed.map((i) => (
+                        <CompletedRow key={i.key} label={i.label} color={completedColor} />
+                      ))}
                     </div>
-                  ))
-                )
+                  )}
+                </>
               )}
-            </div>
-          </CardBox>
-
-          <CardBox onClick={() => setOverlay("call")} height="calc(45% - 8px)" padding={20} theme={theme}>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 12,
-                height: "100%",
-              }}
-            >
-              <Phone size={50} strokeWidth={2} color={theme.text} />
-              <div
-                style={{
-                  fontFamily: "'Trebuchet MS', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 20,
-                  color: theme.text,
-                }}
-              >
-                Make a call
-              </div>
             </div>
           </CardBox>
         </Column>
       </div>
 
-      {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
+      <button
+        type="button"
+        onClick={() => setOverlay("call")}
+        aria-label="Make a call"
+        style={{
+          position: "absolute",
+          bottom: 24,
+          right: 24,
+          width: 64,
+          height: 64,
+          borderRadius: "50%",
+          background: theme.card,
+          border: `1.5px solid ${theme.border}`,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: theme.text,
+          zIndex: 20,
+        }}
+      >
+        <Phone size={28} strokeWidth={2} color={theme.text} />
+      </button>
 
+      {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
       {overlay === "call" && (
         <OverlayView title="Make a Call" onClose={() => setOverlay(null)} theme={theme}>
           <div style={{ flex: 1, minHeight: 200 }} />
         </OverlayView>
       )}
     </main>
+  );
+}
+
+function CompletedRow({ label, color }: { label: string; color: string }) {
+  return (
+    <div
+      style={{
+        fontFamily: "Verdana, sans-serif",
+        fontSize: 12,
+        fontWeight: 400,
+        color,
+        opacity: 0.6,
+        textDecoration: "line-through",
+        transition: "all 0.3s ease",
+      }}
+    >
+      {label}
+    </div>
   );
 }
 
@@ -287,42 +316,6 @@ function CardBox({
   return <div style={style}>{children}</div>;
 }
 
-function ActionBtn({
-  children,
-  theme,
-  fontSize,
-}: {
-  children: React.ReactNode;
-  theme: { card: string; text: string; border: string };
-  fontSize: number;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={(e) => e.stopPropagation()}
-      style={{
-        fontFamily: "'Trebuchet MS', sans-serif",
-        fontWeight: 700,
-        fontSize,
-        color: theme.text,
-        background: theme.card,
-        border: `1.5px solid ${theme.border}`,
-        borderRadius: 6,
-        padding: "0 16px",
-        cursor: "pointer",
-        lineHeight: 1.5,
-        height: 48,
-        minWidth: 150,
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
 function OverlayView({
   title,
   children,
@@ -377,35 +370,19 @@ function OverlayView({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <h2
-            style={{
-              margin: 0,
-              fontFamily: "'Trebuchet MS', sans-serif",
-              fontWeight: 700,
-              fontSize: 20,
-              color: theme.text,
-            }}
-          >
+          <h2 style={{ margin: 0, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 20, color: theme.text }}>
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            style={{
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              padding: 4,
-              color: theme.text,
-            }}
+            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: theme.text }}
           >
             <X size={24} strokeWidth={1.5} color={theme.text} />
           </button>
         </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
-          {children}
-        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>{children}</div>
       </div>
     </div>
   );
