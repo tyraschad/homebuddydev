@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import {
   ArrowLeft, Check, Plus, X, Edit, Trash2, Upload, Eye, EyeOff, Camera,
   Home as HomeIcon, Glasses, Brain, EyeOff as Blind, Sparkles, Ear, Palette, VolumeX,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, type Reminder, type ReminderType, type Contact } from "@/lib/carer-store";
+import { CategoryPicker, ReminderForm, uid } from "@/components/reminder-form";
 
 export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
@@ -13,21 +14,14 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 const GREEN = "#2F8F4E";
-const STORAGE_KEY = "homebuddy.onboarding.v1";
+const STORAGE_KEY = "homebuddy.onboarding.v2";
 const TOTAL = 10;
 
 type Condition =
   | "Low Vision" | "MCI" | "Blindness" | "Alzheimer's"
   | "Hearing loss w/ aid" | "Hearing loss w/o aid" | "Colorblindness" | "Deaf";
 
-type OnbReminder = {
-  id: string;
-  type: ReminderType;
-  name: string;
-  time: string;
-  repeatSchedule: string;
-  notes?: string;
-};
+type OnbReminder = Reminder;
 
 type OnbDevice = {
   id: string;
@@ -85,7 +79,7 @@ const ALL_CONDITIONS: Condition[] = [
   "Hearing loss w/ aid", "Hearing loss w/o aid", "Colorblindness", "Deaf",
 ];
 
-function uid() { return Math.random().toString(36).slice(2, 10); }
+
 
 function Onboarding() {
   const { theme, cardBorder, buttonBorder, inputBorder, appearance, sizes } = useSettings();
@@ -214,15 +208,7 @@ function Onboarding() {
     setElder(newElder);
 
     data.reminders.forEach((r) => {
-      const rem: Reminder = {
-        id: r.id, type: r.type, name: r.name,
-        timesPerDay: 1, times: [r.time || "08:00"],
-        repeats: r.repeatSchedule !== "Once",
-        repeatSchedule: r.repeatSchedule === "Once" ? "Daily" : r.repeatSchedule,
-        notes: r.notes, elderId: newElder.id,
-        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-      };
-      addReminder(rem);
+      addReminder({ ...r, elderId: newElder.id });
     });
 
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
@@ -455,7 +441,7 @@ function Onboarding() {
         {/* ===== PAGE 7B: INSTRUCTION CONTEXT (DEVICES) — step 8 ===== */}
         {data.step === 8 && (
           <DevicesPage
-            data={data} update={update}
+            data={data} update={update} elderName={elderName}
             theme={theme} card={card} btnPrimary={btnPrimary} btnSecondary={btnSecondary}
             inputStyle={inputStyle} h1={h1} muted={muted}
             cardBorder={cardBorder} buttonBorder={buttonBorder}
@@ -482,21 +468,14 @@ function Onboarding() {
               <SummaryProfile data={data} card={card} theme={theme} cardBorder={cardBorder} />
               <SummarySection
                 title="Reminders" count={data.reminders.length} card={card} theme={theme}
-                lines={data.reminders.map((r) => `${r.time || "—"} · ${r.name}`)}
+                lines={data.reminders.map((r) => `${r.times?.[0] || "—"} · ${r.name}`)}
               />
               <SummarySection
                 title="Instruction Context" count={data.devices.length} card={card} theme={theme}
                 lines={data.devices.map((d) => d.label)}
               />
-              <SummarySection
-                title="Phone Contacts"
-                count={data.contacts.length + (data.emergencyVisible.ems ? 1 : 0) + (data.emergencyVisible.poison ? 1 : 0)}
-                card={card} theme={theme}
-                lines={[
-                  ...data.contacts.map((c) => c.name),
-                  ...(data.emergencyVisible.ems ? ["Emergency Services"] : []),
-                  ...(data.emergencyVisible.poison ? ["Poison Control"] : []),
-                ]}
+              <ContactsSummaryCard
+                data={data} card={card} theme={theme} cardBorder={cardBorder} appearance={appearance}
               />
             </div>
             <p style={{ ...small, marginTop: 16 }}>You can edit any of this from your care portal anytime.</p>
@@ -618,31 +597,29 @@ function suggestRecommendations(conditions: Condition[]) {
 }
 
 // ---------- Reminders Page ----------
-function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSecondary, inputStyle, h1, muted, onNext }: any) {
-  const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<OnbReminder>({
-    id: "", type: "medication", name: "", time: "08:00", repeatSchedule: "Daily", notes: "",
+function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSecondary, h1, muted, onNext }: any) {
+  const [picking, setPicking] = useState(false);
+  const [editing, setEditing] = useState<Reminder | null>(null);
+
+  const blankReminder = (type: ReminderType): Reminder => ({
+    id: uid(), type, name: "",
+    timesPerDay: 1, times: ["08:00"],
+    repeats: true, repeatSchedule: "Daily",
+    elderId: "elder-1",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
-  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const startAdd = () => {
-    setDraft({ id: "", type: "medication", name: "", time: "08:00", repeatSchedule: "Daily", notes: "" });
-    setEditingId(null); setOpen(true);
+  const onSave = (r: Reminder) => {
+    const list = data.reminders as Reminder[];
+    const exists = list.some((x) => x.id === r.id);
+    update({ reminders: exists ? list.map((x) => (x.id === r.id ? r : x)) : [...list, r] });
+    setEditing(null);
   };
-  const startEdit = (r: OnbReminder) => { setDraft(r); setEditingId(r.id); setOpen(true); };
-
-  const save = () => {
-    if (!draft.name.trim()) return;
-    const list = data.reminders as OnbReminder[];
-    if (editingId) {
-      update({ reminders: list.map((r) => (r.id === editingId ? { ...draft, id: editingId } : r)) });
-    } else {
-      update({ reminders: [...list, { ...draft, id: uid() }] });
-    }
-    setOpen(false);
+  const onDelete = (r: Reminder) => {
+    update({ reminders: (data.reminders as Reminder[]).filter((x) => x.id !== r.id) });
+    setEditing(null);
   };
-
-  const del = (id: string) => update({ reminders: (data.reminders as OnbReminder[]).filter((r) => r.id !== id) });
 
   return (
     <div>
@@ -656,65 +633,37 @@ function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSe
         {data.reminders.length === 0 ? (
           <div style={{ ...muted, textAlign: "center", padding: 16 }}>No reminders yet</div>
         ) : (
-          (data.reminders as OnbReminder[]).map((r) => (
+          (data.reminders as Reminder[]).map((r) => (
             <div key={r.id} style={{ ...card, display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ flex: 1, color: theme.text, fontSize: 14 }}>
-                <strong>{r.time}</strong> · {r.name} · <span style={{ color: theme.muted }}>{r.repeatSchedule}</span>
+                <strong>{r.times[0]}</strong> · {r.name} · <span style={{ color: theme.muted }}>{r.repeats === false ? "Does not repeat" : r.repeatSchedule}</span>
               </div>
-              <button type="button" onClick={() => startEdit(r)} style={iconBtn(theme)} aria-label="Edit"><Edit size={16} /></button>
-              <button type="button" onClick={() => del(r.id)} style={iconBtn(theme)} aria-label="Delete"><Trash2 size={16} /></button>
+              <button type="button" onClick={() => setEditing(r)} style={iconBtn(theme)} aria-label="Edit"><Edit size={16} /></button>
+              <button type="button" onClick={() => onDelete(r)} style={iconBtn(theme)} aria-label="Delete"><Trash2 size={16} /></button>
             </div>
           ))
         )}
       </div>
 
-      <button type="button" onClick={startAdd} style={{ ...btnSecondary, marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8 }}>
+      <button type="button" onClick={() => setPicking(true)} style={{ ...btnSecondary, marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8 }}>
         <Plus size={16} /> Add a reminder
       </button>
 
-      {open && (
-        <Modal onClose={() => setOpen(false)} theme={theme} card={card}>
-          <h2 style={{ ...h1, fontSize: 22, marginTop: 0 }}>{editingId ? "Edit reminder" : "Add a reminder"}</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <Field label="Category">
-              <select style={inputStyle} value={draft.type}
-                onChange={(e) => setDraft({ ...draft, type: e.target.value as ReminderType })}>
-                <option value="medication">Medication</option>
-                <option value="appointment">Appointment</option>
-                <option value="activity">Activity</option>
-                <option value="other">Other</option>
-              </select>
-            </Field>
-            <Field label="Name">
-              <input style={inputStyle} value={draft.name}
-                onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="e.g., Aspirin" />
-            </Field>
-            <Field label="Time">
-              <input type="time" style={inputStyle} value={draft.time}
-                onChange={(e) => setDraft({ ...draft, time: e.target.value })} />
-            </Field>
-            <Field label="Repeat">
-              <select style={inputStyle} value={draft.repeatSchedule}
-                onChange={(e) => setDraft({ ...draft, repeatSchedule: e.target.value })}>
-                <option>Daily</option>
-                <option>Weekdays</option>
-                <option>Weekly</option>
-                <option>Monthly</option>
-                <option value="Once">Does not repeat</option>
-              </select>
-            </Field>
-            <Field label="Notes (optional)">
-              <textarea style={{ ...inputStyle, minHeight: 64 }} value={draft.notes || ""}
-                onChange={(e) => setDraft({ ...draft, notes: e.target.value })} />
-            </Field>
-          </div>
-          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-            <button type="button" disabled={!draft.name.trim()} onClick={save} style={btnPrimary(!draft.name.trim())}>
-              Save reminder
-            </button>
-            <button type="button" onClick={() => setOpen(false)} style={btnSecondary}>Cancel</button>
-          </div>
-        </Modal>
+      {picking && (
+        <CategoryPicker
+          onClose={() => setPicking(false)}
+          onPick={(t) => { setPicking(false); setEditing(blankReminder(t)); }}
+        />
+      )}
+
+      {editing && (
+        <ReminderForm
+          initial={editing}
+          existing={(data.reminders as Reminder[]).some((x) => x.id === editing.id)}
+          onClose={() => setEditing(null)}
+          onSave={onSave}
+          onDelete={onDelete}
+        />
       )}
 
       <div style={{ marginTop: 32 }}>
@@ -724,8 +673,9 @@ function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSe
   );
 }
 
+
 // ---------- Devices Page ----------
-function DevicesPage({ data, update, theme, card, btnPrimary, btnSecondary, inputStyle, h1, muted, cardBorder, buttonBorder, onNext }: any) {
+function DevicesPage({ data, update, theme, card, btnPrimary, btnSecondary, inputStyle, h1, muted, cardBorder, buttonBorder, onNext, elderName }: any) {
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const [analyzing, setAnalyzing] = useState(false);
   const [label, setLabel] = useState("");
@@ -775,7 +725,10 @@ function DevicesPage({ data, update, theme, card, btnPrimary, btnSecondary, inpu
   return (
     <div>
       <h1 style={h1}>Instruction Context</h1>
-      <p style={muted}>Add the devices they use at home so HomeBuddy can give clear, step-by-step help.</p>
+      <p style={muted}>Photograph devices in their home. We'll identify them and create helpful shortcuts for common questions.</p>
+      <p style={{ ...muted, marginTop: 12 }}>
+        When {elderName} asks a question via voice or text, HomeBuddy will use these devices to provide specific, helpful instructions. For example, if they ask "How do I change the channel?", HomeBuddy knows they have a TV remote and can guide them step-by-step.
+      </p>
 
       <div style={{ ...card, marginTop: 16 }}>
         {!photo ? (
@@ -962,6 +915,50 @@ function SummarySection({ title, count, lines, card, theme }: any) {
           {lines.map((l: string, i: number) => <li key={i}>{l}</li>)}
         </ul>
       )}
+    </div>
+  );
+}
+
+function ContactsSummaryCard({ data, card, theme, cardBorder, appearance }: any) {
+  const mainContacts = (data.contacts as OnbContact[]).filter((c) => c.name.trim());
+  const emergency: string[] = [
+    ...(data.emergencyVisible.ems ? ["Emergency Services"] : []),
+    ...(data.emergencyVisible.poison ? ["Poison Control"] : []),
+  ];
+  const sectionTitle: CSSProperties = {
+    fontWeight: 700, fontSize: 16, color: theme.text, fontFamily: "Georgia, serif",
+  };
+  const countLine: CSSProperties = { fontSize: 14, color: theme.muted, marginTop: 4 };
+  const listStyle: CSSProperties = { margin: "8px 0 0", paddingLeft: 20, color: theme.text, fontSize: 14 };
+  const emergencyBg = appearance === "dark" ? "#3A3A4E" : "#F5F0E8";
+  return (
+    <div style={card}>
+      <div style={sectionTitle}>Phone Contacts</div>
+      <div style={{ marginTop: 12 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, color: theme.text }}>Main Contacts</div>
+        <div style={countLine}>
+          {mainContacts.length} contact{mainContacts.length === 1 ? "" : "s"} added
+        </div>
+        {mainContacts.length > 0 && (
+          <ul style={listStyle}>
+            {mainContacts.map((c) => <li key={c.id}>{c.name}</li>)}
+          </ul>
+        )}
+      </div>
+      <div style={{
+        marginTop: 16, padding: 12, borderRadius: 6,
+        background: emergencyBg, border: cardBorder,
+      }}>
+        <div style={{ fontWeight: 700, fontSize: 16, color: theme.text }}>Emergency Contacts</div>
+        <div style={countLine}>
+          {emergency.length} emergency number{emergency.length === 1 ? "" : "s"}
+        </div>
+        {emergency.length > 0 && (
+          <ul style={listStyle}>
+            {emergency.map((n) => <li key={n}>{n}</li>)}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
