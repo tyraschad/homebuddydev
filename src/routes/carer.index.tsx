@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Fragment, useEffect, useState, type CSSProperties } from "react";
+import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   ArrowLeft, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, X,
-  Edit, Trash2,
+  Edit, Trash2, Settings as SettingsIcon,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import {
-  useCarer, type Reminder, type ReminderType, type ElderProfile, type Contact,
+  useCarer, type Reminder, type ReminderType, type ElderProfile, type Contact, type Device,
   TYPE_COLOR, TYPE_LABEL, reminderBg,
 } from "@/lib/carer-store";
 import {
@@ -14,6 +14,9 @@ import {
   ymd, uid, ordinal, iconForType,
   ModalShell as Modal, CategoryPicker, NumberStepper, ReminderForm,
 } from "@/components/reminder-form";
+import { DeviceListEditor } from "@/components/instruction-context-form";
+import { PortalTour, hasCompletedTour, type TourStep } from "@/components/portal-tour";
+
 
 
 export const Route = createFileRoute("/carer/")({
