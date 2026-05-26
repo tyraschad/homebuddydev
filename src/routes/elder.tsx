@@ -42,6 +42,22 @@ function toMinutes(t: string) {
   const [h, m] = t.split(":").map(Number);
   return (h || 0) * 60 + (m || 0);
 }
+function formatTimeStr(t: string) {
+  const [h, m] = t.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h || 0, m || 0, 0, 0);
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+}
+function buildAnnouncement(name: string, reminderName: string, offsetMin: number, time: string) {
+  if (offsetMin === 0) return `Hi ${name}, it's time for your ${reminderName}.`;
+  const timeStr = formatTimeStr(time);
+  if (offsetMin >= 60) {
+    const h = Math.round(offsetMin / 60);
+    return `Hi ${name}, you have ${reminderName} in ${h} hour${h > 1 ? "s" : ""}, at ${timeStr}.`;
+  }
+  return `Hi ${name}, you have ${reminderName} in ${offsetMin} minutes, at ${timeStr}.`;
+}
+
 
 function ElderHome() {
   const { theme, appearance, textSize, announcementsEnabled } = useSettings();
