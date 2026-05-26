@@ -21,7 +21,7 @@ type View =
 
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const { theme, cardBorder, inputBorder, buttonBorder, highContrast, sizes } = useSettings();
-  const { reminders, elder } = useCarer();
+  const { reminders, elder, bumpDeviceAccess } = useCarer();
   const callSteps = useServerFn(generateSteps);
   const callAnswer = useServerFn(answerQuestion);
   const callSpeak = useServerFn(speak);
