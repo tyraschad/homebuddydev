@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import {
-  useCarer, type Reminder, type ReminderType, TYPE_COLOR, TYPE_LABEL,
+  useCarer, type Reminder, type ReminderType, TYPE_COLOR, TYPE_LABEL, reminderBg,
 } from "@/lib/carer-store";
 
 export const Route = createFileRoute("/carer/")({
