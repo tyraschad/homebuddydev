@@ -12,7 +12,7 @@ import {
 import {
   GREEN, RED, WEEKDAY_SHORT, WEEKDAY_LONG,
   ymd, uid, ordinal, iconForType,
-  ModalShell, CategoryPicker, NumberStepper, ReminderForm,
+  Modal, CategoryPicker, NumberStepper, ReminderForm,
 } from "@/components/reminder-form";
 
 
@@ -688,7 +688,7 @@ function ViewReminderModal({ reminder, onClose, onEdit, onDelete }: {
 }) {
   const { theme, buttonBorder } = useSettings();
   return (
-    <ModalShell onClose={onClose} width={520}>
+    <Modal onClose={onClose} width={520}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         {iconForType(reminder.type, 22, TYPE_COLOR[reminder.type])}
         <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 20 }}>{reminder.name}</h2>
@@ -717,14 +717,14 @@ function ViewReminderModal({ reminder, onClose, onEdit, onDelete }: {
           display: "inline-flex", alignItems: "center", gap: 6,
         }}><Edit size={16} /> Edit</button>
       </div>
-    </ModalShell>
+    </Modal>
   );
 }
 
 function ConfirmDelete({ name, onCancel, onConfirm }: { name: string; onCancel: () => void; onConfirm: () => void }) {
   const { theme, buttonBorder } = useSettings();
   return (
-    <ModalShell onClose={onCancel} width={460}>
+    <Modal onClose={onCancel} width={460}>
       <h3 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 20 }}>Delete "{name}"?</h3>
       <p style={{ color: theme.muted, marginTop: 6 }}>This cannot be undone.</p>
       <div style={{ display: "flex", gap: 10, marginTop: 18, justifyContent: "flex-end" }}>
@@ -737,7 +737,7 @@ function ConfirmDelete({ name, onCancel, onConfirm }: { name: string; onCancel: 
           borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
         }}>Delete</button>
       </div>
-    </ModalShell>
+    </Modal>
   );
 }
 
@@ -757,7 +757,7 @@ function DatePopup({ date, reminders, onClose, onViewFullDay, appearance }: {
     .flatMap((r) => r.times.map((t) => ({ r, t })))
     .sort((a, b) => a.t.localeCompare(b.t));
   return (
-    <ModalShell onClose={onClose} width={500}>
+    <Modal onClose={onClose} width={500}>
       <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 24, color: theme.text, paddingRight: 32 }}>
         {headerStr}
       </h2>
@@ -799,7 +799,7 @@ function DatePopup({ date, reminders, onClose, onViewFullDay, appearance }: {
         borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700,
         fontSize: 16, cursor: "pointer", marginTop: 8,
       }}>View full day</button>
-    </ModalShell>
+    </Modal>
   );
 }
 
@@ -853,7 +853,7 @@ function EditProfileModal({ elder, onClose, onSave }: {
   const tagBg = theme.bg;
 
   return (
-    <ModalShell onClose={onClose} width={700}>
+    <Modal onClose={onClose} width={700}>
       <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 24, paddingRight: 32 }}>
         Edit Profile
       </h2>
@@ -996,7 +996,7 @@ function EditProfileModal({ elder, onClose, onSave }: {
           fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
         }}>Cancel</button>
       </div>
-    </ModalShell>
+    </Modal>
   );
 }
 
