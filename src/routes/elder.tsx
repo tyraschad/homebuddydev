@@ -174,18 +174,21 @@ function ElderHome() {
             >
               Today's Reminders
             </h2>
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <p
-                style={{
-                  fontFamily: "Verdana, sans-serif",
-                  fontSize: sizes.body,
-                  color: theme.text,
-                  textAlign: "center",
-                  margin: 0,
-                }}
-              >
-                You're all clear for today
-              </p>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, marginTop: 12, overflowY: "auto" }}>
+              {reminders.length === 0 ? (
+                <p style={{ fontFamily: "Verdana, sans-serif", fontSize: sizes.body, color: theme.text, textAlign: "center", margin: "auto" }}>
+                  No reminders scheduled
+                </p>
+              ) : (
+                reminders.flatMap((r) =>
+                  r.times.map((t) => (
+                    <div key={r.id + t} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", border: `1.5px solid ${theme.border}`, borderRadius: 6, fontFamily: "Verdana, sans-serif", fontSize: sizes.body, color: theme.text }}>
+                      <span style={{ fontWeight: 700 }}>{r.name}</span>
+                      <span>{t}</span>
+                    </div>
+                  ))
+                )
+              )}
             </div>
           </CardBox>
 
