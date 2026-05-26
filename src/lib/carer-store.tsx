@@ -10,13 +10,19 @@ export type Reminder = {
   dose?: number;
   timesPerDay: number;
   times: string[];
-  repeatSchedule: string;
+  repeats?: boolean; // true if recurring; false = one-time
+  repeatSchedule: string; // "Daily" | "Weekly" | "Monthly" | "Weekdays" | "Custom"
+  weekday?: number; // 0=Sun..6=Sat (for Weekly)
+  monthlyDates?: number[]; // 1..31 (for Monthly)
+  customDays?: number[]; // 0=Sun..6=Sat (for Custom)
+  oneTimeDate?: string; // YYYY-MM-DD when repeats=false
   photo?: string;
   notes?: string;
   elderId: string;
   createdAt: string;
   updatedAt: string;
 };
+
 
 export type Contact = { id: string; name: string; phone: string };
 
