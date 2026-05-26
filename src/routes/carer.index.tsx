@@ -2,13 +2,18 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Fragment, useEffect, useState, type CSSProperties } from "react";
 import {
   ArrowLeft, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, X,
-  Pill, Stethoscope, Activity, HelpCircle, Edit, Trash2, AlertTriangle, Minus,
+  Edit, Trash2,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import {
   useCarer, type Reminder, type ReminderType, type ElderProfile, type Contact,
   TYPE_COLOR, TYPE_LABEL, reminderBg,
 } from "@/lib/carer-store";
+import {
+  GREEN, RED, WEEKDAY_SHORT, WEEKDAY_LONG,
+  ymd, uid, ordinal, iconForType,
+  ModalShell, CategoryPicker, NumberStepper, ReminderForm,
+} from "@/components/reminder-form";
 
 
 export const Route = createFileRoute("/carer/")({
@@ -16,14 +21,8 @@ export const Route = createFileRoute("/carer/")({
   head: () => ({ meta: [{ title: "Carer Portal" }] }),
 });
 
-const GREEN = "#2F8F4E";
-const RED = "#C0392B";
-
 type ViewMode = "day" | "week" | "month" | "list";
 
-function ymd(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
 function fmtLong(d: Date) {
   return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 }
@@ -37,21 +36,6 @@ function ageFromDob(dob: string) {
   if (m < 0 || (m === 0 && t.getDate() < b.getDate())) a--;
   return `${a} years old`;
 }
-function uid() {
-  return Math.random().toString(36).slice(2, 10);
-}
-
-function iconForType(type: ReminderType, size = 18, color = "currentColor") {
-  switch (type) {
-    case "medication": return <Pill size={size} color={color} />;
-    case "appointment": return <Stethoscope size={size} color={color} />;
-    case "activity": return <Activity size={size} color={color} />;
-    default: return <HelpCircle size={size} color={color} />;
-  }
-}
-
-const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const WEEKDAY_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 // Reminder applies on a given date based on its schedule
 function appliesOn(r: Reminder, d: Date) {
@@ -93,6 +77,8 @@ function formatSchedule(r: Reminder) {
     default: return r.repeatSchedule;
   }
 }
+
+
 
 
 function CarerPortal() {
