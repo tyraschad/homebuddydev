@@ -91,6 +91,7 @@ function CarerPortal() {
   const [view, setView] = useState<ViewMode>("day");
   const [cursor, setCursor] = useState<Date | null>(null);
   const [profileOpen, setProfileOpen] = useState(true);
+  const [icOpen, setIcOpen] = useState(true);
   const [headerDate, setHeaderDate] = useState("");
 
   useEffect(() => {
@@ -104,26 +105,50 @@ function CarerPortal() {
   const [viewing, setViewing] = useState<Reminder | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
   const [dayPopup, setDayPopup] = useState<Date | null>(null);
-  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<"conditions" | "notes" | "contacts" | "devices" | null>(null);
   const [savedToast, setSavedToast] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
 
+  const headerRef = useRef<HTMLElement | null>(null);
+  const profileRef = useRef<HTMLElement | null>(null);
+  const icRef = useRef<HTMLElement | null>(null);
+  const scheduleRef = useRef<HTMLElement | null>(null);
+  const calendarRef = useRef<HTMLElement | null>(null);
+  const todayBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const today = new Date();
   const isToday = cursor != null && ymd(cursor) === ymd(today);
 
+  // Determine if "today" is within the currently viewed range
+  const viewingToday = (() => {
+    if (!cursor) return true;
+    if (view === "day" || view === "list") return ymd(cursor) === ymd(today);
+    if (view === "month") return cursor.getFullYear() === today.getFullYear() && cursor.getMonth() === today.getMonth();
+    if (view === "week") {
+      const start = new Date(cursor); start.setDate(cursor.getDate() - ((cursor.getDay() + 6) % 7));
+      const end = new Date(start); end.setDate(start.getDate() + 6);
+      const t = ymd(today);
+      return t >= ymd(start) && t <= ymd(end);
+    }
+    return false;
+  })();
 
-  // Grey "panel" backgrounds for header + schedule controls
+  // Auto-launch tour on first visit (once elder data loaded)
+  useEffect(() => {
+    if (!cursor) return;
+    if (!hasCompletedTour()) {
+      const t = setTimeout(() => setTourOpen(true), 600);
+      return () => clearTimeout(t);
+    }
+  }, [cursor]);
+
   const panelBg = appearance === "dark" ? "#2A2A3E" : "#F5F0E8";
   const gridLine = appearance === "dark" ? "#555555" : "#CCCCCC";
 
   const headerStyle: CSSProperties = {
-    background: panelBg,
-    padding: 16,
-    display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
-    alignItems: "center",
-    gap: 16,
-    borderBottom: cardBorder,
+    background: panelBg, padding: 16,
+    display: "grid", gridTemplateColumns: "1fr auto 1fr",
+    alignItems: "center", gap: 16, borderBottom: cardBorder,
   };
 
   const btnPrimary: CSSProperties = {
@@ -145,11 +170,24 @@ function CarerPortal() {
     background: panelBg, borderRadius: 8, padding: 16, margin: 16,
   };
 
+  const editPencil = (onClick: () => void, label: string): CSSProperties => ({});
+
+  const handleGoToday = () => setCursor(new Date());
+
+  const tourSteps: TourStep[] = [
+    { ref: headerRef, title: "Welcome to the Carer Portal", body: "Manage reminders, contacts, and settings for your loved one from here." },
+    { ref: profileRef, title: "Elder Profile", body: `View and edit ${elder.name}'s health conditions, notes, and phone contacts.` },
+    { ref: icRef, title: "Instruction Context", body: "Add devices from their home so HomeBuddy can give personalized help." },
+    { ref: scheduleRef, title: "Schedule controls", body: "Create reminders for medication, appointments, and activities — switch between day, week, month, and list." },
+    { ref: calendarRef, title: "Calendar", body: "All reminders are shown here. Tap any reminder to view or edit it." },
+    { ref: todayBtnRef, title: "Jump to today", body: "Tap this button to jump back to today's date from any view." },
+  ];
+
   return (
     <main style={{ minHeight: "100vh", background: theme.bg, color: theme.text,
       fontFamily: "Verdana, sans-serif", lineHeight: 1.5 }}>
-      {/* BOX 1: HEADER */}
-      <header style={headerStyle}>
+      {/* HEADER */}
+      <header ref={headerRef} style={headerStyle}>
         <div style={{ justifySelf: "start" }}>
           <Link to="/" style={{ ...btnSecondary, display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
             <ArrowLeft size={18} /> View Elder Screen
@@ -163,12 +201,18 @@ function CarerPortal() {
             {headerDate}
           </div>
         </div>
-        <div style={{ justifySelf: "end" }} />
-
+        <div style={{ justifySelf: "end", display: "flex", gap: 8 }}>
+          <Link to="/carer/settings" aria-label="Carer settings" title="Carer settings" style={{
+            ...btnSecondary, padding: "10px 12px",
+            display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
+          }}>
+            <SettingsIcon size={18} />
+          </Link>
+        </div>
       </header>
 
-      {/* BOX 2: ELDER PROFILE CARD (white) */}
-      <section style={{ ...whiteCard, position: "relative" }}>
+      {/* ELDER PROFILE CARD with expandable sub-sections */}
+      <section ref={profileRef} style={whiteCard}>
         <button
           type="button"
           onClick={() => setProfileOpen((v) => !v)}
@@ -177,10 +221,10 @@ function CarerPortal() {
           <div style={{ width: 60, height: 60, borderRadius: "50%", background: theme.bg, border: buttonBorder,
             display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Georgia, serif",
             fontWeight: 700, fontSize: 24, color: theme.text, flexShrink: 0, overflow: "hidden" }}>
-            {elder.avatar ? <img src={elder.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : elder.name.charAt(0)}
+            {elder.avatar ? <img src={elder.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (elder.name.charAt(0) || "?")}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Georgia, serif", color: theme.text }}>{elder.name}</div>
+            <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Georgia, serif", color: theme.text }}>{elder.name || "Elder"}</div>
             <div style={{ fontSize: 14, color: theme.muted }}>{ageFromDob(elder.dob)}</div>
           </div>
           {profileOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
@@ -188,56 +232,96 @@ function CarerPortal() {
 
         {profileOpen && (
           <div style={{ marginTop: 16, display: "grid", gap: 16 }}>
-            <Field label="Health conditions">
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {elder.conditions.length === 0 && <span style={{ color: theme.muted }}>None added.</span>}
-                {elder.conditions.map((c) => (
-                  <span key={c} style={{ background: theme.bg, border: buttonBorder, borderRadius: 999,
-                    padding: "4px 12px", fontSize: 12, color: theme.text, fontFamily: "'Trebuchet MS', sans-serif" }}>
-                    {c}
-                  </span>
-                ))}
+            <SubSection label="Health conditions" onEdit={() => setEditTarget("conditions")}>
+              {elder.conditions.length === 0 ? (
+                <EmptyLine text="No health conditions added" />
+              ) : (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {elder.conditions.map((c) => (
+                    <span key={c} style={{ background: theme.bg, border: buttonBorder, borderRadius: 999,
+                      padding: "4px 12px", fontSize: 12, color: theme.text, fontFamily: "'Trebuchet MS', sans-serif" }}>
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </SubSection>
+
+            <SubSection label="Notes" onEdit={() => setEditTarget("notes")}>
+              {elder.notes ? <div>{elder.notes}</div> : <EmptyLine text="No notes added" />}
+            </SubSection>
+
+            <SubSection label="Phone contacts" onEdit={() => setEditTarget("contacts")}>
+              {elder.contacts.length === 0 ? (
+                <EmptyLine text="No contacts added" />
+              ) : (
+                <div style={{ display: "grid", gap: 6 }}>
+                  {elder.contacts.map((c) => (
+                    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
+                      <span style={{ fontWeight: 700 }}>{c.name}</span>
+                      <span style={{ color: theme.muted }}>{c.phone}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SubSection>
+          </div>
+        )}
+      </section>
+
+      {/* INSTRUCTION CONTEXT CARD */}
+      <section ref={icRef} style={whiteCard}>
+        <button
+          type="button"
+          onClick={() => setIcOpen((v) => !v)}
+          style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, width: "100%" }}
+        >
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Georgia, serif", color: theme.text }}>Instruction Context</div>
+            <div style={{ fontSize: 14, color: theme.muted }}>
+              {elder.devices.length} device{elder.devices.length === 1 ? "" : "s"} added
+            </div>
+          </div>
+          {icOpen && (
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setEditTarget("devices"); }}
+              aria-label="Edit instruction context"
+              style={{
+                background: "transparent", border: "none", cursor: "pointer", color: theme.text, padding: 6,
+              }}
+            ><Edit size={16} /></button>
+          )}
+          {icOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
+        </button>
+
+        {icOpen && (
+          <div style={{ marginTop: 16 }}>
+            {elder.devices.length === 0 ? (
+              <div style={{ textAlign: "center", color: theme.muted, fontSize: 14, padding: 16 }}>
+                No devices added
               </div>
-            </Field>
-            <Field label="Notes"><div>{elder.notes || <span style={{ color: theme.muted }}>—</span>}</div></Field>
-            <Field label="Phone contacts">
-              <div style={{ display: "grid", gap: 6 }}>
-                {elder.contacts.length === 0 && <span style={{ color: theme.muted }}>None added.</span>}
-                {elder.contacts.map((c) => (
-                  <div key={c.id} style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
-                    <span style={{ fontWeight: 700 }}>{c.name}</span>
-                    <span style={{ color: theme.muted }}>{c.phone}</span>
+            ) : (
+              <div style={{ display: "grid", gap: 8 }}>
+                {elder.devices.map((d) => (
+                  <div key={d.id} style={{
+                    display: "flex", alignItems: "center", gap: 12, padding: 8,
+                    border: buttonBorder, borderRadius: 8,
+                  }}>
+                    {d.photo
+                      ? <img src={d.photo} alt="" style={{ width: 30, height: 30, borderRadius: 4, objectFit: "cover" }} />
+                      : <div style={{ width: 30, height: 30, borderRadius: 4, background: theme.bg, border: buttonBorder }} />}
+                    <div style={{ fontSize: 14, color: theme.text, fontWeight: 700 }}>{d.name}</div>
                   </div>
                 ))}
               </div>
-            </Field>
-            <Field label="Instruction context"><div style={{ color: theme.muted }}>{elder.context || "—"}</div></Field>
+            )}
           </div>
         )}
-
-        <button
-          type="button"
-          title="Edit profile"
-          aria-label="Edit profile"
-          onClick={() => setEditProfileOpen(true)}
-          style={{
-            position: "absolute", bottom: 10, right: 10,
-            width: 32, height: 32, borderRadius: "50%", border: "none",
-            background: appearance === "dark" ? "rgba(74,74,74,0.8)" : "rgba(240,240,240,0.8)",
-            color: theme.text, cursor: "pointer",
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-            transition: "background 0.2s ease, color 0.2s ease",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = GREEN; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = theme.text; }}
-        >
-          <Edit size={16} />
-        </button>
       </section>
 
-
-      {/* BOX 3: SCHEDULE CONTROLS (grey panel) */}
-      <section style={{ ...greyPanel, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+      {/* SCHEDULE CONTROLS */}
+      <section ref={scheduleRef} style={{ ...greyPanel, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
         <div style={{ display: "flex", gap: 4 }}>
           {(["day", "week", "month", "list"] as ViewMode[]).map((m) => (
             <button key={m} onClick={() => setView(m)} style={{
@@ -260,28 +344,38 @@ function CarerPortal() {
             )}
           </span>
           <button onClick={() => cursor && shiftCursor(view, cursor, setCursor, 1)} style={iconBtn(theme, buttonBorder)}><ChevronRight size={18} /></button>
-          {cursor && !isToday && (
-            <button onClick={() => setCursor(new Date())} style={{
-              background: "transparent", color: "#2563EB", border: "none", padding: "6px 8px",
-              fontSize: 14, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
-              textDecoration: "underline",
-            }}>Today</button>
-          )}
         </div>
         <button onClick={() => setPickCategoryOpen(true)} style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 6 }}>
           <Plus size={18} /> Add Reminder / Medication
         </button>
       </section>
 
-      {/* BOX 4: CALENDAR (white card) */}
-      <section style={whiteCard}>
+      {/* CALENDAR */}
+      <section ref={calendarRef} style={{ ...whiteCard, position: "relative" }}>
         {cursor && view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={() => setPickCategoryOpen(true)} theme={theme} appearance={appearance} gridLine={gridLine} />}
         {cursor && view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
         {cursor && view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => setDayPopup(d)} theme={theme} appearance={appearance} gridLine={gridLine} />}
         {cursor && view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
-
       </section>
 
+      {/* FLOATING GO-TO-TODAY BUTTON */}
+      <button
+        ref={todayBtnRef}
+        type="button"
+        onClick={handleGoToday}
+        aria-label="Go to current date"
+        style={{
+          position: "fixed", bottom: 16, right: 16, height: 44, padding: "0 20px",
+          background: theme.card, color: theme.text, border: cardBorder, borderRadius: 22,
+          fontFamily: "Verdana, sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)", zIndex: 40,
+          opacity: viewingToday ? 0 : 1,
+          pointerEvents: viewingToday ? "none" : "auto",
+          transition: "opacity 0.3s ease",
+        }}
+      >
+        Go to current date
+      </button>
 
       {/* MODALS */}
       {pickCategoryOpen && (
@@ -340,13 +434,14 @@ function CarerPortal() {
         />
       )}
 
-      {editProfileOpen && (
-        <EditProfileModal
+      {editTarget && (
+        <EditSectionModal
+          target={editTarget}
           elder={elder}
-          onClose={() => setEditProfileOpen(false)}
+          onClose={() => setEditTarget(null)}
           onSave={(next) => {
             setElder(next);
-            setEditProfileOpen(false);
+            setEditTarget(null);
             setSavedToast(true);
             setTimeout(() => setSavedToast(false), 2000);
           }}
@@ -358,15 +453,14 @@ function CarerPortal() {
           position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
           background: GREEN, color: "#fff", padding: "10px 18px", borderRadius: 8,
           fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
-          zIndex: 100, animation: "fadeInOut 2s ease",
-        }}>Profile updated</div>
+          zIndex: 100,
+        }}>Saved</div>
       )}
 
-
-
+      {tourOpen && <PortalTour steps={tourSteps} onClose={() => setTourOpen(false)} />}
 
       <style>{`
-        input[type="text"], input[type="number"], input[type="time"], input[type="date"], textarea, select {
+        input[type="text"], input[type="number"], input[type="time"], input[type="date"], input[type="tel"], textarea, select {
           background: ${theme.bg}; color: ${theme.text}; border: ${inputBorder};
           border-radius: 8px; padding: 10px 12px; font-family: Verdana, sans-serif; font-size: 16px; width: 100%; box-sizing: border-box;
         }
@@ -375,6 +469,32 @@ function CarerPortal() {
     </main>
   );
 }
+
+function SubSection({ label, onEdit, children }: { label: string; onEdit: () => void; children: React.ReactNode }) {
+  const { theme } = useSettings();
+  return (
+    <div>
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        marginBottom: 8,
+      }}>
+        <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13,
+          textTransform: "uppercase", color: theme.muted, letterSpacing: 0.5 }}>{label}</div>
+        <button type="button" onClick={onEdit} aria-label={`Edit ${label}`} title={`Edit ${label}`}
+          style={{ background: "transparent", border: "none", cursor: "pointer", color: theme.text, padding: 4 }}>
+          <Edit size={16} />
+        </button>
+      </div>
+      <div style={{ fontSize: 15, color: theme.text }}>{children}</div>
+    </div>
+  );
+}
+
+function EmptyLine({ text }: { text: string }) {
+  const { theme } = useSettings();
+  return <span style={{ color: theme.muted, fontStyle: "italic" }}>{text}</span>;
+}
+
 
 function iconBtn(theme: { text: string; card: string }, border: string): CSSProperties {
   return {
