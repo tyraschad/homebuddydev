@@ -165,10 +165,10 @@ function SettingsPage() {
           <ToggleDot on={tts} />
         </button>
 
-        <button type="button" onClick={() => setHc((v) => !v)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={hc}>
+        <button type="button" onClick={() => setHighContrast(!highContrast)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={highContrast}>
           <Contrast size={20} strokeWidth={2} color={theme.text} />
           <span style={labelStyle}>High contrast mode</span>
-          <ToggleDot on={hc} />
+          <ToggleDot on={highContrast} />
         </button>
       </div>
     </main>
