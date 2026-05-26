@@ -769,33 +769,8 @@ function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
             {errors.times && <div style={errStyle}>{errors.times}</div>}
           </div>
 
-          <div style={{ border: buttonBorder, borderRadius: 8, padding: 12 }}>
-            <button type="button" onClick={() => setScheduleOpen((v) => !v)} style={{
-              all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, width: "100%",
-              fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700,
-            }}>
-              <span style={{ flex: 1 }}>Repeat &amp; schedule <span style={{ color: RED }}>*</span></span>
-              {scheduleOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
-            {scheduleOpen && (
-              <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {["Daily", "Weekdays", "Weekends", "Weekly", "Monthly", "Custom"].map((s) => (
-                  <button key={s} type="button" onClick={() => setR({ ...r, repeatSchedule: s })} style={{
-                    background: r.repeatSchedule === s ? theme.text : "transparent",
-                    color: r.repeatSchedule === s ? theme.card : theme.text,
-                    border: buttonBorder, borderRadius: 999, padding: "6px 14px", cursor: "pointer",
-                    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13,
-                  }}>{s}</button>
-                ))}
-              </div>
-            )}
-            {r.repeatSchedule === "Custom" && (
-              <input type="text" placeholder="Describe schedule (e.g., every Tue & Thu)"
-                value={r.notes ?? ""} onChange={(e) => setR({ ...r, notes: e.target.value })}
-                style={{ marginTop: 10 }} />
-            )}
-            {errors.repeatSchedule && <div style={errStyle}>{errors.repeatSchedule}</div>}
-          </div>
+          <RepeatScheduleField r={r} setR={setR} errors={errors} />
+
 
           <div>
             <label style={labelStyle}>Notes</label>
