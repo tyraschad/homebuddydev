@@ -320,6 +320,21 @@ function CarerPortal() {
         />
       )}
 
+      {dayPopup && (
+        <DatePopup
+          date={dayPopup}
+          reminders={reminders.filter((r) => appliesOn(r, dayPopup))}
+          onClose={() => setDayPopup(null)}
+          onViewFullDay={() => { setCursor(dayPopup); setView("day"); setDayPopup(null); }}
+          appearance={appearance}
+        />
+      )}
+
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={() => { deleteReminder(confirmDelete.id); setConfirmDelete(null); }}
+        />
+      )}
+
       <style>{`
         input[type="text"], input[type="number"], input[type="time"], input[type="date"], textarea, select {
           background: ${theme.bg}; color: ${theme.text}; border: ${inputBorder};
