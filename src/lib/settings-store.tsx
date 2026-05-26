@@ -67,6 +67,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [appearance, setAppearanceState] = useState<AppearanceMode>("light");
   const [textSize, setTextSizeState] = useState<TextSize>("medium");
   const [highContrast, setHighContrastState] = useState<boolean>(true);
+  const [announcementsEnabled, setAnnouncementsEnabledState] = useState<boolean>(true);
 
   useEffect(() => {
     try {
@@ -76,6 +77,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       if (t === "medium" || t === "large") setTextSizeState(t);
       const h = localStorage.getItem("highContrast");
       if (h === "true" || h === "false") setHighContrastState(h === "true");
+      const an = localStorage.getItem("announcementsEnabled");
+      if (an === "true" || an === "false") setAnnouncementsEnabledState(an === "true");
     } catch {}
   }, []);
 
@@ -90,6 +93,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const setHighContrast = (v: boolean) => {
     setHighContrastState(v);
     try { localStorage.setItem("highContrast", String(v)); } catch {}
+  };
+  const setAnnouncementsEnabled = (v: boolean) => {
+    setAnnouncementsEnabledState(v);
+    try { localStorage.setItem("announcementsEnabled", String(v)); } catch {}
   };
 
   const theme = appearance === "dark" ? darkTheme : lightTheme;
@@ -106,9 +113,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         appearance,
         textSize,
         highContrast,
+        announcementsEnabled,
         setAppearance,
         setTextSize,
         setHighContrast,
+        setAnnouncementsEnabled,
         theme,
         sizes,
         cardBorder,
@@ -121,6 +130,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     </SettingsContext.Provider>
   );
 }
+
 
 export function useSettings() {
   const ctx = useContext(SettingsContext);
