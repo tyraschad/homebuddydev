@@ -672,7 +672,7 @@ function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
 }) {
   const { theme, buttonBorder } = useSettings();
   const [r, setR] = useState<Reminder>(initial);
-  const [scheduleOpen, setScheduleOpen] = useState(true);
+  const [errors, setErrorsUnused] = useState<Record<string, string>>({}); void errors; void setErrorsUnused;
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDoseWarn, setShowDoseWarn] = useState(false);
 
