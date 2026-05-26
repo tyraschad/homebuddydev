@@ -1,4 +1,4 @@
-import { Fragment, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import {
   X, Plus, Minus, Pill, Stethoscope, Activity, HelpCircle,
   AlertTriangle, ChevronLeft, ChevronRight,
