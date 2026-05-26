@@ -202,7 +202,7 @@ export function CarerProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CarerContext.Provider value={{ elder, setElder, reminders, setReminders, addReminder, updateReminder, deleteReminder, resetAll }}>
+    <CarerContext.Provider value={{ elder, setElder, reminders, setReminders, addReminder, updateReminder, deleteReminder, bumpDeviceAccess, resetAll }}>
       {children}
     </CarerContext.Provider>
   );
