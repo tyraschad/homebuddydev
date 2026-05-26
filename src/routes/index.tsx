@@ -322,6 +322,7 @@ function OverlayView({
   onClose: () => void;
   theme: { card: string; text: string; border: string; overlay: string };
 }) {
+  const { cardBorder } = useSettings();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
