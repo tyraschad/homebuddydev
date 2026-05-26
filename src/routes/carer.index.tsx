@@ -92,6 +92,7 @@ function CarerPortal() {
   const [cursor, setCursor] = useState<Date | null>(null);
   const [profileOpen, setProfileOpen] = useState(true);
   const [icOpen, setIcOpen] = useState(true);
+  const [expandedDevices, setExpandedDevices] = useState<Set<string>>(new Set());
   const [headerDate, setHeaderDate] = useState("");
 
   useEffect(() => {
@@ -303,17 +304,51 @@ function CarerPortal() {
               </div>
             ) : (
               <div style={{ display: "grid", gap: 8 }}>
-                {elder.devices.map((d) => (
-                  <div key={d.id} style={{
-                    display: "flex", alignItems: "center", gap: 12, padding: 8,
-                    border: buttonBorder, borderRadius: 8,
-                  }}>
-                    {d.photo
-                      ? <img src={d.photo} alt="" style={{ width: 30, height: 30, borderRadius: 4, objectFit: "cover" }} />
-                      : <div style={{ width: 30, height: 30, borderRadius: 4, background: theme.bg, border: buttonBorder }} />}
-                    <div style={{ fontSize: 14, color: theme.text, fontWeight: 700 }}>{d.name}</div>
-                  </div>
-                ))}
+                {elder.devices.map((d) => {
+                  const open = expandedDevices.has(d.id);
+                  return (
+                    <div key={d.id} style={{ border: buttonBorder, borderRadius: 8, overflow: "hidden" }}>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedDevices((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(d.id)) next.delete(d.id); else next.add(d.id);
+                          return next;
+                        })}
+                        style={{
+                          all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 12,
+                          padding: 12, width: "100%", boxSizing: "border-box",
+                        }}
+                      >
+                        {d.photo
+                          ? <img src={d.photo} alt="" style={{ width: 30, height: 30, borderRadius: 4, objectFit: "cover" }} />
+                          : <div style={{ width: 30, height: 30, borderRadius: 4, background: theme.bg, border: buttonBorder }} />}
+                        <div style={{ flex: 1, fontSize: 16, color: theme.text, fontWeight: 700 }}>{d.name}</div>
+                        {open ? <ChevronDown size={16} color={theme.text} /> : <ChevronRight size={16} color={theme.text} />}
+                      </button>
+                      {open && (
+                        <div style={{ padding: 16, borderTop: buttonBorder, background: theme.bg, display: "grid", gap: 12 }}>
+                          {d.photo && (
+                            <div>
+                              <div style={{ fontSize: 12, color: theme.muted, marginBottom: 6 }}>Device</div>
+                              <img src={d.photo} alt={d.name} style={{ maxWidth: 200, width: "100%", height: "auto", border: buttonBorder, borderRadius: 4, objectFit: "contain" }} />
+                            </div>
+                          )}
+                          <div>
+                            <div style={{ fontSize: 12, color: theme.muted, marginBottom: 6 }}>Suggested questions</div>
+                            {d.questions && d.questions.length > 0 ? (
+                              <ul style={{ margin: 0, paddingLeft: 20, color: theme.text, fontSize: 13, fontFamily: "Verdana, sans-serif", display: "grid", gap: 4 }}>
+                                {d.questions.map((q, i) => <li key={i}>{q}</li>)}
+                              </ul>
+                            ) : (
+                              <div style={{ fontSize: 14, color: theme.muted }}>No questions added</div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
