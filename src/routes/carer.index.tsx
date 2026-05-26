@@ -351,6 +351,29 @@ function CarerPortal() {
         />
       )}
 
+      {editProfileOpen && (
+        <EditProfileModal
+          elder={elder}
+          onClose={() => setEditProfileOpen(false)}
+          onSave={(next) => {
+            setElder(next);
+            setEditProfileOpen(false);
+            setSavedToast(true);
+            setTimeout(() => setSavedToast(false), 2000);
+          }}
+        />
+      )}
+
+      {savedToast && (
+        <div style={{
+          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+          background: GREEN, color: "#fff", padding: "10px 18px", borderRadius: 8,
+          fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+          zIndex: 100, animation: "fadeInOut 2s ease",
+        }}>Profile updated</div>
+      )}
+
+
 
 
       <style>{`
