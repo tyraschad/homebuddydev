@@ -174,7 +174,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
   const handleSuggestion = async (s: Suggestion) => {
     const query = s.label;
-    if (s.device) await openGuide(query, s.device, null);
+    if (s.device) { bumpDeviceAccess(s.device.id); await openGuide(query, s.device, null); }
     else if (s.reminder) await openGuide(query, null, s.reminder);
     else await handleQuery(query);
   };
