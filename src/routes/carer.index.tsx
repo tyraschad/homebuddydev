@@ -375,8 +375,8 @@ function WeekView({ date, reminders, onOpen, theme, border }: {
         {hours().map((h) => {
           const hh = String(h).padStart(2, "0");
           return (
-            <>
-              <div key={`l-${h}`} style={{ color: theme.muted, fontSize: 12, paddingTop: 6 }}>{hh}:00</div>
+            <Fragment key={`row-${h}`}>
+              <div style={{ color: theme.muted, fontSize: 12, paddingTop: 6 }}>{hh}:00</div>
               {days.map((d) => {
                 const items = reminders.filter((r) => appliesOn(r, d))
                   .flatMap((r) => r.times.filter((t) => t.startsWith(hh)).map((t) => ({ r, t })));
@@ -386,7 +386,7 @@ function WeekView({ date, reminders, onOpen, theme, border }: {
                   </div>
                 );
               })}
-            </>
+            </Fragment>
           );
         })}
       </div>
