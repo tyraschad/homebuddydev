@@ -21,14 +21,7 @@ type Condition =
   | "Low Vision" | "MCI" | "Blindness" | "Alzheimer's"
   | "Hearing loss w/ aid" | "Hearing loss w/o aid" | "Colorblindness" | "Deaf";
 
-type OnbReminder = {
-  id: string;
-  type: ReminderType;
-  name: string;
-  time: string;
-  repeatSchedule: string;
-  notes?: string;
-};
+type OnbReminder = Reminder;
 
 type OnbDevice = {
   id: string;
