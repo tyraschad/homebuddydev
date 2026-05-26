@@ -68,6 +68,11 @@ function CarerPortal() {
   const [view, setView] = useState<ViewMode>("day");
   const [cursor, setCursor] = useState<Date>(new Date());
   const [profileOpen, setProfileOpen] = useState(true);
+  const [headerDate, setHeaderDate] = useState("");
+
+  useEffect(() => {
+    setHeaderDate(new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }));
+  }, []);
 
   const [pickCategoryOpen, setPickCategoryOpen] = useState(false);
   const [editing, setEditing] = useState<Reminder | null>(null); // form modal
