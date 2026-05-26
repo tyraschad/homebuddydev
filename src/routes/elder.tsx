@@ -214,6 +214,7 @@ function ElderHome() {
       {/* Floating Phone Button */}
       <button
         type="button"
+        className="fab-phone"
         onClick={() => setOverlay("call")}
         aria-label="Make a call"
         style={{
