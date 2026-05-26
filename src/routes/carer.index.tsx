@@ -115,6 +115,9 @@ function CarerPortal() {
   const [viewing, setViewing] = useState<Reminder | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
   const [dayPopup, setDayPopup] = useState<Date | null>(null);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
+
 
   const today = new Date();
   const isToday = cursor != null && ymd(cursor) === ymd(today);
