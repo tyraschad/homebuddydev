@@ -98,21 +98,25 @@ function CarerPortal() {
   const { elder, reminders, addReminder, updateReminder, deleteReminder } = useCarer();
 
   const [view, setView] = useState<ViewMode>("day");
-  const [cursor, setCursor] = useState<Date>(new Date());
+  const [cursor, setCursor] = useState<Date | null>(null);
   const [profileOpen, setProfileOpen] = useState(true);
   const [headerDate, setHeaderDate] = useState("");
 
   useEffect(() => {
-    setHeaderDate(new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }));
+    const now = new Date();
+    setCursor(now);
+    setHeaderDate(now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }));
   }, []);
 
   const [pickCategoryOpen, setPickCategoryOpen] = useState(false);
   const [editing, setEditing] = useState<Reminder | null>(null);
   const [viewing, setViewing] = useState<Reminder | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
+  const [dayPopup, setDayPopup] = useState<Date | null>(null);
 
   const today = new Date();
-  const isToday = ymd(cursor) === ymd(today);
+  const isToday = cursor != null && ymd(cursor) === ymd(today);
+
 
   // Grey "panel" backgrounds for header + schedule controls
   const panelBg = appearance === "dark" ? "#2A2A3E" : "#F5F0E8";
