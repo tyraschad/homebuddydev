@@ -86,7 +86,7 @@ const ALL_CONDITIONS: Condition[] = [
   "Hearing loss w/ aid", "Hearing loss w/o aid", "Colorblindness", "Deaf",
 ];
 
-function uid() { return Math.random().toString(36).slice(2, 10); }
+
 
 function Onboarding() {
   const { theme, cardBorder, buttonBorder, inputBorder, appearance, sizes } = useSettings();
