@@ -6,8 +6,10 @@ import {
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import {
-  useCarer, type Reminder, type ReminderType, TYPE_COLOR, TYPE_LABEL, reminderBg,
+  useCarer, type Reminder, type ReminderType, type ElderProfile, type Contact,
+  TYPE_COLOR, TYPE_LABEL, reminderBg,
 } from "@/lib/carer-store";
+
 
 export const Route = createFileRoute("/carer/")({
   component: CarerPortal,
@@ -95,7 +97,7 @@ function formatSchedule(r: Reminder) {
 
 function CarerPortal() {
   const { theme, cardBorder, buttonBorder, inputBorder, appearance } = useSettings();
-  const { elder, reminders, addReminder, updateReminder, deleteReminder } = useCarer();
+  const { elder, setElder, reminders, addReminder, updateReminder, deleteReminder } = useCarer();
 
   const [view, setView] = useState<ViewMode>("day");
   const [cursor, setCursor] = useState<Date | null>(null);
@@ -113,6 +115,9 @@ function CarerPortal() {
   const [viewing, setViewing] = useState<Reminder | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
   const [dayPopup, setDayPopup] = useState<Date | null>(null);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
+
 
   const today = new Date();
   const isToday = cursor != null && ymd(cursor) === ymd(today);
@@ -169,16 +174,12 @@ function CarerPortal() {
             {headerDate}
           </div>
         </div>
-        <div style={{ justifySelf: "end" }}>
-          <Link to="/carer/settings" style={{ color: theme.text, fontSize: 14, textDecoration: "underline",
-            fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
-            Carer Portal Settings
-          </Link>
-        </div>
+        <div style={{ justifySelf: "end" }} />
+
       </header>
 
       {/* BOX 2: ELDER PROFILE CARD (white) */}
-      <section style={whiteCard}>
+      <section style={{ ...whiteCard, position: "relative" }}>
         <button
           type="button"
           onClick={() => setProfileOpen((v) => !v)}
@@ -224,7 +225,27 @@ function CarerPortal() {
             <Field label="Instruction context"><div style={{ color: theme.muted }}>{elder.context || "—"}</div></Field>
           </div>
         )}
+
+        <button
+          type="button"
+          title="Edit profile"
+          aria-label="Edit profile"
+          onClick={() => setEditProfileOpen(true)}
+          style={{
+            position: "absolute", bottom: 10, right: 10,
+            width: 32, height: 32, borderRadius: "50%", border: "none",
+            background: appearance === "dark" ? "rgba(74,74,74,0.8)" : "rgba(240,240,240,0.8)",
+            color: theme.text, cursor: "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            transition: "background 0.2s ease, color 0.2s ease",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = GREEN; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = theme.text; }}
+        >
+          <Edit size={16} />
+        </button>
       </section>
+
 
       {/* BOX 3: SCHEDULE CONTROLS (grey panel) */}
       <section style={{ ...greyPanel, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
@@ -329,6 +350,29 @@ function CarerPortal() {
           appearance={appearance}
         />
       )}
+
+      {editProfileOpen && (
+        <EditProfileModal
+          elder={elder}
+          onClose={() => setEditProfileOpen(false)}
+          onSave={(next) => {
+            setElder(next);
+            setEditProfileOpen(false);
+            setSavedToast(true);
+            setTimeout(() => setSavedToast(false), 2000);
+          }}
+        />
+      )}
+
+      {savedToast && (
+        <div style={{
+          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+          background: GREEN, color: "#fff", padding: "10px 18px", borderRadius: 8,
+          fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+          zIndex: 100, animation: "fadeInOut 2s ease",
+        }}>Profile updated</div>
+      )}
+
 
 
 
@@ -1257,4 +1301,200 @@ function DatePopup({ date, reminders, onClose, onViewFullDay, appearance }: {
   );
 }
 
+/* ---------------- EDIT PROFILE MODAL ---------------- */
+
+function EditProfileModal({ elder, onClose, onSave }: {
+  elder: ElderProfile;
+  onClose: () => void;
+  onSave: (e: ElderProfile) => void;
+}) {
+  const { theme, buttonBorder } = useSettings();
+  const [draft, setDraft] = useState<ElderProfile>(elder);
+  const [newCondition, setNewCondition] = useState("");
+  const [errors, setErrors] = useState<{ name?: string; contacts?: string }>({});
+
+  const labelStyle: CSSProperties = {
+    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+    color: theme.text, display: "block", marginBottom: 6,
+  };
+  const errStyle: CSSProperties = { color: RED, fontSize: 13, marginTop: 4 };
+
+  const nameValid = draft.name.trim().length > 0;
+
+  const addCondition = () => {
+    const v = newCondition.trim();
+    if (!v || draft.conditions.includes(v)) { setNewCondition(""); return; }
+    setDraft({ ...draft, conditions: [...draft.conditions, v] });
+    setNewCondition("");
+  };
+  const removeCondition = (c: string) =>
+    setDraft({ ...draft, conditions: draft.conditions.filter((x) => x !== c) });
+
+  const addContact = () =>
+    setDraft({ ...draft, contacts: [...draft.contacts, { id: Math.random().toString(36).slice(2, 9), name: "", phone: "" }] });
+  const updateContact = (id: string, patch: Partial<Contact>) =>
+    setDraft({ ...draft, contacts: draft.contacts.map((c) => (c.id === id ? { ...c, ...patch } : c)) });
+  const removeContact = (id: string) =>
+    setDraft({ ...draft, contacts: draft.contacts.filter((c) => c.id !== id) });
+
+  const onSubmit = () => {
+    const e: { name?: string; contacts?: string } = {};
+    if (!nameValid) e.name = "This field is required";
+    if (draft.contacts.some((c) => !c.name.trim() || !c.phone.trim())) {
+      e.contacts = "Please fill in both name and phone for each contact";
+    }
+    setErrors(e);
+    if (Object.keys(e).length > 0) return;
+    onSave({ ...draft, name: draft.name.trim() });
+  };
+
+  const tagBg = theme.bg;
+
+  return (
+    <ModalShell onClose={onClose} width={700}>
+      <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 24, paddingRight: 32 }}>
+        Edit Profile
+      </h2>
+
+      <div style={{ display: "grid", gap: 16, marginTop: 20 }}>
+        {/* Avatar */}
+        <div>
+          <label style={labelStyle}>Photo</label>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 60, height: 60, borderRadius: "50%", background: theme.bg, border: buttonBorder,
+              display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Georgia, serif",
+              fontWeight: 700, fontSize: 24, color: theme.text, overflow: "hidden", flexShrink: 0 }}>
+              {draft.avatar ? <img src={draft.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (draft.name.charAt(0) || "?")}
+            </div>
+            <label style={{
+              background: "transparent", color: theme.text, border: buttonBorder,
+              borderRadius: 8, padding: "8px 14px", cursor: "pointer",
+              fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+            }}>
+              Change photo
+              <input type="file" accept="image/jpeg,image/png" style={{ display: "none" }}
+                onChange={(e) => {
+                  const f = e.target.files?.[0]; if (!f) return;
+                  const reader = new FileReader();
+                  reader.onload = () => setDraft({ ...draft, avatar: String(reader.result) });
+                  reader.readAsDataURL(f);
+                }} />
+            </label>
+          </div>
+        </div>
+
+        {/* Name */}
+        <div>
+          <label style={labelStyle}>Name <span style={{ color: RED }}>*</span></label>
+          <input type="text" value={draft.name} placeholder="e.g., Albert Chen"
+            onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+            style={errors.name ? { borderColor: RED } : undefined} />
+          {errors.name && <div style={errStyle}>{errors.name}</div>}
+        </div>
+
+        {/* DOB */}
+        <div>
+          <label style={labelStyle}>Date of birth</label>
+          <input type="date" value={draft.dob} onChange={(e) => setDraft({ ...draft, dob: e.target.value })} />
+        </div>
+
+        {/* Conditions */}
+        <div>
+          <label style={labelStyle}>Health conditions</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+            {draft.conditions.map((c) => (
+              <span key={c} style={{
+                background: tagBg, color: theme.text, border: buttonBorder,
+                borderRadius: 12, padding: "4px 8px", fontFamily: "Verdana, sans-serif", fontSize: 12,
+                display: "inline-flex", alignItems: "center", gap: 6,
+              }}>
+                {c}
+                <button type="button" onClick={() => removeCondition(c)} aria-label={`Remove ${c}`}
+                  style={{ background: "transparent", border: "none", color: theme.text, cursor: "pointer", padding: 0, display: "inline-flex" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = RED; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = theme.text; }}>
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+            {draft.conditions.length === 0 && <span style={{ color: theme.muted, fontSize: 13 }}>None added.</span>}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input type="text" value={newCondition} placeholder="e.g., Diabetes"
+              onChange={(e) => setNewCondition(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCondition(); } }} />
+            <button type="button" onClick={addCondition} style={{
+              background: theme.text, color: theme.card, border: "none", borderRadius: 8,
+              padding: "0 14px", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif",
+              fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6,
+            }}>
+              <Plus size={16} /> Add condition
+            </button>
+          </div>
+        </div>
+
+        {/* Contacts */}
+        <div>
+          <label style={labelStyle}>Phone contacts</label>
+          <div style={{ display: "grid", gap: 8 }}>
+            {draft.contacts.map((c) => (
+              <div key={c.id} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8 }}>
+                <input type="text" placeholder="Name" value={c.name}
+                  onChange={(e) => updateContact(c.id, { name: e.target.value })} />
+                <input type="tel" placeholder="Phone" value={c.phone}
+                  onChange={(e) => updateContact(c.id, { phone: e.target.value })} />
+                <button type="button" onClick={() => removeContact(c.id)} aria-label="Remove contact"
+                  style={{
+                    background: "transparent", color: theme.text, border: buttonBorder, borderRadius: 8,
+                    width: 44, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
+                  }}>
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <button type="button" onClick={addContact} style={{
+            marginTop: 10, background: "transparent", color: theme.text, border: buttonBorder,
+            borderRadius: 8, padding: "8px 14px", cursor: "pointer",
+            fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6,
+          }}>
+            <Plus size={16} /> Add contact
+          </button>
+          {errors.contacts && <div style={errStyle}>{errors.contacts}</div>}
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label style={labelStyle}>Notes</label>
+          <textarea value={draft.notes} rows={5} placeholder="e.g., Prefers morning medications..."
+            onChange={(e) => setDraft({ ...draft, notes: e.target.value })} />
+        </div>
+
+        {/* Context (read-only) */}
+        <div>
+          <label style={labelStyle}>
+            Instruction context <span style={{ color: theme.muted, fontWeight: 400 }}>(Read-only)</span>
+          </label>
+          <div style={{
+            background: theme.bg, border: buttonBorder, borderRadius: 8, padding: 10,
+            color: theme.muted, fontSize: 13, minHeight: 44,
+          }}>{draft.context || "—"}</div>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gap: 8, marginTop: 20 }}>
+        <button type="button" onClick={onSubmit} disabled={!nameValid} style={{
+          background: nameValid ? GREEN : "#9CC9A8", color: "#fff", border: "none",
+          height: 44, borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
+          fontWeight: 700, fontSize: 16, cursor: nameValid ? "pointer" : "not-allowed", width: "100%",
+        }}>Save</button>
+        <button type="button" onClick={onClose} style={{
+          background: "transparent", color: theme.text, border: buttonBorder,
+          height: 44, borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
+          fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
+        }}>Cancel</button>
+      </div>
+    </ModalShell>
+  );
+}
 
