@@ -245,12 +245,13 @@ function CardBox({
   center?: boolean;
   theme: { bg: string; card: string; text: string; border: string };
 }) {
+  const { cardBorder } = useSettings();
   const style: React.CSSProperties = {
     height,
     flexShrink: 0,
     overflow: "hidden",
     background: theme.card,
-    border: `1.5px solid ${theme.border}`,
+    border: cardBorder,
     borderRadius: 8,
     padding,
     boxSizing: "border-box",
