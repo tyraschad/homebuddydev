@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Fragment, useState, type CSSProperties } from "react";
+import { Fragment, useEffect, useState, type CSSProperties } from "react";
 import {
   ArrowLeft, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, X,
   Pill, Stethoscope, Activity, HelpCircle, Edit, Trash2, AlertTriangle, Minus,
