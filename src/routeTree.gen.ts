@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as ElderRouteImport } from './routes/elder'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ElderRouteImport } from './routes/elder'
@@ -24,6 +25,11 @@ import { Route as CarerSettingsRouteImport } from './routes/carer.settings'
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ElderRoute = ElderRouteImport.update({
+  id: '/elder',
+  path: '/elder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRouteWithChildren
   '/setup': typeof SetupRoute
+  '/elder': typeof ElderRoute
   '/carer/settings': typeof CarerSettingsRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/text-size': typeof SettingsTextSizeRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/elder': typeof ElderRoute
   '/onboarding': typeof OnboardingRoute
   '/setup': typeof SetupRoute
+  '/elder': typeof ElderRoute
   '/carer/settings': typeof CarerSettingsRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/text-size': typeof SettingsTextSizeRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRouteWithChildren
   '/setup': typeof SetupRoute
+  '/elder': typeof ElderRoute
   '/carer/settings': typeof CarerSettingsRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/text-size': typeof SettingsTextSizeRoute
