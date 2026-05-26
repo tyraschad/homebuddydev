@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Settings, Mic, Phone, X } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
-import { useCarer } from "@/lib/carer-store";
+import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS } from "@/lib/carer-store";
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
+import { speak } from "@/lib/talk.functions";
+
 
 export const Route = createFileRoute("/elder")({
   component: ElderHome,
