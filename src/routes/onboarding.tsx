@@ -5,8 +5,10 @@ import {
   Home as HomeIcon, Glasses, Brain, EyeOff as Blind, Sparkles, Ear, Palette, VolumeX,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
-import { useCarer, type Reminder, type ReminderType, type Contact } from "@/lib/carer-store";
+import { useCarer, type Reminder, type ReminderType, type Contact, type Device } from "@/lib/carer-store";
 import { CategoryPicker, ReminderForm, uid } from "@/components/reminder-form";
+import { DeviceListEditor } from "@/components/instruction-context-form";
+
 
 export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
@@ -23,12 +25,8 @@ type Condition =
 
 type OnbReminder = Reminder;
 
-type OnbDevice = {
-  id: string;
-  label: string;
-  photo?: string;
-  questions: string[];
-};
+type OnbDevice = Device;
+
 
 type OnbContact = { id: string; name: string; phone: string; visible: boolean };
 
@@ -203,7 +201,8 @@ function Onboarding() {
         ...(data.emergencyVisible.poison ? [{ id: "poison", name: "Poison Control", phone: "1-800-222-1222" }] : []),
       ],
       notes: data.elderNotes,
-      context: data.devices.map((d) => `${d.label}: ${d.questions.join(", ")}`).join("\n"),
+      context: "",
+      devices: data.devices,
     };
     setElder(newElder);
 
@@ -213,6 +212,7 @@ function Onboarding() {
 
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
   };
+
 
   // Cleared resume
   const startOver = () => {
