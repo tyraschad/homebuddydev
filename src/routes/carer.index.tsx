@@ -886,3 +886,267 @@ function ConfirmDelete({ name, onCancel, onConfirm }: { name: string; onCancel: 
     </ModalShell>
   );
 }
+
+/* ---------------- REPEAT & SCHEDULE FIELD ---------------- */
+
+function RepeatScheduleField({ r, setR, errors }: {
+  r: Reminder;
+  setR: (r: Reminder) => void;
+  errors: Record<string, string>;
+}) {
+  const { theme, buttonBorder, appearance } = useSettings();
+  const repeats = r.repeats !== false;
+  const offBg = appearance === "dark" ? "#4A4A4A" : "#E0E0E0";
+  const accent = GREEN;
+  const labelStyle: CSSProperties = {
+    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+    color: theme.text, display: "block", marginBottom: 6,
+  };
+  const errStyle: CSSProperties = { color: RED, fontSize: 12, marginTop: 6 };
+  const options = ["Daily", "Weekly", "Monthly", "Weekdays", "Custom"];
+
+  const toggle = () => {
+    if (repeats) {
+      setR({ ...r, repeats: false, oneTimeDate: r.oneTimeDate ?? ymd(new Date()) });
+    } else {
+      setR({ ...r, repeats: true });
+    }
+  };
+
+  const pickRepeat = (s: string) => {
+    const next: Reminder = { ...r, repeatSchedule: s };
+    if (s === "Weekly" && next.weekday == null) next.weekday = new Date().getDay();
+    if (s === "Monthly" && !(next.monthlyDates ?? []).length) next.monthlyDates = [new Date().getDate()];
+    if (s === "Custom" && !(next.customDays ?? []).length) next.customDays = [];
+    setR(next);
+  };
+
+  return (
+    <div style={{ border: buttonBorder, borderRadius: 8, padding: 12, display: "grid", gap: 12 }}>
+      {/* Toggle row */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span style={labelStyle}>Repeats</span>
+        <button
+          type="button"
+          onClick={toggle}
+          aria-pressed={repeats}
+          style={{
+            position: "relative", width: 50, height: 28, borderRadius: 14, border: "none",
+            background: repeats ? accent : offBg, cursor: "pointer", padding: 0,
+            transition: "background 0.2s ease",
+          }}
+        >
+          <span style={{
+            position: "absolute", top: 2, left: repeats ? 24 : 2,
+            width: 24, height: 24, borderRadius: "50%", background: "#fff",
+            transition: "left 0.2s ease",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+          }} />
+        </button>
+        <span style={{ fontSize: 14, color: theme.muted }}>
+          {repeats ? "Repeats" : "Does not repeat"}
+        </span>
+      </div>
+
+      {repeats && (
+        <>
+          {/* Option selector */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {options.map((s) => {
+              const active = r.repeatSchedule === s;
+              return (
+                <button key={s} type="button" onClick={() => pickRepeat(s)} style={{
+                  background: active ? accent : "transparent",
+                  color: active ? "#fff" : theme.text,
+                  border: active ? `1.5px solid ${accent}` : buttonBorder,
+                  borderRadius: 999, padding: "6px 14px", cursor: "pointer",
+                  fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+                }}>{s}</button>
+              );
+            })}
+          </div>
+
+          {/* Weekly */}
+          {r.repeatSchedule === "Weekly" && (
+            <div>
+              <div style={labelStyle}>Day of week</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {WEEKDAY_LONG.map((name, idx) => {
+                  const active = r.weekday === idx;
+                  return (
+                    <button key={name} type="button" onClick={() => setR({ ...r, weekday: idx })} style={{
+                      background: active ? accent : "transparent",
+                      color: active ? "#fff" : theme.text,
+                      border: active ? `1.5px solid ${accent}` : buttonBorder,
+                      borderRadius: 8, padding: "6px 12px", cursor: "pointer",
+                      fontFamily: "Verdana, sans-serif", fontSize: 14,
+                    }}>{name}</button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Monthly */}
+          {r.repeatSchedule === "Monthly" && (
+            <MonthlyDatePicker
+              selected={r.monthlyDates ?? []}
+              onChange={(dates) => setR({ ...r, monthlyDates: dates })}
+              error={errors.monthlyDates}
+              theme={theme}
+              appearance={appearance}
+              buttonBorder={buttonBorder}
+              labelStyle={labelStyle}
+              errStyle={errStyle}
+              accent={accent}
+            />
+          )}
+
+          {/* Weekdays */}
+          {r.repeatSchedule === "Weekdays" && (
+            <div style={{ fontSize: 14, color: theme.muted }}>Mon, Tue, Wed, Thu, Fri</div>
+          )}
+
+          {/* Custom */}
+          {r.repeatSchedule === "Custom" && (
+            <CustomDayPicker
+              selected={r.customDays ?? []}
+              onChange={(days) => setR({ ...r, customDays: days })}
+              error={errors.customDays}
+              theme={theme}
+              buttonBorder={buttonBorder}
+              labelStyle={labelStyle}
+              errStyle={errStyle}
+              accent={accent}
+            />
+          )}
+
+          {errors.repeatSchedule && <div style={errStyle}>{errors.repeatSchedule}</div>}
+        </>
+      )}
+    </div>
+  );
+}
+
+function MonthlyDatePicker({
+  selected, onChange, error, theme, appearance, buttonBorder, labelStyle, errStyle, accent,
+}: {
+  selected: number[]; onChange: (d: number[]) => void; error?: string;
+  theme: ThemeT; appearance: "light" | "dark"; buttonBorder: string;
+  labelStyle: CSSProperties; errStyle: CSSProperties; accent: string;
+}) {
+  const today = new Date();
+  const [m, setM] = useState(today.getMonth());
+  const [y, setY] = useState(today.getFullYear());
+  const firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+  const grayed = appearance === "dark" ? "#555555" : "#CCCCCC";
+  const monthLabel = new Date(y, m, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+  const toggle = (d: number) => {
+    const set = new Set(selected);
+    if (set.has(d)) set.delete(d); else set.add(d);
+    onChange(Array.from(set).sort((a, b) => a - b));
+  };
+
+  const shift = (dir: -1 | 1) => {
+    let nm = m + dir, ny = y;
+    if (nm < 0) { nm = 11; ny--; }
+    if (nm > 11) { nm = 0; ny++; }
+    setM(nm); setY(ny);
+  };
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < firstDay; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  return (
+    <div>
+      <div style={labelStyle}>Select dates in the month</div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <button type="button" onClick={() => shift(-1)} style={{
+          background: "transparent", border: buttonBorder, borderRadius: 8, padding: "4px 8px", cursor: "pointer", color: theme.text,
+        }}><ChevronLeft size={16} /></button>
+        <span style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16 }}>{monthLabel}</span>
+        <button type="button" onClick={() => shift(1)} style={{
+          background: "transparent", border: buttonBorder, borderRadius: 8, padding: "4px 8px", cursor: "pointer", color: theme.text,
+        }}><ChevronRight size={16} /></button>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+          <div key={d} style={{ textAlign: "center", fontSize: 12, color: theme.muted, padding: 4 }}>{d}</div>
+        ))}
+        {cells.map((d, i) => {
+          if (d == null) {
+            return <div key={`e${i}`} style={{ height: 40, border: `1px solid ${grayed}`, opacity: 0.5, borderRadius: 4, background: "transparent" }} />;
+          }
+          const active = selected.includes(d);
+          return (
+            <button key={d} type="button" onClick={() => toggle(d)} style={{
+              height: 40, border: active ? `1.5px solid ${accent}` : `1px solid ${grayed}`,
+              borderRadius: 4, background: active ? accent : theme.card, color: active ? "#fff" : theme.text,
+              cursor: "pointer", fontFamily: "Verdana, sans-serif", fontSize: 14, fontWeight: active ? 700 : 400,
+            }}>{d}</button>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 13, color: theme.muted, marginTop: 8 }}>
+        Selected: {selected.length ? selected.slice().sort((a, b) => a - b).join(", ") : "None"}
+      </div>
+      {error && <div style={errStyle}>{error}</div>}
+    </div>
+  );
+}
+
+function CustomDayPicker({
+  selected, onChange, error, theme, buttonBorder, labelStyle, errStyle, accent,
+}: {
+  selected: number[]; onChange: (d: number[]) => void; error?: string;
+  theme: ThemeT; buttonBorder: string;
+  labelStyle: CSSProperties; errStyle: CSSProperties; accent: string;
+}) {
+  const days = [
+    { idx: 1, label: "Mon" }, { idx: 2, label: "Tue" }, { idx: 3, label: "Wed" },
+    { idx: 4, label: "Thu" }, { idx: 5, label: "Fri" }, { idx: 6, label: "Sat" }, { idx: 0, label: "Sun" },
+  ];
+  const toggle = (idx: number) => {
+    const set = new Set(selected);
+    if (set.has(idx)) set.delete(idx); else set.add(idx);
+    onChange(Array.from(set));
+  };
+  return (
+    <div>
+      <div style={labelStyle}>Select days of the week</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        {days.map((d) => {
+          const active = selected.includes(d.idx);
+          return (
+            <label key={d.idx} style={{
+              display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer",
+              fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text,
+            }}>
+              <span
+                onClick={() => toggle(d.idx)}
+                style={{
+                  width: 16, height: 16, borderRadius: 3,
+                  border: active ? `1px solid ${accent}` : buttonBorder,
+                  background: active ? accent : theme.card,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  color: "#fff", fontSize: 12, lineHeight: 1, fontWeight: 700,
+                }}
+              >{active ? "✓" : ""}</span>
+              <span onClick={() => toggle(d.idx)}>{d.label}</span>
+            </label>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 13, color: theme.muted, marginTop: 8 }}>
+        Selected: {selected.length
+          ? selected.slice().sort((a, b) => a - b).map((i) => WEEKDAY_SHORT[i]).join(", ")
+          : "None"}
+      </div>
+      {error && <div style={errStyle}>{error}</div>}
+    </div>
+  );
+}
+
