@@ -62,7 +62,7 @@ function appliesOn(r: Reminder, d: Date) {
 }
 
 function CarerPortal() {
-  const { theme, cardBorder, buttonBorder, inputBorder } = useSettings();
+  const { theme, cardBorder, buttonBorder, inputBorder, appearance } = useSettings();
   const { elder, reminders, addReminder, updateReminder, deleteReminder } = useCarer();
 
   const [view, setView] = useState<ViewMode>("day");
@@ -75,15 +75,19 @@ function CarerPortal() {
   }, []);
 
   const [pickCategoryOpen, setPickCategoryOpen] = useState(false);
-  const [editing, setEditing] = useState<Reminder | null>(null); // form modal
-  const [viewing, setViewing] = useState<Reminder | null>(null); // view modal
+  const [editing, setEditing] = useState<Reminder | null>(null);
+  const [viewing, setViewing] = useState<Reminder | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
 
   const today = new Date();
   const isToday = ymd(cursor) === ymd(today);
 
+  // Grey "panel" backgrounds for header + schedule controls
+  const panelBg = appearance === "dark" ? "#2A2A3E" : "#F5F0E8";
+  const gridLine = appearance === "dark" ? "#555555" : "#CCCCCC";
+
   const headerStyle: CSSProperties = {
-    background: theme.card,
+    background: panelBg,
     padding: 16,
     display: "grid",
     gridTemplateColumns: "1fr auto 1fr",
@@ -102,21 +106,19 @@ function CarerPortal() {
     padding: "10px 18px", borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
     fontWeight: 700, fontSize: 16, cursor: "pointer",
   };
-  const btnDanger: CSSProperties = {
-    background: "transparent", color: RED, border: `2px solid ${RED}`,
-    padding: "10px 18px", borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
-    fontWeight: 700, fontSize: 16, cursor: "pointer",
-  };
 
-  const cardStyle: CSSProperties = {
+  const whiteCard: CSSProperties = {
     background: theme.card, border: cardBorder, borderRadius: 8,
     padding: 16, margin: 16,
+  };
+  const greyPanel: CSSProperties = {
+    background: panelBg, borderRadius: 8, padding: 16, margin: 16,
   };
 
   return (
     <main style={{ minHeight: "100vh", background: theme.bg, color: theme.text,
       fontFamily: "Verdana, sans-serif", lineHeight: 1.5 }}>
-      {/* HEADER */}
+      {/* BOX 1: HEADER */}
       <header style={headerStyle}>
         <div style={{ justifySelf: "start" }}>
           <Link to="/" style={{ ...btnSecondary, display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
@@ -139,8 +141,8 @@ function CarerPortal() {
         </div>
       </header>
 
-      {/* PROFILE CARD */}
-      <section style={cardStyle}>
+      {/* BOX 2: ELDER PROFILE CARD (white) */}
+      <section style={whiteCard}>
         <button
           type="button"
           onClick={() => setProfileOpen((v) => !v)}
@@ -188,12 +190,12 @@ function CarerPortal() {
         )}
       </section>
 
-      {/* SCHEDULE HEADER */}
-      <section style={{ ...cardStyle, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+      {/* BOX 3: SCHEDULE CONTROLS (grey panel) */}
+      <section style={{ ...greyPanel, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
         <div style={{ display: "flex", gap: 4 }}>
           {(["day", "week", "month", "list"] as ViewMode[]).map((m) => (
             <button key={m} onClick={() => setView(m)} style={{
-              background: view === m ? theme.text : "transparent",
+              background: view === m ? theme.text : theme.card,
               color: view === m ? theme.card : theme.text,
               border: buttonBorder, padding: "8px 14px", borderRadius: 8, cursor: "pointer",
               fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
@@ -208,7 +210,11 @@ function CarerPortal() {
           </span>
           <button onClick={() => shiftCursor(view, cursor, setCursor, 1)} style={iconBtn(theme, buttonBorder)}><ChevronRight size={18} /></button>
           {!isToday && (
-            <button onClick={() => setCursor(new Date())} style={{ ...btnSecondary, padding: "6px 12px", fontSize: 14 }}>Today</button>
+            <button onClick={() => setCursor(new Date())} style={{
+              background: "transparent", color: "#2563EB", border: "none", padding: "6px 8px",
+              fontSize: 14, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
+              textDecoration: "underline",
+            }}>Today</button>
           )}
         </div>
         <button onClick={() => setPickCategoryOpen(true)} style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -216,13 +222,14 @@ function CarerPortal() {
         </button>
       </section>
 
-      {/* CALENDAR VIEW */}
-      <section style={cardStyle}>
-        {view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} border={buttonBorder} />}
-        {view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} border={buttonBorder} />}
-        {view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => { setCursor(d); setView("day"); }} theme={theme} border={buttonBorder} />}
-        {view === "list" && <ListView reminders={reminders} onOpen={setViewing} theme={theme} border={buttonBorder} />}
+      {/* BOX 4: CALENDAR (white card) */}
+      <section style={whiteCard}>
+        {view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={() => setPickCategoryOpen(true)} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => { setCursor(d); setView("day"); }} theme={theme} gridLine={gridLine} />}
+        {view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
       </section>
+
 
       {/* MODALS */}
       {pickCategoryOpen && (
