@@ -68,7 +68,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         style={{
           position: "relative",
           background: theme.card,
-          border: `1.5px solid ${theme.border}`,
+          border: cardBorder,
           borderRadius: 12,
           padding: 30,
           width: "90%",
