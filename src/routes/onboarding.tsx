@@ -5,8 +5,10 @@ import {
   Home as HomeIcon, Glasses, Brain, EyeOff as Blind, Sparkles, Ear, Palette, VolumeX,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
-import { useCarer, type Reminder, type ReminderType, type Contact } from "@/lib/carer-store";
+import { useCarer, type Reminder, type ReminderType, type Contact, type Device } from "@/lib/carer-store";
 import { CategoryPicker, ReminderForm, uid } from "@/components/reminder-form";
+import { DeviceListEditor } from "@/components/instruction-context-form";
+
 
 export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
@@ -23,12 +25,8 @@ type Condition =
 
 type OnbReminder = Reminder;
 
-type OnbDevice = {
-  id: string;
-  label: string;
-  photo?: string;
-  questions: string[];
-};
+type OnbDevice = Device;
+
 
 type OnbContact = { id: string; name: string; phone: string; visible: boolean };
 
@@ -203,7 +201,8 @@ function Onboarding() {
         ...(data.emergencyVisible.poison ? [{ id: "poison", name: "Poison Control", phone: "1-800-222-1222" }] : []),
       ],
       notes: data.elderNotes,
-      context: data.devices.map((d) => `${d.label}: ${d.questions.join(", ")}`).join("\n"),
+      context: "",
+      devices: data.devices,
     };
     setElder(newElder);
 
@@ -213,6 +212,7 @@ function Onboarding() {
 
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
   };
+
 
   // Cleared resume
   const startOver = () => {
@@ -472,8 +472,9 @@ function Onboarding() {
               />
               <SummarySection
                 title="Instruction Context" count={data.devices.length} card={card} theme={theme}
-                lines={data.devices.map((d) => d.label)}
+                lines={data.devices.map((d) => d.name)}
               />
+
               <ContactsSummaryCard
                 data={data} card={card} theme={theme} cardBorder={cardBorder} appearance={appearance}
               />
@@ -674,54 +675,8 @@ function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSe
 }
 
 
-// ---------- Devices Page ----------
-function DevicesPage({ data, update, theme, card, btnPrimary, btnSecondary, inputStyle, h1, muted, cardBorder, buttonBorder, onNext, elderName }: any) {
-  const [photo, setPhoto] = useState<string | undefined>(undefined);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [label, setLabel] = useState("");
-  const [questions, setQuestions] = useState<string[]>([]);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const QUESTION_HINTS: Record<string, string[]> = {
-    remote: ["How do I change the channel?", "How do I turn up the volume?", "How do I switch to Netflix?"],
-    phone: ["How do I make a call?", "How do I answer a call?", "How do I save a contact?"],
-    microwave: ["How do I heat up food?", "How do I set the timer?", "How do I stop it?"],
-    default: ["How do I turn it on?", "How do I use it?", "How do I get help?"],
-  };
-
-  const guessLabel = (): { label: string; key: string } => {
-    // Simple client-side "AI" guess pool
-    const options = [
-      { label: "TV Remote", key: "remote" },
-      { label: "Cordless Phone", key: "phone" },
-      { label: "Microwave", key: "microwave" },
-    ];
-    return options[Math.floor(Math.random() * options.length)];
-  };
-
-  const onFile = (f: File) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPhoto(String(reader.result));
-      setAnalyzing(true);
-      setTimeout(() => {
-        const g = guessLabel();
-        setLabel(g.label);
-        setQuestions(QUESTION_HINTS[g.key]);
-        setAnalyzing(false);
-      }, 900);
-    };
-    reader.readAsDataURL(f);
-  };
-
-  const reset = () => { setPhoto(undefined); setLabel(""); setQuestions([]); };
-
-  const saveDevice = () => {
-    if (!label.trim()) return;
-    update({ devices: [...(data.devices as OnbDevice[]), { id: uid(), label: label.trim(), photo, questions: questions.filter((q) => q.trim()) }] });
-    reset();
-  };
-
+// ---------- Devices Page (uses shared DeviceListEditor) ----------
+function DevicesPage({ data, update, theme, btnPrimary, h1, muted, onNext, elderName }: any) {
   return (
     <div>
       <h1 style={h1}>Instruction Context</h1>
@@ -730,69 +685,13 @@ function DevicesPage({ data, update, theme, card, btnPrimary, btnSecondary, inpu
         When {elderName} asks a question via voice or text, HomeBuddy will use these devices to provide specific, helpful instructions. For example, if they ask "How do I change the channel?", HomeBuddy knows they have a TV remote and can guide them step-by-step.
       </p>
 
-      <div style={{ ...card, marginTop: 16 }}>
-        {!photo ? (
-          <button type="button" onClick={() => fileRef.current?.click()} style={{ ...btnSecondary, display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <Camera size={16} /> Take photo / Upload photo
-          </button>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <img src={photo} alt="" style={{ width: 80, height: 80, borderRadius: 6, objectFit: "cover", border: cardBorder }} />
-              {analyzing ? (
-                <div style={muted}>Analyzing device…</div>
-              ) : (
-                <div style={{ flex: 1 }}>
-                  <div style={{ ...muted, marginBottom: 4 }}>Looks like a <strong>{label}</strong></div>
-                  <input style={inputStyle} value={label} onChange={(e) => setLabel(e.target.value)} />
-                </div>
-              )}
-            </div>
-            {!analyzing && (
-              <>
-                <div style={{ fontWeight: 700, fontSize: 14, marginTop: 8 }}>What might they ask about it?</div>
-                {questions.map((q, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8 }}>
-                    <input style={inputStyle} value={q}
-                      onChange={(e) => setQuestions(questions.map((x, j) => j === i ? e.target.value : x))} />
-                    <button type="button" onClick={() => setQuestions(questions.filter((_, j) => j !== i))}
-                      style={iconBtn(theme)} aria-label="Remove"><X size={16} /></button>
-                  </div>
-                ))}
-                <button type="button" onClick={() => setQuestions([...questions, ""])} style={{ ...btnSecondary, alignSelf: "flex-start" }}>
-                  + Add question
-                </button>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button type="button" onClick={saveDevice} disabled={!label.trim()} style={btnPrimary(!label.trim())}>Save device</button>
-                  <button type="button" onClick={reset} style={btnSecondary}>Cancel</button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-        <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
+      <div style={{ marginTop: 16 }}>
+        <DeviceListEditor
+          devices={data.devices as Device[]}
+          onChange={(devices) => update({ devices })}
+          elderName={elderName}
+        />
       </div>
-
-      {data.devices.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, margin: "0 0 8px" }}>
-            Devices you've added
-          </h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {(data.devices as OnbDevice[]).map((d) => (
-              <div key={d.id} style={{ ...card, display: "flex", alignItems: "center", gap: 12 }}>
-                {d.photo
-                  ? <img src={d.photo} alt="" style={{ width: 30, height: 30, borderRadius: 4, objectFit: "cover" }} />
-                  : <div style={{ width: 30, height: 30, borderRadius: 4, background: theme.bg, border: buttonBorder }} />}
-                <div style={{ flex: 1, fontSize: 14 }}>{d.label}</div>
-                <button type="button" onClick={() => update({ devices: (data.devices as OnbDevice[]).filter((x) => x.id !== d.id) })}
-                  style={iconBtn(theme)} aria-label="Delete"><Trash2 size={16} /></button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <div style={{ marginTop: 32 }}>
         <button type="button" onClick={onNext} style={btnPrimary()}>Next</button>
@@ -800,6 +699,7 @@ function DevicesPage({ data, update, theme, card, btnPrimary, btnSecondary, inpu
     </div>
   );
 }
+
 
 // ---------- Phone Numbers Page ----------
 function PhoneNumbersPage({ data, update, elderName, theme, card, btnPrimary, btnSecondary, inputStyle, h1, muted, onNext }: any) {

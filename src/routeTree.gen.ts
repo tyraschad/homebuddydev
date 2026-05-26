@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as CarerRouteImport } from './routes/carer'
@@ -17,7 +18,13 @@ import { Route as SettingsIndexRouteImport } from './routes/settings.index'
 import { Route as CarerIndexRouteImport } from './routes/carer.index'
 import { Route as SettingsTextSizeRouteImport } from './routes/settings.text-size'
 import { Route as SettingsAppearanceRouteImport } from './routes/settings.appearance'
+import { Route as CarerSettingsRouteImport } from './routes/carer.settings'
 
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -58,12 +65,19 @@ const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
   path: '/appearance',
   getParentRoute: () => SettingsRoute,
 } as any)
+const CarerSettingsRoute = CarerSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => CarerRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/carer': typeof CarerRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRouteWithChildren
+  '/setup': typeof SetupRoute
+  '/carer/settings': typeof CarerSettingsRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/text-size': typeof SettingsTextSizeRoute
   '/carer/': typeof CarerIndexRoute
@@ -72,6 +86,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
+  '/setup': typeof SetupRoute
+  '/carer/settings': typeof CarerSettingsRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/text-size': typeof SettingsTextSizeRoute
   '/carer': typeof CarerIndexRoute
@@ -83,6 +99,8 @@ export interface FileRoutesById {
   '/carer': typeof CarerRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRouteWithChildren
+  '/setup': typeof SetupRoute
+  '/carer/settings': typeof CarerSettingsRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/text-size': typeof SettingsTextSizeRoute
   '/carer/': typeof CarerIndexRoute
@@ -95,6 +113,8 @@ export interface FileRouteTypes {
     | '/carer'
     | '/onboarding'
     | '/settings'
+    | '/setup'
+    | '/carer/settings'
     | '/settings/appearance'
     | '/settings/text-size'
     | '/carer/'
@@ -103,6 +123,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/onboarding'
+    | '/setup'
+    | '/carer/settings'
     | '/settings/appearance'
     | '/settings/text-size'
     | '/carer'
@@ -113,6 +135,8 @@ export interface FileRouteTypes {
     | '/carer'
     | '/onboarding'
     | '/settings'
+    | '/setup'
+    | '/carer/settings'
     | '/settings/appearance'
     | '/settings/text-size'
     | '/carer/'
@@ -124,10 +148,18 @@ export interface RootRouteChildren {
   CarerRoute: typeof CarerRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRouteWithChildren
+  SetupRoute: typeof SetupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -184,14 +216,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsAppearanceRouteImport
       parentRoute: typeof SettingsRoute
     }
+    '/carer/settings': {
+      id: '/carer/settings'
+      path: '/settings'
+      fullPath: '/carer/settings'
+      preLoaderRoute: typeof CarerSettingsRouteImport
+      parentRoute: typeof CarerRoute
+    }
   }
 }
 
 interface CarerRouteChildren {
+  CarerSettingsRoute: typeof CarerSettingsRoute
   CarerIndexRoute: typeof CarerIndexRoute
 }
 
 const CarerRouteChildren: CarerRouteChildren = {
+  CarerSettingsRoute: CarerSettingsRoute,
   CarerIndexRoute: CarerIndexRoute,
 }
 
@@ -218,6 +259,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarerRoute: CarerRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRouteWithChildren,
+  SetupRoute: SetupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
