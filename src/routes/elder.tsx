@@ -6,7 +6,7 @@ import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 
 
 export const Route = createFileRoute("/elder")({
-  component: Index,
+  component: ElderHome,
   head: () => ({
     meta: [
       { title: "Albert's Home" },
