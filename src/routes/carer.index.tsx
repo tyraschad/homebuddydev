@@ -437,21 +437,33 @@ function WeekView({ date, reminders, onOpen, theme, appearance, gridLine }: {
 }) {
   const start = new Date(date); start.setDate(date.getDate() - ((date.getDay() + 6) % 7));
   const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(start); d.setDate(start.getDate() + i); return d; });
+  const todayStr = ymd(new Date());
+  const todayBg = appearance === "dark" ? "#2A3A4A" : "#F0F4FF";
   return (
     <div style={{ overflowX: "auto" }}>
       <div style={{ display: "grid", gridTemplateColumns: `60px repeat(7, minmax(90px, 1fr))`, minWidth: 760 }}>
         <div style={{ borderBottom: `1px solid ${gridLine}` }} />
-        {days.map((d, i) => (
-          <div key={d.toISOString()} style={{
-            textAlign: "center", padding: "8px 4px",
-            borderLeft: i === 0 ? "none" : `1px solid ${gridLine}`,
-            borderBottom: `1px solid ${gridLine}`,
-            fontFamily: "Georgia, serif", fontWeight: 700,
-          }}>
-            <div style={{ fontSize: 14 }}>{d.toLocaleDateString("en-US", { weekday: "short" })}</div>
-            <div style={{ color: theme.muted, fontSize: 13, fontFamily: "Verdana, sans-serif", fontWeight: 400 }}>{d.getDate()}</div>
-          </div>
-        ))}
+        {days.map((d, i) => {
+          const isTodayCol = ymd(d) === todayStr;
+          return (
+            <div key={d.toISOString()} style={{
+              textAlign: "center", padding: "8px 4px",
+              borderLeft: i === 0 ? "none" : `1px solid ${gridLine}`,
+              borderBottom: `1px solid ${gridLine}`,
+              fontFamily: "Georgia, serif", fontWeight: 700,
+              background: isTodayCol ? todayBg : "transparent",
+            }}>
+              {isTodayCol && (
+                <div style={{ fontSize: 10, fontWeight: 700, color: GREEN, textTransform: "uppercase",
+                  letterSpacing: 0.5, fontFamily: "'Trebuchet MS', sans-serif", marginBottom: 2 }}>
+                  Today
+                </div>
+              )}
+              <div style={{ fontSize: 14 }}>{d.toLocaleDateString("en-US", { weekday: "short" })}</div>
+              <div style={{ color: theme.muted, fontSize: 13, fontFamily: "Verdana, sans-serif", fontWeight: 400 }}>{d.getDate()}</div>
+            </div>
+          );
+        })}
         {hours().map((h) => {
           const hh = String(h).padStart(2, "0");
           return (
@@ -461,11 +473,12 @@ function WeekView({ date, reminders, onOpen, theme, appearance, gridLine }: {
                 {formatHour(h)}
               </div>
               {days.map((d, di) => {
+                const isTodayCol = ymd(d) === todayStr;
                 const items = reminders.filter((r) => appliesOn(r, d))
                   .flatMap((r) => r.times.filter((t) => t.startsWith(hh)).map((t) => ({ r, t })));
                 return (
                   <div key={`c-${h}-${d.toISOString()}`} style={{
-                    background: theme.card,
+                    background: isTodayCol ? todayBg : theme.card,
                     borderLeft: di === 0 ? "none" : `1px solid ${gridLine}`,
                     borderBottom: `1px solid ${gridLine}`,
                     minHeight: 60, display: "flex", alignItems: "center", justifyContent: "center",
@@ -496,6 +509,7 @@ function WeekView({ date, reminders, onOpen, theme, appearance, gridLine }: {
     </div>
   );
 }
+
 
 function MonthView({ date, reminders, onPickDay, theme, gridLine }: {
   date: Date; reminders: Reminder[]; onPickDay: (d: Date) => void;
