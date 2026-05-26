@@ -4,7 +4,7 @@ import {
   AlertTriangle, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { useSettings, type Theme } from "@/lib/settings-store";
-import { TYPE_COLOR, TYPE_LABEL, type Reminder, type ReminderType } from "@/lib/carer-store";
+import { TYPE_COLOR, TYPE_LABEL, DEFAULT_ANNOUNCEMENT_OFFSETS, type Reminder, type ReminderType } from "@/lib/carer-store";
 
 export const GREEN = "#2F8F4E";
 export const RED = "#C0392B";
