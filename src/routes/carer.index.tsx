@@ -690,10 +690,19 @@ function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
     if (!r.name.trim()) e.name = "This field is required";
     if (!r.timesPerDay || r.timesPerDay < 1) e.timesPerDay = "This field is required";
     if (!r.times.length || r.times.some((t) => !t)) e.times = "This field is required";
-    if (!r.repeatSchedule) e.repeatSchedule = "This field is required";
+    if (r.repeats !== false) {
+      if (!r.repeatSchedule) e.repeatSchedule = "This field is required";
+      if (r.repeatSchedule === "Monthly" && !(r.monthlyDates ?? []).length) {
+        e.monthlyDates = "Please select at least one date";
+      }
+      if (r.repeatSchedule === "Custom" && !(r.customDays ?? []).length) {
+        e.customDays = "Please select at least one day of the week";
+      }
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
+
 
   const trySave = () => {
     if (!validate()) return;
