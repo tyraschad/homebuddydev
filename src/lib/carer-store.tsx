@@ -143,6 +143,24 @@ export const TYPE_COLOR: Record<ReminderType, string> = {
   other: "#6B7280",
 };
 
+export const TYPE_BG_LIGHT: Record<ReminderType, string> = {
+  medication: "#E3F2FD",
+  appointment: "#FFF3E0",
+  activity: "#E8F5E9",
+  other: "#F5F5F5",
+};
+
+export const TYPE_BG_DARK: Record<ReminderType, string> = {
+  medication: "#1E3A8A",
+  appointment: "#7C2D12",
+  activity: "#166534",
+  other: "#374151",
+};
+
+export function reminderBg(type: ReminderType, mode: "light" | "dark") {
+  return (mode === "dark" ? TYPE_BG_DARK : TYPE_BG_LIGHT)[type];
+}
+
 export const TYPE_LABEL: Record<ReminderType, string> = {
   medication: "Medication",
   appointment: "Appointment",

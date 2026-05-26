@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import {
-  useCarer, type Reminder, type ReminderType, TYPE_COLOR, TYPE_LABEL,
+  useCarer, type Reminder, type ReminderType, TYPE_COLOR, TYPE_LABEL, reminderBg,
 } from "@/lib/carer-store";
 
 export const Route = createFileRoute("/carer/")({
@@ -62,7 +62,7 @@ function appliesOn(r: Reminder, d: Date) {
 }
 
 function CarerPortal() {
-  const { theme, cardBorder, buttonBorder, inputBorder } = useSettings();
+  const { theme, cardBorder, buttonBorder, inputBorder, appearance } = useSettings();
   const { elder, reminders, addReminder, updateReminder, deleteReminder } = useCarer();
 
   const [view, setView] = useState<ViewMode>("day");
@@ -75,15 +75,19 @@ function CarerPortal() {
   }, []);
 
   const [pickCategoryOpen, setPickCategoryOpen] = useState(false);
-  const [editing, setEditing] = useState<Reminder | null>(null); // form modal
-  const [viewing, setViewing] = useState<Reminder | null>(null); // view modal
+  const [editing, setEditing] = useState<Reminder | null>(null);
+  const [viewing, setViewing] = useState<Reminder | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
 
   const today = new Date();
   const isToday = ymd(cursor) === ymd(today);
 
+  // Grey "panel" backgrounds for header + schedule controls
+  const panelBg = appearance === "dark" ? "#2A2A3E" : "#F5F0E8";
+  const gridLine = appearance === "dark" ? "#555555" : "#CCCCCC";
+
   const headerStyle: CSSProperties = {
-    background: theme.card,
+    background: panelBg,
     padding: 16,
     display: "grid",
     gridTemplateColumns: "1fr auto 1fr",
@@ -102,21 +106,19 @@ function CarerPortal() {
     padding: "10px 18px", borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
     fontWeight: 700, fontSize: 16, cursor: "pointer",
   };
-  const btnDanger: CSSProperties = {
-    background: "transparent", color: RED, border: `2px solid ${RED}`,
-    padding: "10px 18px", borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
-    fontWeight: 700, fontSize: 16, cursor: "pointer",
-  };
 
-  const cardStyle: CSSProperties = {
+  const whiteCard: CSSProperties = {
     background: theme.card, border: cardBorder, borderRadius: 8,
     padding: 16, margin: 16,
+  };
+  const greyPanel: CSSProperties = {
+    background: panelBg, borderRadius: 8, padding: 16, margin: 16,
   };
 
   return (
     <main style={{ minHeight: "100vh", background: theme.bg, color: theme.text,
       fontFamily: "Verdana, sans-serif", lineHeight: 1.5 }}>
-      {/* HEADER */}
+      {/* BOX 1: HEADER */}
       <header style={headerStyle}>
         <div style={{ justifySelf: "start" }}>
           <Link to="/" style={{ ...btnSecondary, display: "inline-flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
@@ -139,8 +141,8 @@ function CarerPortal() {
         </div>
       </header>
 
-      {/* PROFILE CARD */}
-      <section style={cardStyle}>
+      {/* BOX 2: ELDER PROFILE CARD (white) */}
+      <section style={whiteCard}>
         <button
           type="button"
           onClick={() => setProfileOpen((v) => !v)}
@@ -188,12 +190,12 @@ function CarerPortal() {
         )}
       </section>
 
-      {/* SCHEDULE HEADER */}
-      <section style={{ ...cardStyle, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+      {/* BOX 3: SCHEDULE CONTROLS (grey panel) */}
+      <section style={{ ...greyPanel, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
         <div style={{ display: "flex", gap: 4 }}>
           {(["day", "week", "month", "list"] as ViewMode[]).map((m) => (
             <button key={m} onClick={() => setView(m)} style={{
-              background: view === m ? theme.text : "transparent",
+              background: view === m ? theme.text : theme.card,
               color: view === m ? theme.card : theme.text,
               border: buttonBorder, padding: "8px 14px", borderRadius: 8, cursor: "pointer",
               fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
@@ -208,7 +210,11 @@ function CarerPortal() {
           </span>
           <button onClick={() => shiftCursor(view, cursor, setCursor, 1)} style={iconBtn(theme, buttonBorder)}><ChevronRight size={18} /></button>
           {!isToday && (
-            <button onClick={() => setCursor(new Date())} style={{ ...btnSecondary, padding: "6px 12px", fontSize: 14 }}>Today</button>
+            <button onClick={() => setCursor(new Date())} style={{
+              background: "transparent", color: "#2563EB", border: "none", padding: "6px 8px",
+              fontSize: 14, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
+              textDecoration: "underline",
+            }}>Today</button>
           )}
         </div>
         <button onClick={() => setPickCategoryOpen(true)} style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -216,13 +222,14 @@ function CarerPortal() {
         </button>
       </section>
 
-      {/* CALENDAR VIEW */}
-      <section style={cardStyle}>
-        {view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} border={buttonBorder} />}
-        {view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} border={buttonBorder} />}
-        {view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => { setCursor(d); setView("day"); }} theme={theme} border={buttonBorder} />}
-        {view === "list" && <ListView reminders={reminders} onOpen={setViewing} theme={theme} border={buttonBorder} />}
+      {/* BOX 4: CALENDAR (white card) */}
+      <section style={whiteCard}>
+        {view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={() => setPickCategoryOpen(true)} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => { setCursor(d); setView("day"); }} theme={theme} gridLine={gridLine} />}
+        {view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
       </section>
+
 
       {/* MODALS */}
       {pickCategoryOpen && (
@@ -320,39 +327,60 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 /* ---------------- VIEWS ---------------- */
 
-function ReminderBlock({ r, time, onClick, border }: { r: Reminder; time: string; onClick: () => void; border: string }) {
+type ThemeT = { text: string; bg: string; card: string; muted: string };
+
+function ReminderBlock({ r, time, onClick, appearance }: {
+  r: Reminder; time: string; onClick: () => void; appearance: "light" | "dark";
+}) {
   const color = TYPE_COLOR[r.type];
+  const bg = reminderBg(r.type, appearance);
+  const fg = appearance === "dark" ? "#FFFFFF" : "#1A1A2E";
   return (
-    <button onClick={onClick} style={{
+    <button onClick={(e) => { e.stopPropagation(); onClick(); }} style={{
       display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left",
-      background: color + "22", color: "inherit", border: `1.5px solid ${color}`, borderRadius: 6,
+      background: bg, color: fg, border: `1px solid ${color}`, borderRadius: 4,
       padding: "6px 8px", cursor: "pointer", fontFamily: "Verdana, sans-serif", fontSize: 13,
     }}>
-      <span style={{ fontWeight: 700 }}>{time}</span>
+      <span style={{ fontWeight: 700, minWidth: 44 }}>{time}</span>
       {iconForType(r.type, 14, color)}
-      <span style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
-      {r.type === "medication" && r.dose != null && <span style={{ opacity: 0.8 }}>- {r.dose} pill{r.dose > 1 ? "s" : ""}</span>}
+      <span style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{r.name}</span>
+      {r.type === "medication" && r.dose != null && <span style={{ opacity: 0.85, fontSize: 12 }}>- {r.dose} pill{r.dose > 1 ? "s" : ""}</span>}
     </button>
   );
 }
 
 function hours() { return Array.from({ length: 17 }, (_, i) => 6 + i); } // 6..22
 
-function DayView({ date, reminders, onOpen, theme, border }: {
-  date: Date; reminders: Reminder[]; onOpen: (r: Reminder) => void;
-  theme: { text: string; bg: string; card: string; muted: string }; border: string;
+function formatHour(h: number) {
+  const period = h >= 12 ? "PM" : "AM";
+  const hr = ((h + 11) % 12) + 1;
+  return `${hr} ${period}`;
+}
+
+function DayView({ date, reminders, onOpen, onAdd, theme, appearance, gridLine }: {
+  date: Date; reminders: Reminder[]; onOpen: (r: Reminder) => void; onAdd: () => void;
+  theme: ThemeT; appearance: "light" | "dark"; gridLine: string;
 }) {
   const items = reminders.filter((r) => appliesOn(r, date));
   return (
-    <div style={{ display: "grid", gap: 4 }}>
+    <div style={{ display: "grid" }}>
       {hours().map((h) => {
         const hh = String(h).padStart(2, "0");
         const slot = items.flatMap((r) => r.times.filter((t) => t.startsWith(hh)).map((t) => ({ r, t })));
         return (
-          <div key={h} style={{ display: "grid", gridTemplateColumns: "70px 1fr", gap: 8, alignItems: "stretch" }}>
-            <div style={{ color: theme.muted, fontSize: 13, paddingTop: 6 }}>{hh}:00</div>
-            <div style={{ background: theme.bg, border, borderRadius: 6, padding: 6, minHeight: 40, display: "grid", gap: 4 }}>
-              {slot.map(({ r, t }, i) => <ReminderBlock key={r.id + t + i} r={r} time={t} onClick={() => onOpen(r)} border={border} />)}
+          <div key={h}
+            onClick={() => slot.length === 0 && onAdd()}
+            style={{
+              display: "grid", gridTemplateColumns: "70px 1fr",
+              minHeight: 60, borderBottom: `1px solid ${gridLine}`,
+              background: theme.card, cursor: slot.length === 0 ? "pointer" : "default",
+            }}>
+            <div style={{ color: theme.muted, fontSize: 13, padding: "8px 8px 0 0", textAlign: "right",
+              fontFamily: "'Trebuchet MS', sans-serif" }}>{formatHour(h)}</div>
+            <div style={{ padding: 6, display: "grid", gap: 4, alignContent: "center" }}>
+              {slot.map(({ r, t }, i) => (
+                <ReminderBlock key={r.id + t + i} r={r} time={t} onClick={() => onOpen(r)} appearance={appearance} />
+              ))}
             </div>
           </div>
         );
@@ -361,33 +389,61 @@ function DayView({ date, reminders, onOpen, theme, border }: {
   );
 }
 
-function WeekView({ date, reminders, onOpen, theme, border }: {
+function WeekView({ date, reminders, onOpen, theme, appearance, gridLine }: {
   date: Date; reminders: Reminder[]; onOpen: (r: Reminder) => void;
-  theme: { text: string; bg: string; card: string; muted: string }; border: string;
+  theme: ThemeT; appearance: "light" | "dark"; gridLine: string;
 }) {
   const start = new Date(date); start.setDate(date.getDate() - ((date.getDay() + 6) % 7));
   const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(start); d.setDate(start.getDate() + i); return d; });
   return (
     <div style={{ overflowX: "auto" }}>
-      <div style={{ display: "grid", gridTemplateColumns: `60px repeat(7, minmax(120px, 1fr))`, gap: 4, minWidth: 800 }}>
-        <div />
-        {days.map((d) => (
-          <div key={d.toISOString()} style={{ textAlign: "center", fontFamily: "Georgia, serif", fontWeight: 700 }}>
-            <div>{d.toLocaleDateString("en-US", { weekday: "short" })}</div>
-            <div style={{ color: theme.muted, fontSize: 13 }}>{d.getDate()}</div>
+      <div style={{ display: "grid", gridTemplateColumns: `60px repeat(7, minmax(90px, 1fr))`, minWidth: 760 }}>
+        <div style={{ borderBottom: `1px solid ${gridLine}` }} />
+        {days.map((d, i) => (
+          <div key={d.toISOString()} style={{
+            textAlign: "center", padding: "8px 4px",
+            borderLeft: i === 0 ? "none" : `1px solid ${gridLine}`,
+            borderBottom: `1px solid ${gridLine}`,
+            fontFamily: "Georgia, serif", fontWeight: 700,
+          }}>
+            <div style={{ fontSize: 14 }}>{d.toLocaleDateString("en-US", { weekday: "short" })}</div>
+            <div style={{ color: theme.muted, fontSize: 13, fontFamily: "Verdana, sans-serif", fontWeight: 400 }}>{d.getDate()}</div>
           </div>
         ))}
         {hours().map((h) => {
           const hh = String(h).padStart(2, "0");
           return (
             <Fragment key={`row-${h}`}>
-              <div style={{ color: theme.muted, fontSize: 12, paddingTop: 6 }}>{hh}:00</div>
-              {days.map((d) => {
+              <div style={{ color: theme.muted, fontSize: 12, padding: "8px 8px 0 0", textAlign: "right",
+                borderBottom: `1px solid ${gridLine}`, fontFamily: "'Trebuchet MS', sans-serif", minHeight: 60 }}>
+                {formatHour(h)}
+              </div>
+              {days.map((d, di) => {
                 const items = reminders.filter((r) => appliesOn(r, d))
                   .flatMap((r) => r.times.filter((t) => t.startsWith(hh)).map((t) => ({ r, t })));
                 return (
-                  <div key={`c-${h}-${d.toISOString()}`} style={{ background: theme.bg, border, borderRadius: 6, padding: 4, minHeight: 38, display: "grid", gap: 3 }}>
-                    {items.map(({ r, t }, i) => <ReminderBlock key={r.id + t + i} r={r} time={t} onClick={() => onOpen(r)} border={border} />)}
+                  <div key={`c-${h}-${d.toISOString()}`} style={{
+                    background: theme.card,
+                    borderLeft: di === 0 ? "none" : `1px solid ${gridLine}`,
+                    borderBottom: `1px solid ${gridLine}`,
+                    minHeight: 60, display: "flex", alignItems: "center", justifyContent: "center",
+                    flexWrap: "wrap", gap: 4, padding: 4,
+                  }}>
+                    {items.map(({ r }, i) => {
+                      const color = TYPE_COLOR[r.type];
+                      const bg = reminderBg(r.type, appearance);
+                      return (
+                        <button key={r.id + i} onClick={() => onOpen(r)} title={`${r.name} - ${r.times.join(", ")}`}
+                          aria-label={r.name}
+                          style={{
+                            width: 26, height: 26, borderRadius: 4, background: bg,
+                            border: `1px solid ${color}`, cursor: "pointer",
+                            display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 0,
+                          }}>
+                          {iconForType(r.type, 14, color)}
+                        </button>
+                      );
+                    })}
                   </div>
                 );
               })}
@@ -399,9 +455,9 @@ function WeekView({ date, reminders, onOpen, theme, border }: {
   );
 }
 
-function MonthView({ date, reminders, onPickDay, theme, border }: {
+function MonthView({ date, reminders, onPickDay, theme, gridLine }: {
   date: Date; reminders: Reminder[]; onPickDay: (d: Date) => void;
-  theme: { text: string; bg: string; card: string; muted: string }; border: string;
+  theme: ThemeT; gridLine: string;
 }) {
   const first = new Date(date.getFullYear(), date.getMonth(), 1);
   const startOffset = (first.getDay() + 6) % 7;
@@ -413,25 +469,32 @@ function MonthView({ date, reminders, onPickDay, theme, border }: {
   const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, fontWeight: 700,
-        fontFamily: "Georgia, serif", textAlign: "center", marginBottom: 4 }}>
-        {weekdays.map((w) => <div key={w} style={{ color: theme.muted, fontSize: 13 }}>{w}</div>)}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", fontWeight: 700,
+        fontFamily: "Georgia, serif", textAlign: "center", marginBottom: 1 }}>
+        {weekdays.map((w) => (
+          <div key={w} style={{ color: theme.muted, fontSize: 13, padding: "6px 0",
+            borderBottom: `1px solid ${gridLine}` }}>{w}</div>
+        ))}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
         {cells.map((c, i) => {
-          if (!c) return <div key={i} />;
+          if (!c) return <div key={i} style={{ background: theme.bg, minHeight: 80,
+            border: `1px solid ${gridLine}`, marginLeft: -1, marginTop: -1 }} />;
           const dayReminders = reminders.filter((r) => appliesOn(r, c));
           return (
             <button key={i} onClick={() => onPickDay(c)} style={{
-              background: theme.bg, border, borderRadius: 6, minHeight: 72, padding: 6,
-              textAlign: "left", color: theme.text, cursor: "pointer", display: "flex", flexDirection: "column", gap: 4,
+              background: theme.card, border: `1px solid ${gridLine}`, marginLeft: -1, marginTop: -1,
+              minHeight: 80, padding: 8, textAlign: "left", color: theme.text, cursor: "pointer",
+              display: "flex", flexDirection: "column", gap: 6,
             }}>
-              <span style={{ fontWeight: 700, fontSize: 13 }}>{c.getDate()}</span>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-                {dayReminders.slice(0, 5).map((r) => (
-                  <span key={r.id} style={{ width: 8, height: 8, borderRadius: "50%", background: TYPE_COLOR[r.type] }} />
+              <span style={{ fontWeight: 700, fontSize: 14 }}>{c.getDate()}</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                {dayReminders.slice(0, 6).map((r, idx) => (
+                  <span key={r.id + idx} style={{
+                    width: 9, height: 9, borderRadius: "50%", background: TYPE_COLOR[r.type],
+                  }} />
                 ))}
-                {dayReminders.length > 5 && <span style={{ fontSize: 11, color: theme.muted }}>+{dayReminders.length - 5}</span>}
+                {dayReminders.length > 6 && <span style={{ fontSize: 11, color: theme.muted }}>+{dayReminders.length - 6}</span>}
               </div>
             </button>
           );
@@ -441,35 +504,58 @@ function MonthView({ date, reminders, onPickDay, theme, border }: {
   );
 }
 
-function ListView({ reminders, onOpen, theme, border }: {
+function ListView({ reminders, onOpen, onEdit, onDelete, theme, appearance, gridLine, panelBg }: {
   reminders: Reminder[]; onOpen: (r: Reminder) => void;
-  theme: { text: string; bg: string; card: string; muted: string }; border: string;
+  onEdit: (r: Reminder) => void; onDelete: (r: Reminder) => void;
+  theme: ThemeT; appearance: "light" | "dark"; gridLine: string; panelBg: string;
 }) {
-  if (reminders.length === 0) return <div style={{ color: theme.muted }}>No reminders yet. Add one to get started.</div>;
+  if (reminders.length === 0) return <div style={{ color: theme.muted, padding: 16 }}>No reminders yet. Add one to get started.</div>;
+  const headTd: CSSProperties = {
+    padding: "12px", fontSize: 12, fontWeight: 700, textTransform: "uppercase",
+    fontFamily: "'Trebuchet MS', sans-serif", color: theme.text, textAlign: "left",
+    borderBottom: `1px solid ${theme.text}`,
+  };
+  const bodyTd: CSSProperties = {
+    padding: 12, fontSize: 13, color: theme.text, borderBottom: `1px solid ${gridLine}`,
+    height: 48, verticalAlign: "middle",
+  };
   return (
     <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-        <thead>
-          <tr style={{ textAlign: "left", color: theme.muted, fontFamily: "'Trebuchet MS', sans-serif" }}>
-            <th style={{ padding: "8px 6px" }}>Reminder</th>
-            <th style={{ padding: "8px 6px" }}>Details</th>
-            <th style={{ padding: "8px 6px" }}>Times</th>
-            <th style={{ padding: "8px 6px" }}>Frequency</th>
-            <th style={{ padding: "8px 6px" }}></th>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead style={{ background: panelBg }}>
+          <tr>
+            <th style={headTd}>Reminder</th>
+            <th style={headTd}>Details</th>
+            <th style={headTd}>Times</th>
+            <th style={headTd}>Frequency</th>
+            <th style={{ ...headTd, textAlign: "right" }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {reminders.map((r) => (
-            <tr key={r.id} onClick={() => onOpen(r)} style={{ cursor: "pointer", borderTop: border }}>
-              <td style={{ padding: "10px 6px", fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
-                {iconForType(r.type, 16, TYPE_COLOR[r.type])} {r.name}
+            <tr key={r.id} onClick={() => onOpen(r)} style={{ cursor: "pointer", background: theme.card }}>
+              <td style={{ ...bodyTd, fontWeight: 700, fontSize: 14 }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  {iconForType(r.type, 16, TYPE_COLOR[r.type])} {r.name}
+                </span>
               </td>
-              <td style={{ padding: "10px 6px", color: theme.muted }}>
+              <td style={{ ...bodyTd, color: theme.muted }}>
                 {r.type === "medication" ? `${r.dose ?? 1} pill${(r.dose ?? 1) > 1 ? "s" : ""}` : (r.details || "—")}
               </td>
-              <td style={{ padding: "10px 6px" }}>{r.times.join(", ")}</td>
-              <td style={{ padding: "10px 6px" }}>{r.repeatSchedule}</td>
-              <td style={{ padding: "10px 6px", color: theme.muted, textAlign: "right" }}>›</td>
+              <td style={bodyTd}>{r.times.join(", ")}</td>
+              <td style={bodyTd}>{r.repeatSchedule}</td>
+              <td style={{ ...bodyTd, textAlign: "right" }}>
+                <span style={{ display: "inline-flex", gap: 8 }}>
+                  <button onClick={(e) => { e.stopPropagation(); onEdit(r); }} aria-label="Edit"
+                    style={{ background: "transparent", border: "none", cursor: "pointer", color: theme.text, padding: 4 }}>
+                    <Edit size={16} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); onDelete(r); }} aria-label="Delete"
+                    style={{ background: "transparent", border: "none", cursor: "pointer", color: RED, padding: 4 }}>
+                    <Trash2 size={16} />
+                  </button>
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -477,6 +563,7 @@ function ListView({ reminders, onOpen, theme, border }: {
     </div>
   );
 }
+
 
 /* ---------------- MODALS ---------------- */
 
