@@ -330,10 +330,7 @@ function CarerPortal() {
         />
       )}
 
-          onCancel={() => setConfirmDelete(null)}
-          onConfirm={() => { deleteReminder(confirmDelete.id); setConfirmDelete(null); }}
-        />
-      )}
+
 
       <style>{`
         input[type="text"], input[type="number"], input[type="time"], input[type="date"], textarea, select {
