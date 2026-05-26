@@ -919,6 +919,50 @@ function SummarySection({ title, count, lines, card, theme }: any) {
   );
 }
 
+function ContactsSummaryCard({ data, card, theme, cardBorder, appearance }: any) {
+  const mainContacts = (data.contacts as OnbContact[]).filter((c) => c.name.trim());
+  const emergency: string[] = [
+    ...(data.emergencyVisible.ems ? ["Emergency Services"] : []),
+    ...(data.emergencyVisible.poison ? ["Poison Control"] : []),
+  ];
+  const sectionTitle: CSSProperties = {
+    fontWeight: 700, fontSize: 16, color: theme.text, fontFamily: "Georgia, serif",
+  };
+  const countLine: CSSProperties = { fontSize: 14, color: theme.muted, marginTop: 4 };
+  const listStyle: CSSProperties = { margin: "8px 0 0", paddingLeft: 20, color: theme.text, fontSize: 14 };
+  const emergencyBg = appearance === "dark" ? "#3A3A4E" : "#F5F0E8";
+  return (
+    <div style={card}>
+      <div style={sectionTitle}>Phone Contacts</div>
+      <div style={{ marginTop: 12 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, color: theme.text }}>Main Contacts</div>
+        <div style={countLine}>
+          {mainContacts.length} contact{mainContacts.length === 1 ? "" : "s"} added
+        </div>
+        {mainContacts.length > 0 && (
+          <ul style={listStyle}>
+            {mainContacts.map((c) => <li key={c.id}>{c.name}</li>)}
+          </ul>
+        )}
+      </div>
+      <div style={{
+        marginTop: 16, padding: 12, borderRadius: 6,
+        background: emergencyBg, border: cardBorder,
+      }}>
+        <div style={{ fontWeight: 700, fontSize: 16, color: theme.text }}>Emergency Contacts</div>
+        <div style={countLine}>
+          {emergency.length} emergency number{emergency.length === 1 ? "" : "s"}
+        </div>
+        {emergency.length > 0 && (
+          <ul style={listStyle}>
+            {emergency.map((n) => <li key={n}>{n}</li>)}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
