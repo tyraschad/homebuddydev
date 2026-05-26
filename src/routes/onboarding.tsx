@@ -472,8 +472,9 @@ function Onboarding() {
               />
               <SummarySection
                 title="Instruction Context" count={data.devices.length} card={card} theme={theme}
-                lines={data.devices.map((d) => d.label)}
+                lines={data.devices.map((d) => d.name)}
               />
+
               <ContactsSummaryCard
                 data={data} card={card} theme={theme} cardBorder={cardBorder} appearance={appearance}
               />
