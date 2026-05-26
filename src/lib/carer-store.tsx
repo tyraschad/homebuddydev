@@ -19,9 +19,14 @@ export type Reminder = {
   photo?: string;
   notes?: string;
   elderId: string;
+  // Minutes before the reminder to announce; 0 = at exact time. Default [60,30,5,0].
+  announcementOffsets?: number[];
   createdAt: string;
   updatedAt: string;
 };
+
+export const DEFAULT_ANNOUNCEMENT_OFFSETS = [60, 30, 5, 0];
+
 
 
 export type Contact = { id: string; name: string; phone: string };
