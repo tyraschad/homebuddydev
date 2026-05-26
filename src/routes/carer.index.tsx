@@ -179,7 +179,7 @@ function CarerPortal() {
       </header>
 
       {/* BOX 2: ELDER PROFILE CARD (white) */}
-      <section style={whiteCard}>
+      <section style={{ ...whiteCard, position: "relative" }}>
         <button
           type="button"
           onClick={() => setProfileOpen((v) => !v)}
@@ -225,7 +225,27 @@ function CarerPortal() {
             <Field label="Instruction context"><div style={{ color: theme.muted }}>{elder.context || "—"}</div></Field>
           </div>
         )}
+
+        <button
+          type="button"
+          title="Edit profile"
+          aria-label="Edit profile"
+          onClick={() => setEditProfileOpen(true)}
+          style={{
+            position: "absolute", bottom: 10, right: 10,
+            width: 32, height: 32, borderRadius: "50%", border: "none",
+            background: appearance === "dark" ? "rgba(74,74,74,0.8)" : "rgba(240,240,240,0.8)",
+            color: theme.text, cursor: "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            transition: "background 0.2s ease, color 0.2s ease",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = GREEN; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = theme.text; }}
+        >
+          <Edit size={16} />
+        </button>
       </section>
+
 
       {/* BOX 3: SCHEDULE CONTROLS (grey panel) */}
       <section style={{ ...greyPanel, display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
