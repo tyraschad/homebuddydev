@@ -138,38 +138,22 @@ function Index() {
           </CardBox>
 
           <CardBox onClick={() => setOverlay("chat")} height="calc(70% - 8px)" padding={30} theme={theme}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "100%", width: "100%" }}>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20, marginTop: 24 }}>
-                <Mic size={90} strokeWidth={2} color={theme.text} />
-                <div
-                  style={{
-                    fontFamily: "'Trebuchet MS', sans-serif",
-                    fontWeight: 700,
-                    fontSize: 24,
-                    color: theme.text,
-                    textAlign: "center",
-                  }}
-                >
-                  Tap to Ask a Question
-                </div>
-              </div>
-              <div style={{ flex: 1, minHeight: 24 }} />
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, height: "100%", width: "100%" }}>
+              <Mic size={90} strokeWidth={2} color={theme.text} />
               <div
                 style={{
-                  display: "flex",
-                  gap: 16,
-                  justifyContent: "center",
-                  flexWrap: "wrap",
-                  marginBottom: 20,
-                  width: "100%",
+                  fontFamily: "'Trebuchet MS', sans-serif",
+                  fontWeight: 700,
+                  fontSize: 24,
+                  color: theme.text,
+                  textAlign: "center",
                 }}
               >
-                <ActionBtn theme={theme} fontSize={sizes.button}>Change TV Input</ActionBtn>
-                <ActionBtn theme={theme} fontSize={sizes.button}>Go to Netflix</ActionBtn>
-                <ActionBtn theme={theme} fontSize={sizes.button}>Turn on Washer</ActionBtn>
+                Tap to Ask a Question
               </div>
             </div>
           </CardBox>
+
         </Column>
 
         <Column width="50%">
