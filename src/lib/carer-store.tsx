@@ -94,6 +94,7 @@ type Ctx = {
   addReminder: (r: Reminder) => void;
   updateReminder: (r: Reminder) => void;
   deleteReminder: (id: string) => void;
+  bumpDeviceAccess: (deviceId: string) => void;
   resetAll: () => void;
 };
 
