@@ -5,7 +5,7 @@ import { useSettings } from "@/lib/settings-store";
 type Action = { icon: React.ReactNode; label: string };
 
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
-  const { theme, sizes } = useSettings();
+  const { theme, sizes, cardBorder, inputBorder, buttonBorder, highContrast } = useSettings();
   const [recording, setRecording] = useState(false);
   const [text, setText] = useState("");
 
