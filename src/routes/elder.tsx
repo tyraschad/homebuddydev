@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Settings, Mic, Phone, X } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
+import { useCarer } from "@/lib/carer-store";
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 
 
@@ -40,6 +41,7 @@ function greeting(d: Date) {
 
 function ElderHome() {
   const { theme, sizes, textSize } = useSettings();
+  const { reminders } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
 
