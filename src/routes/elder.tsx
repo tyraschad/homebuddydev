@@ -155,41 +155,9 @@ function ElderHome() {
         <Column width="50%">
           <CardBox flex={1} padding={16} theme={theme}>
             <div style={{ position: "relative", display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
-              <h2 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text, margin: 0, marginBottom: 12, paddingRight: 72 }}>
+              <h2 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text, margin: 0, marginBottom: 12 }}>
                 Today's Reminders
               </h2>
-              <button
-                type="button"
-                onClick={() => setOverlay("call")}
-                aria-label="Make a call"
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  width: 56,
-                  height: 56,
-                  borderRadius: "50%",
-                  background: "#6BA24A",
-                  border: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  zIndex: 5,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-                  transition: "background 0.2s, box-shadow 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#5A8F3D";
-                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.25)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#6BA24A";
-                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
-                }}
-              >
-                <Phone size={24} strokeWidth={2} color="#FFFFFF" />
-              </button>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", minHeight: 0 }}>
                 {items.length === 0 ? (
                   <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, textAlign: "center", margin: "auto" }}>
