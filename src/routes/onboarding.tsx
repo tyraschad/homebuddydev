@@ -675,7 +675,7 @@ function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSe
 
 
 // ---------- Devices Page ----------
-function DevicesPage({ data, update, theme, card, btnPrimary, btnSecondary, inputStyle, h1, muted, cardBorder, buttonBorder, onNext }: any) {
+function DevicesPage({ data, update, theme, card, btnPrimary, btnSecondary, inputStyle, h1, muted, cardBorder, buttonBorder, onNext, elderName }: any) {
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const [analyzing, setAnalyzing] = useState(false);
   const [label, setLabel] = useState("");
