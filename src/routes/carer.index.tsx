@@ -1198,3 +1198,63 @@ function CustomDayPicker({
   );
 }
 
+/* ---------------- DATE POPUP (Month view click) ---------------- */
+
+function DatePopup({ date, reminders, onClose, onViewFullDay, appearance }: {
+  date: Date; reminders: Reminder[]; onClose: () => void;
+  onViewFullDay: () => void; appearance: "light" | "dark";
+}) {
+  const { theme } = useSettings();
+  const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
+  const headerStr = date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const sorted = reminders
+    .flatMap((r) => r.times.map((t) => ({ r, t })))
+    .sort((a, b) => a.t.localeCompare(b.t));
+  return (
+    <ModalShell onClose={onClose} width={500}>
+      <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 24, color: theme.text, paddingRight: 32 }}>
+        {headerStr}
+      </h2>
+      <div style={{ fontSize: 16, marginTop: 12, marginBottom: 12, color: theme.text }}>
+        Reminders for {dayName}
+      </div>
+      {sorted.length === 0 ? (
+        <div style={{ textAlign: "center", fontSize: 14, color: theme.muted, padding: "24px 0" }}>
+          No reminders scheduled for {dayName}
+        </div>
+      ) : (
+        <div>
+          {sorted.map(({ r, t }, idx) => {
+            const color = TYPE_COLOR[r.type];
+            const bg = reminderBg(r.type, appearance);
+            const fg = appearance === "dark" ? "#FFFFFF" : "#1A1A2E";
+            return (
+              <div key={r.id + t + idx} style={{
+                display: "flex", alignItems: "center", gap: 8,
+                background: bg, color: fg, border: `1px solid ${color}`,
+                borderRadius: 4, padding: 8, marginBottom: 12,
+              }}>
+                <span style={{ fontWeight: 700, minWidth: 50 }}>{t}</span>
+                {iconForType(r.type, 16, color)}
+                <span style={{ fontWeight: 700, flex: 1 }}>{r.name}</span>
+                {r.type === "medication" && r.dose != null && (
+                  <span style={{ fontSize: 13, opacity: 0.85 }}>- {r.dose} pill{r.dose > 1 ? "s" : ""}</span>
+                )}
+                {r.type !== "medication" && r.details && (
+                  <span style={{ fontSize: 13, opacity: 0.85 }}>- {r.details}</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <button onClick={onViewFullDay} style={{
+        background: GREEN, color: "#fff", border: "none", height: 44, width: "100%",
+        borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700,
+        fontSize: 16, cursor: "pointer", marginTop: 8,
+      }}>View full day</button>
+    </ModalShell>
+  );
+}
+
+
