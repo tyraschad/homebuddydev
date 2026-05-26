@@ -13,9 +13,9 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as CarerRouteImport } from './routes/carer'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings.index'
-import { Route as CarerIndexRouteImport } from './routes/carer.index'
 import { Route as SettingsTextSizeRouteImport } from './routes/settings.text-size'
 import { Route as SettingsAppearanceRouteImport } from './routes/settings.appearance'
+import { Route as CarerIndexRouteImport } from './routes/carer.index'
 import { Route as CarerSettingsRouteImport } from './routes/carer.settings'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -38,11 +38,6 @@ const SettingsIndexRoute = SettingsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SettingsRoute,
 } as any)
-const CarerIndexRoute = CarerIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => CarerRoute,
-} as any)
 const SettingsTextSizeRoute = SettingsTextSizeRouteImport.update({
   id: '/text-size',
   path: '/text-size',
@@ -52,6 +47,11 @@ const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
   id: '/appearance',
   path: '/appearance',
   getParentRoute: () => SettingsRoute,
+} as any)
+const CarerIndexRoute = CarerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CarerRoute,
 } as any)
 const CarerSettingsRoute = CarerSettingsRouteImport.update({
   id: '/settings',
@@ -64,17 +64,17 @@ export interface FileRoutesByFullPath {
   '/carer': typeof CarerRouteWithChildren
   '/settings': typeof SettingsRouteWithChildren
   '/carer/settings': typeof CarerSettingsRoute
+  '/carer/': typeof CarerIndexRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/text-size': typeof SettingsTextSizeRoute
-  '/carer/': typeof CarerIndexRoute
   '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/carer/settings': typeof CarerSettingsRoute
+  '/carer': typeof CarerIndexRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/text-size': typeof SettingsTextSizeRoute
-  '/carer': typeof CarerIndexRoute
   '/settings': typeof SettingsIndexRoute
 }
 export interface FileRoutesById {
@@ -83,9 +83,9 @@ export interface FileRoutesById {
   '/carer': typeof CarerRouteWithChildren
   '/settings': typeof SettingsRouteWithChildren
   '/carer/settings': typeof CarerSettingsRoute
+  '/carer/': typeof CarerIndexRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/text-size': typeof SettingsTextSizeRoute
-  '/carer/': typeof CarerIndexRoute
   '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -95,17 +95,17 @@ export interface FileRouteTypes {
     | '/carer'
     | '/settings'
     | '/carer/settings'
+    | '/carer/'
     | '/settings/appearance'
     | '/settings/text-size'
-    | '/carer/'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/carer/settings'
+    | '/carer'
     | '/settings/appearance'
     | '/settings/text-size'
-    | '/carer'
     | '/settings'
   id:
     | '__root__'
@@ -113,9 +113,9 @@ export interface FileRouteTypes {
     | '/carer'
     | '/settings'
     | '/carer/settings'
+    | '/carer/'
     | '/settings/appearance'
     | '/settings/text-size'
-    | '/carer/'
     | '/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -155,13 +155,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsIndexRouteImport
       parentRoute: typeof SettingsRoute
     }
-    '/carer/': {
-      id: '/carer/'
-      path: '/'
-      fullPath: '/carer/'
-      preLoaderRoute: typeof CarerIndexRouteImport
-      parentRoute: typeof CarerRoute
-    }
     '/settings/text-size': {
       id: '/settings/text-size'
       path: '/text-size'
@@ -176,6 +169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsAppearanceRouteImport
       parentRoute: typeof SettingsRoute
     }
+    '/carer/': {
+      id: '/carer/'
+      path: '/'
+      fullPath: '/carer/'
+      preLoaderRoute: typeof CarerIndexRouteImport
+      parentRoute: typeof CarerRoute
+    }
     '/carer/settings': {
       id: '/carer/settings'
       path: '/settings'
@@ -185,18 +185,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface CarerRouteChildren {
-  CarerSettingsRoute: typeof CarerSettingsRoute
-  CarerIndexRoute: typeof CarerIndexRoute
-}
-
-const CarerRouteChildren: CarerRouteChildren = {
-  CarerSettingsRoute: CarerSettingsRoute,
-  CarerIndexRoute: CarerIndexRoute,
-}
-
-const CarerRouteWithChildren = CarerRoute._addFileChildren(CarerRouteChildren)
 
 interface SettingsRouteChildren {
   SettingsAppearanceRoute: typeof SettingsAppearanceRoute
@@ -214,6 +202,18 @@ const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
   SettingsRouteChildren,
 )
 
+interface CarerRouteChildren {
+  CarerSettingsRoute: typeof CarerSettingsRoute
+  CarerIndexRoute: typeof CarerIndexRoute
+}
+
+const CarerRouteChildren: CarerRouteChildren = {
+  CarerSettingsRoute: CarerSettingsRoute,
+  CarerIndexRoute: CarerIndexRoute,
+}
+
+const CarerRouteWithChildren = CarerRoute._addFileChildren(CarerRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CarerRoute: CarerRouteWithChildren,
@@ -222,13 +222,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

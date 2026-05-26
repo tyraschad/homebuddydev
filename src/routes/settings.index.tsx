@@ -91,8 +91,8 @@ function SettingsPage() {
         >
           Settings
         </h1>
-        <button
-          type="button"
+        <Link
+          to="/carer"
           style={{
             justifySelf: "end",
             background: "transparent",
@@ -107,7 +107,7 @@ function SettingsPage() {
           }}
         >
           Open Carer Portal
-        </button>
+        </Link>
       </header>
 
       <div style={{ padding: "0 16px 16px" }}>
