@@ -98,21 +98,25 @@ function CarerPortal() {
   const { elder, reminders, addReminder, updateReminder, deleteReminder } = useCarer();
 
   const [view, setView] = useState<ViewMode>("day");
-  const [cursor, setCursor] = useState<Date>(new Date());
+  const [cursor, setCursor] = useState<Date | null>(null);
   const [profileOpen, setProfileOpen] = useState(true);
   const [headerDate, setHeaderDate] = useState("");
 
   useEffect(() => {
-    setHeaderDate(new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }));
+    const now = new Date();
+    setCursor(now);
+    setHeaderDate(now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }));
   }, []);
 
   const [pickCategoryOpen, setPickCategoryOpen] = useState(false);
   const [editing, setEditing] = useState<Reminder | null>(null);
   const [viewing, setViewing] = useState<Reminder | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
+  const [dayPopup, setDayPopup] = useState<Date | null>(null);
 
   const today = new Date();
-  const isToday = ymd(cursor) === ymd(today);
+  const isToday = cursor != null && ymd(cursor) === ymd(today);
+
 
   // Grey "panel" backgrounds for header + schedule controls
   const panelBg = appearance === "dark" ? "#2A2A3E" : "#F5F0E8";
@@ -236,12 +240,17 @@ function CarerPortal() {
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => shiftCursor(view, cursor, setCursor, -1)} style={iconBtn(theme, buttonBorder)}><ChevronLeft size={18} /></button>
+          <button onClick={() => cursor && shiftCursor(view, cursor, setCursor, -1)} style={iconBtn(theme, buttonBorder)}><ChevronLeft size={18} /></button>
           <span style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, minWidth: 180, textAlign: "center" }}>
-            {labelForCursor(view, cursor)}
+            {cursor ? labelForCursor(view, cursor) : ""}
+            {view === "day" && isToday && (
+              <span style={{ marginLeft: 8, fontFamily: "Verdana, sans-serif", fontSize: 14, color: GREEN, fontWeight: 700 }}>
+                — Today
+              </span>
+            )}
           </span>
-          <button onClick={() => shiftCursor(view, cursor, setCursor, 1)} style={iconBtn(theme, buttonBorder)}><ChevronRight size={18} /></button>
-          {!isToday && (
+          <button onClick={() => cursor && shiftCursor(view, cursor, setCursor, 1)} style={iconBtn(theme, buttonBorder)}><ChevronRight size={18} /></button>
+          {cursor && !isToday && (
             <button onClick={() => setCursor(new Date())} style={{
               background: "transparent", color: "#2563EB", border: "none", padding: "6px 8px",
               fontSize: 14, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
@@ -256,10 +265,11 @@ function CarerPortal() {
 
       {/* BOX 4: CALENDAR (white card) */}
       <section style={whiteCard}>
-        {view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={() => setPickCategoryOpen(true)} theme={theme} appearance={appearance} gridLine={gridLine} />}
-        {view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
-        {view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => { setCursor(d); setView("day"); }} theme={theme} gridLine={gridLine} />}
-        {view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
+        {cursor && view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={() => setPickCategoryOpen(true)} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {cursor && view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {cursor && view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => setDayPopup(d)} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {cursor && view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
+
       </section>
 
 
@@ -309,6 +319,18 @@ function CarerPortal() {
           onConfirm={() => { deleteReminder(confirmDelete.id); setConfirmDelete(null); }}
         />
       )}
+
+      {dayPopup && (
+        <DatePopup
+          date={dayPopup}
+          reminders={reminders.filter((r) => appliesOn(r, dayPopup))}
+          onClose={() => setDayPopup(null)}
+          onViewFullDay={() => { setCursor(dayPopup); setView("day"); setDayPopup(null); }}
+          appearance={appearance}
+        />
+      )}
+
+
 
       <style>{`
         input[type="text"], input[type="number"], input[type="time"], input[type="date"], textarea, select {
@@ -427,21 +449,33 @@ function WeekView({ date, reminders, onOpen, theme, appearance, gridLine }: {
 }) {
   const start = new Date(date); start.setDate(date.getDate() - ((date.getDay() + 6) % 7));
   const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(start); d.setDate(start.getDate() + i); return d; });
+  const todayStr = ymd(new Date());
+  const todayBg = appearance === "dark" ? "#2A3A4A" : "#F0F4FF";
   return (
     <div style={{ overflowX: "auto" }}>
       <div style={{ display: "grid", gridTemplateColumns: `60px repeat(7, minmax(90px, 1fr))`, minWidth: 760 }}>
         <div style={{ borderBottom: `1px solid ${gridLine}` }} />
-        {days.map((d, i) => (
-          <div key={d.toISOString()} style={{
-            textAlign: "center", padding: "8px 4px",
-            borderLeft: i === 0 ? "none" : `1px solid ${gridLine}`,
-            borderBottom: `1px solid ${gridLine}`,
-            fontFamily: "Georgia, serif", fontWeight: 700,
-          }}>
-            <div style={{ fontSize: 14 }}>{d.toLocaleDateString("en-US", { weekday: "short" })}</div>
-            <div style={{ color: theme.muted, fontSize: 13, fontFamily: "Verdana, sans-serif", fontWeight: 400 }}>{d.getDate()}</div>
-          </div>
-        ))}
+        {days.map((d, i) => {
+          const isTodayCol = ymd(d) === todayStr;
+          return (
+            <div key={d.toISOString()} style={{
+              textAlign: "center", padding: "8px 4px",
+              borderLeft: i === 0 ? "none" : `1px solid ${gridLine}`,
+              borderBottom: `1px solid ${gridLine}`,
+              fontFamily: "Georgia, serif", fontWeight: 700,
+              background: isTodayCol ? todayBg : "transparent",
+            }}>
+              {isTodayCol && (
+                <div style={{ fontSize: 10, fontWeight: 700, color: GREEN, textTransform: "uppercase",
+                  letterSpacing: 0.5, fontFamily: "'Trebuchet MS', sans-serif", marginBottom: 2 }}>
+                  Today
+                </div>
+              )}
+              <div style={{ fontSize: 14 }}>{d.toLocaleDateString("en-US", { weekday: "short" })}</div>
+              <div style={{ color: theme.muted, fontSize: 13, fontFamily: "Verdana, sans-serif", fontWeight: 400 }}>{d.getDate()}</div>
+            </div>
+          );
+        })}
         {hours().map((h) => {
           const hh = String(h).padStart(2, "0");
           return (
@@ -451,11 +485,12 @@ function WeekView({ date, reminders, onOpen, theme, appearance, gridLine }: {
                 {formatHour(h)}
               </div>
               {days.map((d, di) => {
+                const isTodayCol = ymd(d) === todayStr;
                 const items = reminders.filter((r) => appliesOn(r, d))
                   .flatMap((r) => r.times.filter((t) => t.startsWith(hh)).map((t) => ({ r, t })));
                 return (
                   <div key={`c-${h}-${d.toISOString()}`} style={{
-                    background: theme.card,
+                    background: isTodayCol ? todayBg : theme.card,
                     borderLeft: di === 0 ? "none" : `1px solid ${gridLine}`,
                     borderBottom: `1px solid ${gridLine}`,
                     minHeight: 60, display: "flex", alignItems: "center", justifyContent: "center",
@@ -487,9 +522,10 @@ function WeekView({ date, reminders, onOpen, theme, appearance, gridLine }: {
   );
 }
 
-function MonthView({ date, reminders, onPickDay, theme, gridLine }: {
+
+function MonthView({ date, reminders, onPickDay, theme, appearance, gridLine }: {
   date: Date; reminders: Reminder[]; onPickDay: (d: Date) => void;
-  theme: ThemeT; gridLine: string;
+  theme: ThemeT; appearance: "light" | "dark"; gridLine: string;
 }) {
   const first = new Date(date.getFullYear(), date.getMonth(), 1);
   const startOffset = (first.getDay() + 6) % 7;
@@ -499,6 +535,8 @@ function MonthView({ date, reminders, onPickDay, theme, gridLine }: {
   for (let i = 1; i <= daysInMonth; i++) cells.push(new Date(date.getFullYear(), date.getMonth(), i));
   while (cells.length % 7 !== 0) cells.push(null);
   const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const todayStr = ymd(new Date());
+  const todayBg = appearance === "dark" ? "#2A3A4A" : "#F0F4FF";
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", fontWeight: 700,
@@ -513,13 +551,17 @@ function MonthView({ date, reminders, onPickDay, theme, gridLine }: {
           if (!c) return <div key={i} style={{ background: theme.bg, minHeight: 80,
             border: `1px solid ${gridLine}`, marginLeft: -1, marginTop: -1 }} />;
           const dayReminders = reminders.filter((r) => appliesOn(r, c));
+          const isTodayCell = ymd(c) === todayStr;
           return (
             <button key={i} onClick={() => onPickDay(c)} style={{
-              background: theme.card, border: `1px solid ${gridLine}`, marginLeft: -1, marginTop: -1,
+              background: isTodayCell ? todayBg : theme.card,
+              border: isTodayCell ? `2px solid ${GREEN}` : `1px solid ${gridLine}`,
+              marginLeft: -1, marginTop: -1,
               minHeight: 80, padding: 8, textAlign: "left", color: theme.text, cursor: "pointer",
-              display: "flex", flexDirection: "column", gap: 6,
+              display: "flex", flexDirection: "column", gap: 6, position: "relative",
             }}>
-              <span style={{ fontWeight: 700, fontSize: 14 }}>{c.getDate()}</span>
+              <span style={{ fontWeight: isTodayCell ? 700 : 700, fontSize: 14,
+                color: isTodayCell ? GREEN : theme.text }}>{c.getDate()}</span>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                 {dayReminders.slice(0, 6).map((r, idx) => (
                   <span key={r.id + idx} style={{
@@ -528,7 +570,13 @@ function MonthView({ date, reminders, onPickDay, theme, gridLine }: {
                 ))}
                 {dayReminders.length > 6 && <span style={{ fontSize: 11, color: theme.muted }}>+{dayReminders.length - 6}</span>}
               </div>
+              {isTodayCell && (
+                <span style={{ position: "absolute", bottom: 4, right: 6, fontSize: 8,
+                  fontWeight: 700, color: GREEN, textTransform: "uppercase", letterSpacing: 0.5,
+                  fontFamily: "'Trebuchet MS', sans-serif" }}>today</span>
+              )}
             </button>
+
           );
         })}
       </div>
@@ -1149,4 +1197,64 @@ function CustomDayPicker({
     </div>
   );
 }
+
+/* ---------------- DATE POPUP (Month view click) ---------------- */
+
+function DatePopup({ date, reminders, onClose, onViewFullDay, appearance }: {
+  date: Date; reminders: Reminder[]; onClose: () => void;
+  onViewFullDay: () => void; appearance: "light" | "dark";
+}) {
+  const { theme } = useSettings();
+  const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
+  const headerStr = date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const sorted = reminders
+    .flatMap((r) => r.times.map((t) => ({ r, t })))
+    .sort((a, b) => a.t.localeCompare(b.t));
+  return (
+    <ModalShell onClose={onClose} width={500}>
+      <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 24, color: theme.text, paddingRight: 32 }}>
+        {headerStr}
+      </h2>
+      <div style={{ fontSize: 16, marginTop: 12, marginBottom: 12, color: theme.text }}>
+        Reminders for {dayName}
+      </div>
+      {sorted.length === 0 ? (
+        <div style={{ textAlign: "center", fontSize: 14, color: theme.muted, padding: "24px 0" }}>
+          No reminders scheduled for {dayName}
+        </div>
+      ) : (
+        <div>
+          {sorted.map(({ r, t }, idx) => {
+            const color = TYPE_COLOR[r.type];
+            const bg = reminderBg(r.type, appearance);
+            const fg = appearance === "dark" ? "#FFFFFF" : "#1A1A2E";
+            return (
+              <div key={r.id + t + idx} style={{
+                display: "flex", alignItems: "center", gap: 8,
+                background: bg, color: fg, border: `1px solid ${color}`,
+                borderRadius: 4, padding: 8, marginBottom: 12,
+              }}>
+                <span style={{ fontWeight: 700, minWidth: 50 }}>{t}</span>
+                {iconForType(r.type, 16, color)}
+                <span style={{ fontWeight: 700, flex: 1 }}>{r.name}</span>
+                {r.type === "medication" && r.dose != null && (
+                  <span style={{ fontSize: 13, opacity: 0.85 }}>- {r.dose} pill{r.dose > 1 ? "s" : ""}</span>
+                )}
+                {r.type !== "medication" && r.details && (
+                  <span style={{ fontSize: 13, opacity: 0.85 }}>- {r.details}</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <button onClick={onViewFullDay} style={{
+        background: GREEN, color: "#fff", border: "none", height: 44, width: "100%",
+        borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700,
+        fontSize: 16, cursor: "pointer", marginTop: 8,
+      }}>View full day</button>
+    </ModalShell>
+  );
+}
+
 
