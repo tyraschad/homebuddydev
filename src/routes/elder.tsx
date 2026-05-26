@@ -392,3 +392,94 @@ function OverlayView({
     </div>
   );
 }
+
+const EMERGENCY_CONTACTS = [
+  { id: "e1", name: "Emergency Services", phone: "911" },
+  { id: "e2", name: "Poison Control", phone: "1-800-222-1222" },
+];
+
+function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: string; text: string; border: string; overlay: string; muted: string } }) {
+  const { elder } = useCarer();
+  const { cardBorder, appearance } = useSettings();
+  const contacts = elder.contacts ?? [];
+  const separator = appearance === "dark" ? "#5A5A6E" : "#E5E5E0";
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 16, zIndex: 50, boxSizing: "border-box",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: theme.card, border: cardBorder, borderRadius: 8, padding: 24,
+          width: "90%", maxWidth: 500, maxHeight: "90vh",
+          display: "flex", flexDirection: "column", boxSizing: "border-box", color: theme.text,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 24, color: theme.text }}>
+            Make a Call
+          </h2>
+          <button
+            type="button" onClick={onClose} aria-label="Close"
+            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: theme.text }}
+          >
+            <X size={20} strokeWidth={1.5} color={theme.text} />
+          </button>
+        </div>
+
+        <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+          {contacts.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "24px 0" }}>
+              <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>No contacts saved</div>
+              <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: theme.muted, marginTop: 4 }}>Add contacts in settings</div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {contacts.map((c) => (
+                <ContactRow key={c.id} name={c.name} phone={c.phone} theme={theme} separator={separator} />
+              ))}
+            </div>
+          )}
+
+          <h3 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, color: theme.text, marginTop: 20, marginBottom: 4 }}>
+            Emergency
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {EMERGENCY_CONTACTS.map((c) => (
+              <ContactRow key={c.id} name={c.name} phone={c.phone} theme={theme} separator={separator} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContactRow({ name, phone, theme, separator }: { name: string; phone: string; theme: { text: string; muted: string }; separator: string }) {
+  return (
+    <a
+      href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+      style={{
+        display: "flex", flexDirection: "column", padding: "12px 0",
+        borderBottom: `1px solid ${separator}`, textDecoration: "none", color: "inherit", cursor: "pointer",
+      }}
+    >
+      <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>{name}</div>
+      <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>{phone}</div>
+    </a>
+  );
+}
