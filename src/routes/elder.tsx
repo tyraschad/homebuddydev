@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Settings, Mic, Phone, X } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
-import { useCarer } from "@/lib/carer-store";
+import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS } from "@/lib/carer-store";
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
+import { speak } from "@/lib/talk.functions";
+
 
 export const Route = createFileRoute("/elder")({
   component: ElderHome,
@@ -40,18 +42,66 @@ function toMinutes(t: string) {
   const [h, m] = t.split(":").map(Number);
   return (h || 0) * 60 + (m || 0);
 }
+function formatTimeStr(t: string) {
+  const [h, m] = t.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h || 0, m || 0, 0, 0);
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+}
+function buildAnnouncement(name: string, reminderName: string, offsetMin: number, time: string) {
+  if (offsetMin === 0) return `Hi ${name}, it's time for your ${reminderName}.`;
+  const timeStr = formatTimeStr(time);
+  if (offsetMin >= 60) {
+    const h = Math.round(offsetMin / 60);
+    return `Hi ${name}, you have ${reminderName} in ${h} hour${h > 1 ? "s" : ""}, at ${timeStr}.`;
+  }
+  return `Hi ${name}, you have ${reminderName} in ${offsetMin} minutes, at ${timeStr}.`;
+}
+
 
 function ElderHome() {
-  const { theme, appearance, textSize } = useSettings();
-  const { reminders } = useCarer();
+  const { theme, appearance, textSize, announcementsEnabled } = useSettings();
+  const { reminders, elder } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
 
   useEffect(() => {
     setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000 * 30);
+    const t = setInterval(() => setNow(new Date()), 1000 * 20);
     return () => clearInterval(t);
   }, []);
+
+  // Announcement scheduler: speak reminders aloud at configured offsets.
+  const announcedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!now || !announcementsEnabled) return;
+    const today = now.toISOString().slice(0, 10);
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    reminders.forEach((r) => {
+      const offsets = r.announcementOffsets ?? DEFAULT_ANNOUNCEMENT_OFFSETS;
+      r.times.forEach((t) => {
+        const targetMin = toMinutes(t);
+        offsets.forEach((off) => {
+          const announceMin = targetMin - off;
+          // Fire if within current minute and not too late (e.g. user just opened the app)
+          if (nowMin === announceMin) {
+            const key = `${today}|${r.id}|${t}|${off}`;
+            if (announcedRef.current.has(key)) return;
+            announcedRef.current.add(key);
+            const text = buildAnnouncement(elder.name || "there", r.name, off, t);
+            speak({ data: { text } })
+              .then((res) => {
+                const audio = new Audio(`data:${res.mime};base64,${res.audio}`);
+                audio.play().catch(() => {});
+              })
+              .catch(() => {});
+          }
+        });
+      });
+    });
+  }, [now, reminders, announcementsEnabled, elder.name]);
+
+
 
   const dateDayStr = now ? formatDateDay(now) : "";
   const timeStr = now ? formatTime(now) : "";
@@ -264,7 +314,8 @@ function CompletedRow({ label, color }: { label: string; color: string }) {
     <div
       style={{
         fontFamily: "Verdana, sans-serif",
-        fontSize: 12,
+        fontSize: 16,
+
         fontWeight: 400,
         color,
         opacity: 0.6,

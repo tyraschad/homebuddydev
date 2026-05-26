@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Palette, Type, Volume2, Contrast, Check } from "lucide-react";
-import { useState } from "react";
+
 import { useSettings } from "@/lib/settings-store";
 
 export const Route = createFileRoute("/settings/")({
@@ -11,8 +11,9 @@ export const Route = createFileRoute("/settings/")({
 const GREEN = "#2F8F4E";
 
 function SettingsPage() {
-  const { theme, appearance, setAppearance, textSize, setTextSize, highContrast, setHighContrast, cardBorder } = useSettings();
-  const [tts, setTts] = useState(false);
+  const { theme, appearance, setAppearance, textSize, setTextSize, highContrast, setHighContrast, announcementsEnabled, setAnnouncementsEnabled, cardBorder } = useSettings();
+
+
 
 
   const tileStyle: React.CSSProperties = {
@@ -159,11 +160,12 @@ function SettingsPage() {
           />
         </div>
 
-        <button type="button" onClick={() => setTts((v) => !v)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={tts}>
+        <button type="button" onClick={() => setAnnouncementsEnabled(!announcementsEnabled)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={announcementsEnabled}>
           <Volume2 size={20} strokeWidth={2} color={theme.text} />
-          <span style={labelStyle}>Text to speech</span>
-          <ToggleDot on={tts} />
+          <span style={labelStyle}>Reminder Announcements</span>
+          <ToggleDot on={announcementsEnabled} />
         </button>
+
 
         <button type="button" onClick={() => setHighContrast(!highContrast)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={highContrast}>
           <Contrast size={20} strokeWidth={2} color={theme.text} />

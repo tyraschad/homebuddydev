@@ -4,7 +4,7 @@ import {
   AlertTriangle, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { useSettings, type Theme } from "@/lib/settings-store";
-import { TYPE_COLOR, TYPE_LABEL, type Reminder, type ReminderType } from "@/lib/carer-store";
+import { TYPE_COLOR, TYPE_LABEL, DEFAULT_ANNOUNCEMENT_OFFSETS, type Reminder, type ReminderType } from "@/lib/carer-store";
 
 export const GREEN = "#2F8F4E";
 export const RED = "#C0392B";
@@ -199,10 +199,13 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
 
           <RepeatScheduleField r={r} setR={setR} errors={errors} />
 
+          <AnnouncementTimesField r={r} setR={setR} />
+
           <div>
             <label style={labelStyle}>Notes</label>
             <textarea value={r.notes ?? ""} onChange={(e) => setR({ ...r, notes: e.target.value })} />
           </div>
+
         </div>
 
         <div style={{ display: "grid", gap: 10, marginTop: 20 }}>
@@ -475,3 +478,53 @@ function CustomDayPicker({
     </div>
   );
 }
+
+function AnnouncementTimesField({ r, setR }: { r: Reminder; setR: (r: Reminder) => void }) {
+  const { theme, buttonBorder } = useSettings();
+  const current = r.announcementOffsets ?? DEFAULT_ANNOUNCEMENT_OFFSETS;
+  const options: { offset: number; label: string }[] = [
+    { offset: 60, label: "1 hour before" },
+    { offset: 30, label: "30 minutes before" },
+    { offset: 5, label: "5 minutes before" },
+    { offset: 0, label: "At reminder time" },
+  ];
+  const toggle = (off: number) => {
+    const set = new Set(current);
+    if (set.has(off)) set.delete(off); else set.add(off);
+    setR({ ...r, announcementOffsets: Array.from(set).sort((a, b) => b - a) });
+  };
+  const accent = GREEN;
+  const labelStyle: CSSProperties = {
+    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+    color: theme.text, display: "block", marginBottom: 8,
+  };
+  return (
+    <div style={{ border: buttonBorder, borderRadius: 8, padding: 12 }}>
+      <span style={labelStyle}>Spoken announcements</span>
+      <div style={{ display: "grid", gap: 8 }}>
+        {options.map((o) => {
+          const active = current.includes(o.offset);
+          return (
+            <label key={o.offset} style={{
+              display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer",
+              fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text,
+            }}>
+              <span onClick={() => toggle(o.offset)} style={{
+                width: 18, height: 18, borderRadius: 4,
+                border: active ? `1px solid ${accent}` : buttonBorder,
+                background: active ? accent : theme.card,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", fontSize: 12, lineHeight: 1, fontWeight: 700,
+              }}>{active ? "✓" : ""}</span>
+              <span onClick={() => toggle(o.offset)}>{o.label}</span>
+            </label>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 12, color: theme.muted, marginTop: 8 }}>
+        Spoken aloud to remind the elder. Disable any you don't want.
+      </div>
+    </div>
+  );
+}
+
