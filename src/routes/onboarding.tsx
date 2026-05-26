@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import {
   ArrowLeft, Check, Plus, X, Edit, Trash2, Upload, Eye, EyeOff, Camera,
   Home as HomeIcon, Glasses, Brain, EyeOff as Blind, Sparkles, Ear, Palette, VolumeX,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, type Reminder, type ReminderType, type Contact } from "@/lib/carer-store";
+import { CategoryPicker, ReminderForm, uid } from "@/components/reminder-form";
 
 export const Route = createFileRoute("/onboarding")({
   component: Onboarding,
