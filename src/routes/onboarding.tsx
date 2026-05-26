@@ -468,21 +468,14 @@ function Onboarding() {
               <SummaryProfile data={data} card={card} theme={theme} cardBorder={cardBorder} />
               <SummarySection
                 title="Reminders" count={data.reminders.length} card={card} theme={theme}
-                lines={data.reminders.map((r) => `${r.time || "—"} · ${r.name}`)}
+                lines={data.reminders.map((r) => `${r.times?.[0] || "—"} · ${r.name}`)}
               />
               <SummarySection
                 title="Instruction Context" count={data.devices.length} card={card} theme={theme}
                 lines={data.devices.map((d) => d.label)}
               />
-              <SummarySection
-                title="Phone Contacts"
-                count={data.contacts.length + (data.emergencyVisible.ems ? 1 : 0) + (data.emergencyVisible.poison ? 1 : 0)}
-                card={card} theme={theme}
-                lines={[
-                  ...data.contacts.map((c) => c.name),
-                  ...(data.emergencyVisible.ems ? ["Emergency Services"] : []),
-                  ...(data.emergencyVisible.poison ? ["Poison Control"] : []),
-                ]}
+              <ContactsSummaryCard
+                data={data} card={card} theme={theme} cardBorder={cardBorder} appearance={appearance}
               />
             </div>
             <p style={{ ...small, marginTop: 16 }}>You can edit any of this from your care portal anytime.</p>
