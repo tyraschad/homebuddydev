@@ -397,14 +397,21 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 20, color: theme.text }}>Ask me anything</div>
               <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 8 }}>How to use a device, your reminders, or to call someone.</div>
             </div>
-            <div style={{ marginTop: 30, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-              {suggestions.map((s) => (
-                <button key={s.label} type="button" onClick={() => handleSuggestion(s)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 10, background: theme.card, color: theme.text, border: buttonBorder, borderRadius: 20, padding: "12px 20px", height: 48, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: highContrast ? 800 : 700, fontSize: 14, cursor: "pointer", lineHeight: 1.2 }}>
-                  {s.icon}<span>{s.label}</span>
-                </button>
-              ))}
-            </div>
+            {suggestions.length > 0 ? (
+              <div style={{ marginTop: 30, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+                {suggestions.map((s) => (
+                  <button key={s.label} type="button" onClick={() => handleSuggestion(s)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 10, background: theme.card, color: theme.text, border: buttonBorder, borderRadius: 20, padding: "8px 12px", height: 44, fontFamily: "Verdana, sans-serif", fontWeight: highContrast ? 800 : 700, fontSize: 14, cursor: "pointer", lineHeight: 1.2, whiteSpace: "nowrap" }}>
+                    {s.icon}<span>{s.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div style={{ marginTop: 30, textAlign: "center" }}>
+                <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>No devices or reminders set up yet</div>
+                <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: theme.muted, marginTop: 4 }}>Talk to your caregiver to add them</div>
+              </div>
+            )}
             <div style={{ marginTop: 30, display: "flex", alignItems: "center", gap: 12, background: theme.card, border: inputBorder, borderRadius: 20, padding: 16, boxSizing: "border-box" }}>
               <Keyboard size={24} strokeWidth={2} color={theme.text} />
               <input type="text" value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
