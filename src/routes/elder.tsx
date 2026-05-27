@@ -644,9 +644,9 @@ function ContactRow({ name, phone, theme, separator }: { name: string; phone: st
 }
 
 function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; isDark: boolean }) {
-  const textColor = isDark ? "#FFFFFF" : "#1A1A2E";
-  const phoneColor = isDark ? "#E0E0E0" : "#4A4A4A";
-  const separator = isDark ? "#B71C1C" : "#D32F2F";
+  const textColor = "#1A1A2E";
+  const phoneColor = isDark ? "#2A2A3E" : "#4A4A4A";
+  const separator = isDark ? "#B71C1C" : "#FFB3B3";
   return (
     <a
       href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
@@ -655,7 +655,7 @@ function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; is
         borderBottom: `1px solid ${separator}`, textDecoration: "none", color: "inherit", cursor: "pointer",
         transition: "background 0.15s",
       }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = isDark ? "#B71C1C" : "#E53935"; }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = isDark ? "#D32F2F" : "#FFB3B3"; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
     >
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: textColor }}>{name}</div>
