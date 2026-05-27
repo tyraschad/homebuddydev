@@ -436,24 +436,8 @@ function ElderHome() {
   );
 }
 
-function CompletedRow({ label, color }: { label: string; color: string }) {
-  return (
-    <div
-      style={{
-        fontFamily: "Verdana, sans-serif",
-        fontSize: 16,
 
-        fontWeight: 400,
-        color,
-        opacity: 0.6,
-        textDecoration: "line-through",
-        transition: "all 0.3s ease",
-      }}
-    >
-      {label}
-    </div>
-  );
-}
+
 
 function Column({ width, children }: { width: string; children: React.ReactNode }) {
   return (
