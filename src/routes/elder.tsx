@@ -323,10 +323,10 @@ function ElderHome() {
         aria-label="Make a call"
         style={{
           position: "fixed",
-          bottom: 16,
-          right: 16,
-          width: 56,
-          height: 56,
+          bottom: 24,
+          right: 24,
+          width: 64,
+          height: 64,
           borderRadius: "50%",
           background: "#6BA24A",
           border: "none",
@@ -349,14 +349,14 @@ function ElderHome() {
           e.currentTarget.style.transform = "scale(1)";
         }}
       >
-        <Phone size={24} strokeWidth={2} color="#FFFFFF" />
+        <Phone size={32} strokeWidth={2} color="#FFFFFF" />
       </button>
       <style>{`
         @media (max-width: 1199px) {
-          .fab-phone { bottom: 12px !important; right: 12px !important; }
+          .fab-phone { bottom: 24px !important; right: 24px !important; }
         }
         @media (max-width: 767px) {
-          .fab-phone { width: 48px !important; height: 48px !important; bottom: 12px !important; right: 12px !important; }
+          .fab-phone { width: 64px !important; height: 64px !important; bottom: 24px !important; right: 24px !important; }
         }
       `}</style>
     </main>
