@@ -85,7 +85,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     const truncate = (s: string, n = 40) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
 
     // ---- Device relevance scoring (Frequency 50% + Time 30% + Health 20%) ----
-    const devices = elder.devices.filter((d) => d.questions && d.questions.length > 0);
+    const devices = elder.devices.filter((d) => !!d.name && !!d.photo && Array.isArray(d.questions) && d.questions.length > 0);
     if (devices.length > 0) {
       const maxAccess = Math.max(1, ...devices.map((d) => d.accessCount ?? 0));
       const period = currentTimePeriod(new Date(nowTick));
@@ -145,21 +145,23 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     if (upcoming) {
       const diff = upcoming.mins - nowMin;
       let time: string;
-      if (diff < 1) time = "Now";
+      if (diff < 1) time = "now";
       else if (diff < 60) time = `${diff} minute${diff === 1 ? "" : "s"}`;
       else {
         const h = Math.floor(diff / 60); const m = diff % 60;
-        time = m === 0 ? `${h} hour${h === 1 ? "" : "s"}` : `${h}h ${m}m`;
+        time = m === 0 ? `${h} hour${h === 1 ? "" : "s"}` : `${h} hour${h === 1 ? "" : "s"} ${m} minute${m === 1 ? "" : "s"}`;
       }
+      const [hh, mm] = upcoming.t.split(":").map(Number);
+      const d = new Date(); d.setHours(hh || 0, mm || 0, 0, 0);
+      const timeStr = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
       result.push({
         icon: <Clock size={18} strokeWidth={2} color={theme.text} />,
-        label: truncate(`${upcoming.r.name} in ${time}`),
+        label: truncate(`${upcoming.r.name} at ${timeStr} in ${time}`, 60),
         reminder: upcoming.r,
         time: upcoming.t,
       });
     }
 
-    if (result.length === 0) result.push({ icon: <Sparkles size={18} strokeWidth={2} color={theme.text} />, label: "Ask me anything" });
     return result;
   }, [reminders, elder.devices, elder.conditions, theme.text, nowTick]);
 
@@ -395,14 +397,21 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 20, color: theme.text }}>Ask me anything</div>
               <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 8 }}>How to use a device, your reminders, or to call someone.</div>
             </div>
-            <div style={{ marginTop: 30, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-              {suggestions.map((s) => (
-                <button key={s.label} type="button" onClick={() => handleSuggestion(s)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 10, background: theme.card, color: theme.text, border: buttonBorder, borderRadius: 20, padding: "12px 20px", height: 48, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: highContrast ? 800 : 700, fontSize: 14, cursor: "pointer", lineHeight: 1.2 }}>
-                  {s.icon}<span>{s.label}</span>
-                </button>
-              ))}
-            </div>
+            {suggestions.length > 0 ? (
+              <div style={{ marginTop: 30, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+                {suggestions.map((s) => (
+                  <button key={s.label} type="button" onClick={() => handleSuggestion(s)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 10, background: theme.card, color: theme.text, border: buttonBorder, borderRadius: 20, padding: "8px 12px", height: 44, fontFamily: "Verdana, sans-serif", fontWeight: highContrast ? 800 : 700, fontSize: 14, cursor: "pointer", lineHeight: 1.2, whiteSpace: "nowrap" }}>
+                    {s.icon}<span>{s.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div style={{ marginTop: 30, textAlign: "center" }}>
+                <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>No devices or reminders set up yet</div>
+                <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: theme.muted, marginTop: 4 }}>Talk to your caregiver to add them</div>
+              </div>
+            )}
             <div style={{ marginTop: 30, display: "flex", alignItems: "center", gap: 12, background: theme.card, border: inputBorder, borderRadius: 20, padding: 16, boxSizing: "border-box" }}>
               <Keyboard size={24} strokeWidth={2} color={theme.text} />
               <input type="text" value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
