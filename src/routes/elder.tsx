@@ -251,52 +251,128 @@ function ElderHome() {
               </h2>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", minHeight: 0 }}>
                 {items.length === 0 ? (
-                  <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, textAlign: "center", margin: "auto" }}>
-                    No reminders scheduled today
-                  </p>
-                ) : upcoming.length === 0 ? (
-                  <>
-                    <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text, textAlign: "center", marginTop: 0, marginBottom: 16 }}>
-                      All reminders completed today! Great job!
+                  <div style={{ margin: "auto", textAlign: "center" }}>
+                    <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, margin: 0 }}>
+                      No reminders scheduled today
                     </p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {completed.map((i) => (
-                        <CompletedRow key={i.key} label={i.label} color={completedColor} />
-                      ))}
-                    </div>
-                  </>
+                    <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: completedColor, marginTop: 4 }}>
+                      All done!
+                    </p>
+                  </div>
                 ) : (
                   <>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {upcoming.map((i) => (
-                        <div
-                          key={i.key}
-                          style={{
-                            fontFamily: "Verdana, sans-serif",
-                            fontSize: 18,
-                            fontWeight: 700,
-                            color: theme.text,
-                            opacity: 1,
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          {i.label}
+                    {/* Next Task hero */}
+                    {nextItem ? (
+                      <button
+                        type="button"
+                        onClick={() => setSelected({ reminder: nextItem.reminder, time: nextItem.time })}
+                        style={{
+                          textAlign: "left",
+                          background: nextBg,
+                          border: `2px solid ${nextAccent}`,
+                          borderRadius: 12,
+                          padding: 24,
+                          marginBottom: 28,
+                          cursor: "pointer",
+                          boxShadow: "0 4px 8px rgba(0,0,0,0.08)",
+                          color: theme.text,
+                          fontFamily: "inherit",
+                        }}
+                      >
+                        <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: nextAccent, marginBottom: 8 }}>
+                          Next Task
                         </div>
-                      ))}
-                    </div>
-                    {completed.length > 0 && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 16 }}>
-                        {completed.map((i) => (
-                          <CompletedRow key={i.key} label={i.label} color={completedColor} />
-                        ))}
+                        <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text, marginBottom: 6 }}>
+                          {nextItem.reminder.name}
+                        </div>
+                        <div style={{ fontFamily: "Verdana, sans-serif", fontWeight: 700, fontSize: 18, color: nextAccent }}>
+                          {timeUntilText(nextItem.minutes, nowMin)}
+                        </div>
+                      </button>
+                    ) : (
+                      <div style={{ marginBottom: 20, padding: 16, borderRadius: 8, background: nextBg, color: theme.text, fontFamily: "Verdana, sans-serif", fontSize: 14, textAlign: "center" }}>
+                        All reminders completed today! Great job!
                       </div>
                     )}
+
+                    {/* Timeline */}
+                    <div style={{ position: "relative", paddingLeft: 64, height: timelineHeight }}>
+                      {/* Vertical line */}
+                      <div style={{ position: "absolute", left: 56, top: 0, bottom: 0, width: 2, background: timelineLine }} />
+                      {/* Hour labels */}
+                      {hourMarks.map((h) => (
+                        <div
+                          key={h}
+                          style={{
+                            position: "absolute",
+                            top: yFor(h * 60) - 6,
+                            left: 0,
+                            width: 48,
+                            textAlign: "right",
+                            fontFamily: "Verdana, sans-serif",
+                            fontSize: 11,
+                            color: timelineLabel,
+                          }}
+                        >
+                          {formatHour(h)}
+                        </div>
+                      ))}
+                      {/* Reminder items */}
+                      {items.map((i) => {
+                        const y = yFor(i.minutes);
+                        const isNext = nextItem && i.key === nextItem.key;
+                        return (
+                          <button
+                            key={i.key}
+                            type="button"
+                            onClick={() => setSelected({ reminder: i.reminder, time: i.time })}
+                            style={{
+                              position: "absolute",
+                              top: y - 12,
+                              left: 48,
+                              right: 0,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              padding: "4px 8px",
+                              background: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              textAlign: "left",
+                              color: theme.text,
+                              fontFamily: "inherit",
+                            }}
+                          >
+                            <span style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: "50%",
+                              background: i.completed ? timelineLine : (isNext ? nextAccent : theme.text),
+                              flexShrink: 0,
+                              opacity: i.completed ? 0.6 : 1,
+                            }} />
+                            <span style={{
+                              fontFamily: "Verdana, sans-serif",
+                              fontSize: i.completed ? 12 : 14,
+                              color: i.completed ? completedColor : theme.text,
+                              opacity: i.completed ? 0.6 : 1,
+                              textDecoration: i.completed ? "line-through" : "none",
+                              fontWeight: isNext ? 700 : 400,
+                            }}>
+                              <span style={{ color: completedColor, marginRight: 6 }}>{formatTimeStr(i.time)}</span>
+                              {i.reminder.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </>
                 )}
               </div>
             </div>
           </CardBox>
         </Column>
+
       </div>
 
       {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
