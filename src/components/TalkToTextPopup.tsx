@@ -85,7 +85,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     const truncate = (s: string, n = 40) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
 
     // ---- Device relevance scoring (Frequency 50% + Time 30% + Health 20%) ----
-    const devices = elder.devices.filter((d) => d.questions && d.questions.length > 0);
+    const devices = elder.devices.filter((d) => !!d.name && !!d.photo && Array.isArray(d.questions) && d.questions.length > 0);
     if (devices.length > 0) {
       const maxAccess = Math.max(1, ...devices.map((d) => d.accessCount ?? 0));
       const period = currentTimePeriod(new Date(nowTick));
