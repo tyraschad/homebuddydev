@@ -112,15 +112,14 @@ function ElderHome() {
 
   const items = useMemo(() => {
     const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
-    const list: { key: string; time: string; label: string; completed: boolean; minutes: number }[] = [];
+    const list: { key: string; time: string; reminder: typeof reminders[number]; completed: boolean; minutes: number }[] = [];
     reminders.forEach((r) => {
       r.times.forEach((t) => {
         const min = toMinutes(t);
-        const detail = r.type === "medication" && r.dose ? ` - ${r.dose} pill${r.dose > 1 ? "s" : ""}` : "";
         list.push({
           key: r.id + t,
           time: t,
-          label: `${t} ${r.name}${detail}`,
+          reminder: r,
           completed: nowMin >= 0 && nowMin >= min,
           minutes: min,
         });
@@ -130,10 +129,33 @@ function ElderHome() {
     return list;
   }, [reminders, now]);
 
-  const upcoming = items.filter((i) => !i.completed);
-  const completed = items.filter((i) => i.completed);
+  const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
+  const nextKey = items.find((i) => !i.completed)?.key;
+  const [openItemKey, setOpenItemKey] = useState<string | null>(null);
+  const openItem = items.find((i) => i.key === openItemKey) ?? null;
 
+  const timelineColor = appearance === "dark" ? "#5A5A6E" : "#D0D0D0";
+  const nextBg = appearance === "dark" ? "#2E5A2E" : "#E8F5E9";
+  const nextBorder = appearance === "dark" ? "#3F7A3F" : "#A5D6A7";
   const completedColor = appearance === "dark" ? "#B0B0B0" : "#6B6860";
+
+  function formatRelative(min: number) {
+    const diff = min - nowMin;
+    if (diff === 0) return "now";
+    const abs = Math.abs(diff);
+    let txt: string;
+    if (abs < 60) txt = `${abs} minute${abs === 1 ? "" : "s"}`;
+    else {
+      const h = Math.round(abs / 60);
+      txt = `${h} hour${h === 1 ? "" : "s"}`;
+    }
+    return diff > 0 ? `in ${txt}` : `${txt} ago`;
+  }
+
+  function frequencyLabel(r: typeof reminders[number]) {
+    if (r.repeatSchedule) return r.repeatSchedule;
+    return r.repeats ? "Repeats" : "Does not repeat";
+  }
 
   return (
     <main
@@ -208,49 +230,71 @@ function ElderHome() {
               <h2 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text, margin: 0, marginBottom: 12 }}>
                 Today's Reminders
               </h2>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", minHeight: 0 }}>
+              <div style={{ flex: 1, overflowY: "auto", minHeight: 0, position: "relative" }}>
                 {items.length === 0 ? (
                   <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, textAlign: "center", margin: "auto" }}>
                     No reminders scheduled today
                   </p>
-                ) : upcoming.length === 0 ? (
-                  <>
-                    <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text, textAlign: "center", marginTop: 0, marginBottom: 16 }}>
-                      All reminders completed today! Great job!
-                    </p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {completed.map((i) => (
-                        <CompletedRow key={i.key} label={i.label} color={completedColor} />
-                      ))}
-                    </div>
-                  </>
                 ) : (
-                  <>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {upcoming.map((i) => (
-                        <div
-                          key={i.key}
-                          style={{
-                            fontFamily: "Verdana, sans-serif",
-                            fontSize: 18,
-                            fontWeight: 700,
-                            color: theme.text,
-                            opacity: 1,
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          {i.label}
-                        </div>
-                      ))}
+                  <div style={{ position: "relative", paddingLeft: 24 }}>
+                    {/* Timeline line */}
+                    <div style={{ position: "absolute", left: 8, top: 4, bottom: 4, width: 2, background: timelineColor, borderRadius: 1 }} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      {items.map((i) => {
+                        const isNext = i.key === nextKey;
+                        const timeStr = formatTimeStr(i.time);
+                        const rel = formatRelative(i.minutes);
+                        if (i.completed) {
+                          return (
+                            <button
+                              key={i.key}
+                              type="button"
+                              onClick={() => setOpenItemKey(i.key)}
+                              style={{
+                                background: "transparent", border: "none", textAlign: "left", cursor: "pointer",
+                                padding: "12px 16px", fontFamily: "Verdana, sans-serif", color: completedColor,
+                                opacity: 0.6, textDecoration: "line-through",
+                              }}
+                            >
+                              <div style={{ fontSize: 14, fontWeight: 700 }}>{i.reminder.name}</div>
+                              <div style={{ fontSize: 14, marginTop: 2 }}>{timeStr} · {rel}</div>
+                            </button>
+                          );
+                        }
+                        if (isNext) {
+                          return (
+                            <button
+                              key={i.key}
+                              type="button"
+                              onClick={() => setOpenItemKey(i.key)}
+                              style={{
+                                background: nextBg, border: `1.5px solid ${nextBorder}`, borderRadius: 8,
+                                padding: 16, margin: "8px 0", textAlign: "left", cursor: "pointer", color: theme.text,
+                                fontFamily: "Verdana, sans-serif",
+                              }}
+                            >
+                              <div style={{ fontSize: 20, fontWeight: 700 }}>{i.reminder.name}</div>
+                              <div style={{ fontSize: 14, color: completedColor, marginTop: 4 }}>{timeStr} · {rel}</div>
+                            </button>
+                          );
+                        }
+                        return (
+                          <button
+                            key={i.key}
+                            type="button"
+                            onClick={() => setOpenItemKey(i.key)}
+                            style={{
+                              background: "transparent", border: "none", textAlign: "left", cursor: "pointer",
+                              padding: "12px 16px", fontFamily: "Verdana, sans-serif", color: theme.text,
+                            }}
+                          >
+                            <div style={{ fontSize: 16, fontWeight: 700 }}>{i.reminder.name}</div>
+                            <div style={{ fontSize: 14, color: completedColor, marginTop: 2 }}>{timeStr} · {rel}</div>
+                          </button>
+                        );
+                      })}
                     </div>
-                    {completed.length > 0 && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 16 }}>
-                        {completed.map((i) => (
-                          <CompletedRow key={i.key} label={i.label} color={completedColor} />
-                        ))}
-                      </div>
-                    )}
-                  </>
+                  </div>
                 )}
               </div>
             </div>
@@ -260,6 +304,16 @@ function ElderHome() {
 
       {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
       {overlay === "call" && <CallPopup onClose={() => setOverlay(null)} theme={theme} />}
+      {openItem && (
+        <ReminderDetailsPopup
+          onClose={() => setOpenItemKey(null)}
+          reminder={openItem.reminder}
+          time={openItem.time}
+          relative={formatRelative(openItem.minutes)}
+          frequency={frequencyLabel(openItem.reminder)}
+          theme={theme}
+        />
+      )}
 
       {/* Floating Phone Button */}
       <button
@@ -545,5 +599,106 @@ function ContactRow({ name, phone, theme, separator }: { name: string; phone: st
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>{name}</div>
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>{phone}</div>
     </a>
+  );
+}
+
+function ReminderDetailsPopup({
+  onClose, reminder, time, relative, frequency, theme,
+}: {
+  onClose: () => void;
+  reminder: { name: string; details?: string; notes?: string; photo?: string; dose?: number; type: string };
+  time: string;
+  relative: string;
+  frequency: string;
+  theme: { card: string; text: string; muted: string };
+}) {
+  const { cardBorder } = useSettings();
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const timeStr = formatTimeStr(time);
+  const detailsText = [
+    reminder.dose ? `${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}` : null,
+    reminder.details,
+  ].filter(Boolean).join(" — ");
+
+  return (
+    <div
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 16, zIndex: 2000, boxSizing: "border-box",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: theme.card, border: cardBorder, borderRadius: 8, padding: 24,
+          width: "90%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto",
+          display: "flex", flexDirection: "column", boxSizing: "border-box", color: theme.text,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
+          <div>
+            <h2 style={{ margin: 0, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text }}>
+              {reminder.name}
+            </h2>
+            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 4 }}>
+              {timeStr} · {frequency} · {relative}
+            </div>
+          </div>
+          <button
+            type="button" onClick={onClose} aria-label="Close"
+            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: theme.text }}
+          >
+            <X size={20} strokeWidth={1.5} color={theme.text} />
+          </button>
+        </div>
+
+        <Section label="Schedule" theme={theme}>
+          <div style={{ fontSize: 16 }}>{timeStr}</div>
+          <div style={{ fontSize: 16 }}>{frequency}</div>
+        </Section>
+
+        {detailsText && (
+          <Section label="Details" theme={theme}>
+            <div style={{ fontSize: 14 }}>{detailsText}</div>
+          </Section>
+        )}
+
+        {reminder.notes && (
+          <Section label="Notes" theme={theme}>
+            <div style={{ fontSize: 14 }}>{reminder.notes}</div>
+          </Section>
+        )}
+
+        {reminder.photo && (
+          <Section label="Reminder Photos" theme={theme}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 12 }}>
+              <img src={reminder.photo} alt={reminder.name} style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 4, border: cardBorder }} />
+            </div>
+          </Section>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Section({ label, children, theme }: { label: string; children: React.ReactNode; theme: { muted: string; text: string } }) {
+  return (
+    <div style={{ marginTop: 20 }}>
+      <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontSize: 14, fontWeight: 700, color: theme.muted, marginBottom: 8 }}>
+        {label}
+      </div>
+      <div style={{ fontFamily: "Verdana, sans-serif", color: theme.text, display: "flex", flexDirection: "column", gap: 4 }}>
+        {children}
+      </div>
+    </div>
   );
 }
