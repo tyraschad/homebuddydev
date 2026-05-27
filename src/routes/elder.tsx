@@ -2,10 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Settings, Mic, Phone, X } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
-import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type Reminder } from "@/lib/carer-store";
+import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS } from "@/lib/carer-store";
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { speak } from "@/lib/talk.functions";
-
 
 
 export const Route = createFileRoute("/elder")({
@@ -19,21 +18,6 @@ export const Route = createFileRoute("/elder")({
 });
 
 type Overlay = "chat" | "call" | null;
-
-function timeUntilText(min: number, nowMin: number) {
-  const diff = min - nowMin;
-  if (diff <= 0) return "now";
-  if (diff < 60) return `in ${diff} minute${diff !== 1 ? "s" : ""}`;
-  const h = Math.floor(diff / 60);
-  const m = diff % 60;
-  if (m === 0) return `in ${h} hour${h > 1 ? "s" : ""}`;
-  return `in ${h}h ${m}m`;
-}
-
-function frequencyText(r: Reminder) {
-  return r.repeatSchedule || (r.repeats ? "Repeats" : "Does not repeat");
-}
-
 
 function ordinalSuffix(n: number) {
   const s = ["th", "st", "nd", "rd"];
@@ -80,8 +64,6 @@ function ElderHome() {
   const { reminders, elder } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
-  const [selected, setSelected] = useState<{ reminder: Reminder; time: string } | null>(null);
-
 
   useEffect(() => {
     setNow(new Date());
@@ -130,16 +112,17 @@ function ElderHome() {
 
   const items = useMemo(() => {
     const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
-    const list: { key: string; time: string; minutes: number; completed: boolean; reminder: Reminder }[] = [];
+    const list: { key: string; time: string; label: string; completed: boolean; minutes: number }[] = [];
     reminders.forEach((r) => {
       r.times.forEach((t) => {
         const min = toMinutes(t);
+        const detail = r.type === "medication" && r.dose ? ` - ${r.dose} pill${r.dose > 1 ? "s" : ""}` : "";
         list.push({
           key: r.id + t,
           time: t,
-          minutes: min,
+          label: `${t} ${r.name}${detail}`,
           completed: nowMin >= 0 && nowMin >= min,
-          reminder: r,
+          minutes: min,
         });
       });
     });
@@ -148,33 +131,9 @@ function ElderHome() {
   }, [reminders, now]);
 
   const upcoming = items.filter((i) => !i.completed);
-  const nextItem = upcoming[0];
-  const nowMin = now ? now.getHours() * 60 + now.getMinutes() : 0;
+  const completed = items.filter((i) => i.completed);
 
   const completedColor = appearance === "dark" ? "#B0B0B0" : "#6B6860";
-  const timelineLine = appearance === "dark" ? "#5A5A6E" : "#BBBBB0";
-  const timelineLabel = appearance === "dark" ? "#B0B0B0" : "#6B6860";
-  const nextBg = appearance === "dark" ? "#1B5E20" : "#E8F5E9";
-  const nextAccent = "#2E7D32";
-
-  // Hour range: default 8 AM-8 PM, expand if reminders fall outside
-  const startHour = items.length
-    ? Math.min(8, Math.floor(Math.min(...items.map((i) => i.minutes)) / 60))
-    : 8;
-  const endHour = items.length
-    ? Math.max(20, Math.ceil(Math.max(...items.map((i) => i.minutes)) / 60))
-    : 20;
-  const PX_PER_HOUR = 60;
-  const timelineHeight = (endHour - startHour) * PX_PER_HOUR;
-  const yFor = (min: number) => ((min - startHour * 60) / 60) * PX_PER_HOUR;
-  const hourMarks: number[] = [];
-  for (let h = startHour; h <= endHour; h++) hourMarks.push(h);
-  const formatHour = (h: number) => {
-    const ampm = h >= 12 ? "PM" : "AM";
-    const h12 = h % 12 === 0 ? 12 : h % 12;
-    return `${h12} ${ampm}`;
-  };
-
 
   return (
     <main
@@ -251,142 +210,56 @@ function ElderHome() {
               </h2>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", minHeight: 0 }}>
                 {items.length === 0 ? (
-                  <div style={{ margin: "auto", textAlign: "center" }}>
-                    <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, margin: 0 }}>
-                      No reminders scheduled today
+                  <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, textAlign: "center", margin: "auto" }}>
+                    No reminders scheduled today
+                  </p>
+                ) : upcoming.length === 0 ? (
+                  <>
+                    <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text, textAlign: "center", marginTop: 0, marginBottom: 16 }}>
+                      All reminders completed today! Great job!
                     </p>
-                    <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: completedColor, marginTop: 4 }}>
-                      All done!
-                    </p>
-                  </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {completed.map((i) => (
+                        <CompletedRow key={i.key} label={i.label} color={completedColor} />
+                      ))}
+                    </div>
+                  </>
                 ) : (
                   <>
-                    {/* Next Task hero */}
-                    {nextItem ? (
-                      <button
-                        type="button"
-                        onClick={() => setSelected({ reminder: nextItem.reminder, time: nextItem.time })}
-                        style={{
-                          textAlign: "left",
-                          background: nextBg,
-                          border: `2px solid ${nextAccent}`,
-                          borderRadius: 12,
-                          padding: 24,
-                          marginBottom: 28,
-                          cursor: "pointer",
-                          boxShadow: "0 4px 8px rgba(0,0,0,0.08)",
-                          color: theme.text,
-                          fontFamily: "inherit",
-                        }}
-                      >
-                        <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: nextAccent, marginBottom: 8 }}>
-                          Next Task
-                        </div>
-                        <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text, marginBottom: 6 }}>
-                          {nextItem.reminder.name}
-                        </div>
-                        <div style={{ fontFamily: "Verdana, sans-serif", fontWeight: 700, fontSize: 18, color: nextAccent }}>
-                          {timeUntilText(nextItem.minutes, nowMin)}
-                        </div>
-                      </button>
-                    ) : (
-                      <div style={{ marginBottom: 20, padding: 16, borderRadius: 8, background: nextBg, color: theme.text, fontFamily: "Verdana, sans-serif", fontSize: 14, textAlign: "center" }}>
-                        All reminders completed today! Great job!
-                      </div>
-                    )}
-
-                    {/* Timeline */}
-                    <div style={{ position: "relative", paddingLeft: 64, height: timelineHeight }}>
-                      {/* Vertical line */}
-                      <div style={{ position: "absolute", left: 56, top: 0, bottom: 0, width: 2, background: timelineLine }} />
-                      {/* Hour labels */}
-                      {hourMarks.map((h) => (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {upcoming.map((i) => (
                         <div
-                          key={h}
+                          key={i.key}
                           style={{
-                            position: "absolute",
-                            top: yFor(h * 60) - 6,
-                            left: 0,
-                            width: 48,
-                            textAlign: "right",
                             fontFamily: "Verdana, sans-serif",
-                            fontSize: 11,
-                            color: timelineLabel,
+                            fontSize: 18,
+                            fontWeight: 700,
+                            color: theme.text,
+                            opacity: 1,
+                            transition: "all 0.3s ease",
                           }}
                         >
-                          {formatHour(h)}
+                          {i.label}
                         </div>
                       ))}
-                      {/* Reminder items */}
-                      {items.map((i) => {
-                        const y = yFor(i.minutes);
-                        const isNext = nextItem && i.key === nextItem.key;
-                        return (
-                          <button
-                            key={i.key}
-                            type="button"
-                            onClick={() => setSelected({ reminder: i.reminder, time: i.time })}
-                            style={{
-                              position: "absolute",
-                              top: y - 12,
-                              left: 48,
-                              right: 0,
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 10,
-                              padding: "4px 8px",
-                              background: "transparent",
-                              border: "none",
-                              cursor: "pointer",
-                              textAlign: "left",
-                              color: theme.text,
-                              fontFamily: "inherit",
-                            }}
-                          >
-                            <span style={{
-                              width: 10,
-                              height: 10,
-                              borderRadius: "50%",
-                              background: i.completed ? timelineLine : (isNext ? nextAccent : theme.text),
-                              flexShrink: 0,
-                              opacity: i.completed ? 0.6 : 1,
-                            }} />
-                            <span style={{
-                              fontFamily: "Verdana, sans-serif",
-                              fontSize: i.completed ? 12 : 14,
-                              color: i.completed ? completedColor : theme.text,
-                              opacity: i.completed ? 0.6 : 1,
-                              textDecoration: i.completed ? "line-through" : "none",
-                              fontWeight: isNext ? 700 : 400,
-                            }}>
-                              <span style={{ color: completedColor, marginRight: 6 }}>{formatTimeStr(i.time)}</span>
-                              {i.reminder.name}
-                            </span>
-                          </button>
-                        );
-                      })}
                     </div>
+                    {completed.length > 0 && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 16 }}>
+                        {completed.map((i) => (
+                          <CompletedRow key={i.key} label={i.label} color={completedColor} />
+                        ))}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
             </div>
           </CardBox>
         </Column>
-
       </div>
 
       {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
       {overlay === "call" && <CallPopup onClose={() => setOverlay(null)} theme={theme} />}
-      {selected && (
-        <ReminderDetailsPopup
-          reminder={selected.reminder}
-          time={selected.time}
-          nowMin={nowMin}
-          onClose={() => setSelected(null)}
-          theme={theme}
-        />
-      )}
-
 
       {/* Floating Phone Button */}
       <button
@@ -436,8 +309,24 @@ function ElderHome() {
   );
 }
 
+function CompletedRow({ label, color }: { label: string; color: string }) {
+  return (
+    <div
+      style={{
+        fontFamily: "Verdana, sans-serif",
+        fontSize: 16,
 
-
+        fontWeight: 400,
+        color,
+        opacity: 0.6,
+        textDecoration: "line-through",
+        transition: "all 0.3s ease",
+      }}
+    >
+      {label}
+    </div>
+  );
+}
 
 function Column({ width, children }: { width: string; children: React.ReactNode }) {
   return (
@@ -656,134 +545,5 @@ function ContactRow({ name, phone, theme, separator }: { name: string; phone: st
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>{name}</div>
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>{phone}</div>
     </a>
-  );
-}
-
-function ReminderDetailsPopup({
-  reminder,
-  time,
-  nowMin,
-  onClose,
-  theme,
-}: {
-  reminder: Reminder;
-  time: string;
-  nowMin: number;
-  onClose: () => void;
-  theme: { card: string; text: string; muted: string };
-}) {
-  const { cardBorder } = useSettings();
-  const [lightbox, setLightbox] = useState<string | null>(null);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { if (lightbox) setLightbox(null); else onClose(); } };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, lightbox]);
-
-  const targetMin = toMinutes(time);
-  const isFuture = targetMin > nowMin;
-  const subtitle = `${formatTimeStr(time)} · ${frequencyText(reminder)}${isFuture ? ` · Next ${timeUntilText(targetMin, nowMin)}` : ""}`;
-  const detail =
-    reminder.type === "medication" && reminder.dose
-      ? `Take ${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}${reminder.details ? ` — ${reminder.details}` : ""}`
-      : reminder.details || "";
-  const photos = reminder.photo ? [reminder.photo] : [];
-  const labelColor = theme.muted;
-
-  return (
-    <div
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      style={{
-        position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 16, zIndex: 2100, boxSizing: "border-box",
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: theme.card, border: cardBorder, borderRadius: 8, padding: 24,
-          width: "90%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto",
-          display: "flex", flexDirection: "column", boxSizing: "border-box", color: theme.text,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
-          <div>
-            <h2 style={{ margin: 0, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text }}>
-              {reminder.name}
-            </h2>
-            <div style={{ marginTop: 6, fontFamily: "Verdana, sans-serif", fontSize: 14, color: labelColor }}>
-              {subtitle}
-            </div>
-          </div>
-          <button
-            type="button" onClick={onClose} aria-label="Close"
-            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: theme.text, flexShrink: 0 }}
-          >
-            <X size={20} strokeWidth={1.5} color={theme.text} />
-          </button>
-        </div>
-
-        <Section label="Schedule" color={labelColor}>
-          <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text }}>{formatTimeStr(time)}</div>
-          <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text, marginTop: 2 }}>{frequencyText(reminder)}</div>
-        </Section>
-
-        {detail && (
-          <Section label="Details" color={labelColor}>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text }}>{detail}</div>
-          </Section>
-        )}
-
-        {reminder.notes && (
-          <Section label="Notes" color={labelColor}>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text }}>{reminder.notes}</div>
-          </Section>
-        )}
-
-        {photos.length > 0 && (
-          <Section label="Reminder Photos" color={labelColor}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 12 }}>
-              {photos.map((src, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setLightbox(src)}
-                  style={{ padding: 0, border: cardBorder, borderRadius: 4, overflow: "hidden", cursor: "pointer", background: "transparent" }}
-                >
-                  <img src={src} alt={`${reminder.name} ${idx + 1}`} style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} />
-                </button>
-              ))}
-            </div>
-          </Section>
-        )}
-      </div>
-
-      {lightbox && (
-        <div
-          onClick={() => setLightbox(null)}
-          style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: 24, zIndex: 2200,
-          }}
-        >
-          <img src={lightbox} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Section({ label, color, children }: { label: string; color: string; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, color, marginBottom: 6 }}>
-        {label}
-      </div>
-      {children}
-    </div>
   );
 }
