@@ -377,6 +377,16 @@ function ElderHome() {
 
       {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
       {overlay === "call" && <CallPopup onClose={() => setOverlay(null)} theme={theme} />}
+      {selected && (
+        <ReminderDetailsPopup
+          reminder={selected.reminder}
+          time={selected.time}
+          nowMin={nowMin}
+          onClose={() => setSelected(null)}
+          theme={theme}
+        />
+      )}
+
 
       {/* Floating Phone Button */}
       <button
