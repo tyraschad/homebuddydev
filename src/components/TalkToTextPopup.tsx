@@ -145,21 +145,23 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     if (upcoming) {
       const diff = upcoming.mins - nowMin;
       let time: string;
-      if (diff < 1) time = "Now";
+      if (diff < 1) time = "now";
       else if (diff < 60) time = `${diff} minute${diff === 1 ? "" : "s"}`;
       else {
         const h = Math.floor(diff / 60); const m = diff % 60;
-        time = m === 0 ? `${h} hour${h === 1 ? "" : "s"}` : `${h}h ${m}m`;
+        time = m === 0 ? `${h} hour${h === 1 ? "" : "s"}` : `${h} hour${h === 1 ? "" : "s"} ${m} minute${m === 1 ? "" : "s"}`;
       }
+      const [hh, mm] = upcoming.t.split(":").map(Number);
+      const d = new Date(); d.setHours(hh || 0, mm || 0, 0, 0);
+      const timeStr = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
       result.push({
         icon: <Clock size={18} strokeWidth={2} color={theme.text} />,
-        label: truncate(`${upcoming.r.name} in ${time}`),
+        label: truncate(`${upcoming.r.name} at ${timeStr} in ${time}`, 60),
         reminder: upcoming.r,
         time: upcoming.t,
       });
     }
 
-    if (result.length === 0) result.push({ icon: <Sparkles size={18} strokeWidth={2} color={theme.text} />, label: "Ask me anything" });
     return result;
   }, [reminders, elder.devices, elder.conditions, theme.text, nowTick]);
 
