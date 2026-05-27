@@ -601,3 +601,104 @@ function ContactRow({ name, phone, theme, separator }: { name: string; phone: st
     </a>
   );
 }
+
+function ReminderDetailsPopup({
+  onClose, reminder, time, relative, frequency, theme,
+}: {
+  onClose: () => void;
+  reminder: { name: string; details?: string; notes?: string; photo?: string; dose?: number; type: string };
+  time: string;
+  relative: string;
+  frequency: string;
+  theme: { card: string; text: string; muted: string };
+}) {
+  const { cardBorder } = useSettings();
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const timeStr = formatTimeStr(time);
+  const detailsText = [
+    reminder.dose ? `${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}` : null,
+    reminder.details,
+  ].filter(Boolean).join(" — ");
+
+  return (
+    <div
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 16, zIndex: 2000, boxSizing: "border-box",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: theme.card, border: cardBorder, borderRadius: 8, padding: 24,
+          width: "90%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto",
+          display: "flex", flexDirection: "column", boxSizing: "border-box", color: theme.text,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
+          <div>
+            <h2 style={{ margin: 0, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text }}>
+              {reminder.name}
+            </h2>
+            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 4 }}>
+              {timeStr} · {frequency} · {relative}
+            </div>
+          </div>
+          <button
+            type="button" onClick={onClose} aria-label="Close"
+            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: theme.text }}
+          >
+            <X size={20} strokeWidth={1.5} color={theme.text} />
+          </button>
+        </div>
+
+        <Section label="Schedule" theme={theme}>
+          <div style={{ fontSize: 16 }}>{timeStr}</div>
+          <div style={{ fontSize: 16 }}>{frequency}</div>
+        </Section>
+
+        {detailsText && (
+          <Section label="Details" theme={theme}>
+            <div style={{ fontSize: 14 }}>{detailsText}</div>
+          </Section>
+        )}
+
+        {reminder.notes && (
+          <Section label="Notes" theme={theme}>
+            <div style={{ fontSize: 14 }}>{reminder.notes}</div>
+          </Section>
+        )}
+
+        {reminder.photo && (
+          <Section label="Reminder Photos" theme={theme}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 12 }}>
+              <img src={reminder.photo} alt={reminder.name} style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 4, border: cardBorder }} />
+            </div>
+          </Section>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Section({ label, children, theme }: { label: string; children: React.ReactNode; theme: { muted: string; text: string } }) {
+  return (
+    <div style={{ marginTop: 20 }}>
+      <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontSize: 14, fontWeight: 700, color: theme.muted, marginBottom: 8 }}>
+        {label}
+      </div>
+      <div style={{ fontFamily: "Verdana, sans-serif", color: theme.text, display: "flex", flexDirection: "column", gap: 4 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
