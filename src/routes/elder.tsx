@@ -130,17 +130,16 @@ function ElderHome() {
 
   const items = useMemo(() => {
     const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
-    const list: { key: string; time: string; label: string; completed: boolean; minutes: number }[] = [];
+    const list: { key: string; time: string; minutes: number; completed: boolean; reminder: Reminder }[] = [];
     reminders.forEach((r) => {
       r.times.forEach((t) => {
         const min = toMinutes(t);
-        const detail = r.type === "medication" && r.dose ? ` - ${r.dose} pill${r.dose > 1 ? "s" : ""}` : "";
         list.push({
           key: r.id + t,
           time: t,
-          label: `${t} ${r.name}${detail}`,
-          completed: nowMin >= 0 && nowMin >= min,
           minutes: min,
+          completed: nowMin >= 0 && nowMin >= min,
+          reminder: r,
         });
       });
     });
@@ -149,9 +148,33 @@ function ElderHome() {
   }, [reminders, now]);
 
   const upcoming = items.filter((i) => !i.completed);
-  const completed = items.filter((i) => i.completed);
+  const nextItem = upcoming[0];
+  const nowMin = now ? now.getHours() * 60 + now.getMinutes() : 0;
 
   const completedColor = appearance === "dark" ? "#B0B0B0" : "#6B6860";
+  const timelineLine = appearance === "dark" ? "#5A5A6E" : "#BBBBB0";
+  const timelineLabel = appearance === "dark" ? "#B0B0B0" : "#6B6860";
+  const nextBg = appearance === "dark" ? "#1B5E20" : "#E8F5E9";
+  const nextAccent = "#2E7D32";
+
+  // Hour range: default 8 AM-8 PM, expand if reminders fall outside
+  const startHour = items.length
+    ? Math.min(8, Math.floor(Math.min(...items.map((i) => i.minutes)) / 60))
+    : 8;
+  const endHour = items.length
+    ? Math.max(20, Math.ceil(Math.max(...items.map((i) => i.minutes)) / 60))
+    : 20;
+  const PX_PER_HOUR = 60;
+  const timelineHeight = (endHour - startHour) * PX_PER_HOUR;
+  const yFor = (min: number) => ((min - startHour * 60) / 60) * PX_PER_HOUR;
+  const hourMarks: number[] = [];
+  for (let h = startHour; h <= endHour; h++) hourMarks.push(h);
+  const formatHour = (h: number) => {
+    const ampm = h >= 12 ? "PM" : "AM";
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return `${h12} ${ampm}`;
+  };
+
 
   return (
     <main
