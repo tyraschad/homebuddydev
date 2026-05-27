@@ -520,7 +520,9 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
   const { elder } = useCarer();
   const { cardBorder, appearance } = useSettings();
   const contacts = elder.contacts ?? [];
-  const separator = appearance === "dark" ? "#5A5A6E" : "#E5E5E0";
+  const separator = appearance === "dark" ? "#4A4A5E" : "#EFEFEF";
+  const dividerColor = appearance === "dark" ? "#6B6B7B" : "#BDBDBD";
+  const isDark = appearance === "dark";
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -560,10 +562,12 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+          {/* Personal Contacts */}
           {contacts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "24px 0" }}>
-              <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>No contacts saved</div>
-              <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: theme.muted, marginTop: 4 }}>Add contacts in settings</div>
+              <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>
+                No personal contacts saved
+              </div>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column" }}>
@@ -573,13 +577,41 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
             </div>
           )}
 
-          <h3 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, color: theme.text, marginTop: 20, marginBottom: 4 }}>
-            Emergency
-          </h3>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            {EMERGENCY_CONTACTS.map((c) => (
-              <ContactRow key={c.id} name={c.name} phone={c.phone} theme={theme} separator={separator} />
-            ))}
+          {/* Visual Divider */}
+          <div style={{ width: "100%", height: 1, background: dividerColor, margin: "16px 0" }} />
+
+          {/* Emergency Contacts */}
+          <div
+            style={{
+              background: isDark ? "#D32F2F" : "#EF5350",
+              borderRadius: 4,
+              padding: "8px 0",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "'Trebuchet MS', sans-serif",
+                fontWeight: 700,
+                fontSize: 14,
+                color: "#FFFFFF",
+                textTransform: "uppercase",
+                padding: "4px 12px 8px 12px",
+                letterSpacing: "0.5px",
+              }}
+            >
+              Emergency
+            </div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {EMERGENCY_CONTACTS.map((c) => (
+                <EmergencyRow
+                  key={c.id}
+                  name={c.name}
+                  phone={c.phone}
+                  isDark={isDark}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -592,12 +624,36 @@ function ContactRow({ name, phone, theme, separator }: { name: string; phone: st
     <a
       href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
       style={{
-        display: "flex", flexDirection: "column", padding: "12px 0",
+        display: "flex", flexDirection: "column", padding: 12,
         borderBottom: `1px solid ${separator}`, textDecoration: "none", color: "inherit", cursor: "pointer",
+        transition: "background 0.15s",
       }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#F5F5F5"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
     >
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>{name}</div>
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>{phone}</div>
+    </a>
+  );
+}
+
+function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; isDark: boolean }) {
+  const textColor = isDark ? "#FFFFFF" : "#1A1A2E";
+  const phoneColor = isDark ? "#E0E0E0" : "#4A4A4A";
+  const separator = isDark ? "#B71C1C" : "#D32F2F";
+  return (
+    <a
+      href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+      style={{
+        display: "flex", flexDirection: "column", padding: 12,
+        borderBottom: `1px solid ${separator}`, textDecoration: "none", color: "inherit", cursor: "pointer",
+        transition: "background 0.15s",
+      }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = isDark ? "#B71C1C" : "#E53935"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+    >
+      <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: textColor }}>{name}</div>
+      <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: phoneColor, marginTop: 2 }}>{phone}</div>
     </a>
   );
 }
