@@ -112,15 +112,14 @@ function ElderHome() {
 
   const items = useMemo(() => {
     const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
-    const list: { key: string; time: string; label: string; completed: boolean; minutes: number }[] = [];
+    const list: { key: string; time: string; reminder: typeof reminders[number]; completed: boolean; minutes: number }[] = [];
     reminders.forEach((r) => {
       r.times.forEach((t) => {
         const min = toMinutes(t);
-        const detail = r.type === "medication" && r.dose ? ` - ${r.dose} pill${r.dose > 1 ? "s" : ""}` : "";
         list.push({
           key: r.id + t,
           time: t,
-          label: `${t} ${r.name}${detail}`,
+          reminder: r,
           completed: nowMin >= 0 && nowMin >= min,
           minutes: min,
         });
@@ -130,10 +129,33 @@ function ElderHome() {
     return list;
   }, [reminders, now]);
 
-  const upcoming = items.filter((i) => !i.completed);
-  const completed = items.filter((i) => i.completed);
+  const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
+  const nextKey = items.find((i) => !i.completed)?.key;
+  const [openItemKey, setOpenItemKey] = useState<string | null>(null);
+  const openItem = items.find((i) => i.key === openItemKey) ?? null;
 
+  const timelineColor = appearance === "dark" ? "#5A5A6E" : "#D0D0D0";
+  const nextBg = appearance === "dark" ? "#2E5A2E" : "#E8F5E9";
+  const nextBorder = appearance === "dark" ? "#3F7A3F" : "#A5D6A7";
   const completedColor = appearance === "dark" ? "#B0B0B0" : "#6B6860";
+
+  function formatRelative(min: number) {
+    const diff = min - nowMin;
+    if (diff === 0) return "now";
+    const abs = Math.abs(diff);
+    let txt: string;
+    if (abs < 60) txt = `${abs} minute${abs === 1 ? "" : "s"}`;
+    else {
+      const h = Math.round(abs / 60);
+      txt = `${h} hour${h === 1 ? "" : "s"}`;
+    }
+    return diff > 0 ? `in ${txt}` : `${txt} ago`;
+  }
+
+  function frequencyLabel(r: typeof reminders[number]) {
+    if (r.repeatSchedule) return r.repeatSchedule;
+    return r.repeats ? "Repeats" : "Does not repeat";
+  }
 
   return (
     <main
