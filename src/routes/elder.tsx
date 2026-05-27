@@ -524,6 +524,12 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
   const dividerColor = appearance === "dark" ? "#6B6B7B" : "#BDBDBD";
   const isDark = appearance === "dark";
 
+  const emergencyPhones = new Set(EMERGENCY_CONTACTS.map((c) => c.phone.replace(/[^0-9]/g, "")));
+  const personalContacts = contacts.filter((c) => {
+    const normalized = c.phone.replace(/[^0-9]/g, "");
+    return !emergencyPhones.has(normalized);
+  });
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -563,7 +569,7 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
 
         <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
           {/* Personal Contacts */}
-          {contacts.length === 0 ? (
+          {personalContacts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "24px 0" }}>
               <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>
                 No personal contacts saved
@@ -571,7 +577,7 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column" }}>
-              {contacts.map((c) => (
+              {personalContacts.map((c) => (
                 <ContactRow key={c.id} name={c.name} phone={c.phone} theme={theme} separator={separator} />
               ))}
             </div>
@@ -583,7 +589,7 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
           {/* Emergency Contacts */}
           <div
             style={{
-              background: isDark ? "#D32F2F" : "#EF5350",
+              background: isDark ? "#C62828" : "#FFCCCC",
               borderRadius: 4,
               padding: "8px 0",
               overflow: "hidden",
@@ -594,7 +600,7 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
                 fontFamily: "'Trebuchet MS', sans-serif",
                 fontWeight: 700,
                 fontSize: 14,
-                color: "#FFFFFF",
+                color: "#1A1A2E",
                 textTransform: "uppercase",
                 padding: "4px 12px 8px 12px",
                 letterSpacing: "0.5px",
@@ -638,9 +644,9 @@ function ContactRow({ name, phone, theme, separator }: { name: string; phone: st
 }
 
 function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; isDark: boolean }) {
-  const textColor = isDark ? "#FFFFFF" : "#1A1A2E";
-  const phoneColor = isDark ? "#E0E0E0" : "#4A4A4A";
-  const separator = isDark ? "#B71C1C" : "#D32F2F";
+  const textColor = "#1A1A2E";
+  const phoneColor = isDark ? "#2A2A3E" : "#4A4A4A";
+  const separator = isDark ? "#B71C1C" : "#FFB3B3";
   return (
     <a
       href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
@@ -649,7 +655,7 @@ function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; is
         borderBottom: `1px solid ${separator}`, textDecoration: "none", color: "inherit", cursor: "pointer",
         transition: "background 0.15s",
       }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = isDark ? "#B71C1C" : "#E53935"; }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = isDark ? "#D32F2F" : "#FFB3B3"; }}
       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
     >
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: textColor }}>{name}</div>
