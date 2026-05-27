@@ -674,3 +674,132 @@ function ContactRow({ name, phone, theme, separator }: { name: string; phone: st
     </a>
   );
 }
+
+function ReminderDetailsPopup({
+  reminder,
+  time,
+  nowMin,
+  onClose,
+  theme,
+}: {
+  reminder: Reminder;
+  time: string;
+  nowMin: number;
+  onClose: () => void;
+  theme: { card: string; text: string; muted: string };
+}) {
+  const { cardBorder } = useSettings();
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { if (lightbox) setLightbox(null); else onClose(); } };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose, lightbox]);
+
+  const targetMin = toMinutes(time);
+  const isFuture = targetMin > nowMin;
+  const subtitle = `${formatTimeStr(time)} · ${frequencyText(reminder)}${isFuture ? ` · Next ${timeUntilText(targetMin, nowMin)}` : ""}`;
+  const detail =
+    reminder.type === "medication" && reminder.dose
+      ? `Take ${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}${reminder.details ? ` — ${reminder.details}` : ""}`
+      : reminder.details || "";
+  const photos = reminder.photo ? [reminder.photo] : [];
+  const labelColor = theme.muted;
+
+  return (
+    <div
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 16, zIndex: 2100, boxSizing: "border-box",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: theme.card, border: cardBorder, borderRadius: 8, padding: 24,
+          width: "90%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto",
+          display: "flex", flexDirection: "column", boxSizing: "border-box", color: theme.text,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 16 }}>
+          <div>
+            <h2 style={{ margin: 0, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text }}>
+              {reminder.name}
+            </h2>
+            <div style={{ marginTop: 6, fontFamily: "Verdana, sans-serif", fontSize: 14, color: labelColor }}>
+              {subtitle}
+            </div>
+          </div>
+          <button
+            type="button" onClick={onClose} aria-label="Close"
+            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: theme.text, flexShrink: 0 }}
+          >
+            <X size={20} strokeWidth={1.5} color={theme.text} />
+          </button>
+        </div>
+
+        <Section label="Schedule" color={labelColor}>
+          <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text }}>{formatTimeStr(time)}</div>
+          <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text, marginTop: 2 }}>{frequencyText(reminder)}</div>
+        </Section>
+
+        {detail && (
+          <Section label="Details" color={labelColor}>
+            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text }}>{detail}</div>
+          </Section>
+        )}
+
+        {reminder.notes && (
+          <Section label="Notes" color={labelColor}>
+            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text }}>{reminder.notes}</div>
+          </Section>
+        )}
+
+        {photos.length > 0 && (
+          <Section label="Reminder Photos" color={labelColor}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 12 }}>
+              {photos.map((src, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setLightbox(src)}
+                  style={{ padding: 0, border: cardBorder, borderRadius: 4, overflow: "hidden", cursor: "pointer", background: "transparent" }}
+                >
+                  <img src={src} alt={`${reminder.name} ${idx + 1}`} style={{ width: "100%", height: 100, objectFit: "cover", display: "block" }} />
+                </button>
+              ))}
+            </div>
+          </Section>
+        )}
+      </div>
+
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 24, zIndex: 2200,
+          }}
+        >
+          <img src={lightbox} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Section({ label, color, children }: { label: string; color: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, color, marginBottom: 6 }}>
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
