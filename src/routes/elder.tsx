@@ -20,6 +20,21 @@ export const Route = createFileRoute("/elder")({
 
 type Overlay = "chat" | "call" | null;
 
+function timeUntilText(min: number, nowMin: number) {
+  const diff = min - nowMin;
+  if (diff <= 0) return "now";
+  if (diff < 60) return `in ${diff} minute${diff !== 1 ? "s" : ""}`;
+  const h = Math.floor(diff / 60);
+  const m = diff % 60;
+  if (m === 0) return `in ${h} hour${h > 1 ? "s" : ""}`;
+  return `in ${h}h ${m}m`;
+}
+
+function frequencyText(r: Reminder) {
+  return r.repeatSchedule || (r.repeats ? "Repeats" : "Does not repeat");
+}
+
+
 function ordinalSuffix(n: number) {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
