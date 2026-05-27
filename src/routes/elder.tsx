@@ -230,49 +230,71 @@ function ElderHome() {
               <h2 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text, margin: 0, marginBottom: 12 }}>
                 Today's Reminders
               </h2>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto", minHeight: 0 }}>
+              <div style={{ flex: 1, overflowY: "auto", minHeight: 0, position: "relative" }}>
                 {items.length === 0 ? (
                   <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, textAlign: "center", margin: "auto" }}>
                     No reminders scheduled today
                   </p>
-                ) : upcoming.length === 0 ? (
-                  <>
-                    <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text, textAlign: "center", marginTop: 0, marginBottom: 16 }}>
-                      All reminders completed today! Great job!
-                    </p>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      {completed.map((i) => (
-                        <CompletedRow key={i.key} label={i.label} color={completedColor} />
-                      ))}
-                    </div>
-                  </>
                 ) : (
-                  <>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                      {upcoming.map((i) => (
-                        <div
-                          key={i.key}
-                          style={{
-                            fontFamily: "Verdana, sans-serif",
-                            fontSize: 18,
-                            fontWeight: 700,
-                            color: theme.text,
-                            opacity: 1,
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          {i.label}
-                        </div>
-                      ))}
+                  <div style={{ position: "relative", paddingLeft: 24 }}>
+                    {/* Timeline line */}
+                    <div style={{ position: "absolute", left: 8, top: 4, bottom: 4, width: 2, background: timelineColor, borderRadius: 1 }} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      {items.map((i) => {
+                        const isNext = i.key === nextKey;
+                        const timeStr = formatTimeStr(i.time);
+                        const rel = formatRelative(i.minutes);
+                        if (i.completed) {
+                          return (
+                            <button
+                              key={i.key}
+                              type="button"
+                              onClick={() => setOpenItemKey(i.key)}
+                              style={{
+                                background: "transparent", border: "none", textAlign: "left", cursor: "pointer",
+                                padding: "12px 16px", fontFamily: "Verdana, sans-serif", color: completedColor,
+                                opacity: 0.6, textDecoration: "line-through",
+                              }}
+                            >
+                              <div style={{ fontSize: 14, fontWeight: 700 }}>{i.reminder.name}</div>
+                              <div style={{ fontSize: 14, marginTop: 2 }}>{timeStr} · {rel}</div>
+                            </button>
+                          );
+                        }
+                        if (isNext) {
+                          return (
+                            <button
+                              key={i.key}
+                              type="button"
+                              onClick={() => setOpenItemKey(i.key)}
+                              style={{
+                                background: nextBg, border: `1.5px solid ${nextBorder}`, borderRadius: 8,
+                                padding: 16, margin: "8px 0", textAlign: "left", cursor: "pointer", color: theme.text,
+                                fontFamily: "Verdana, sans-serif",
+                              }}
+                            >
+                              <div style={{ fontSize: 20, fontWeight: 700 }}>{i.reminder.name}</div>
+                              <div style={{ fontSize: 14, color: completedColor, marginTop: 4 }}>{timeStr} · {rel}</div>
+                            </button>
+                          );
+                        }
+                        return (
+                          <button
+                            key={i.key}
+                            type="button"
+                            onClick={() => setOpenItemKey(i.key)}
+                            style={{
+                              background: "transparent", border: "none", textAlign: "left", cursor: "pointer",
+                              padding: "12px 16px", fontFamily: "Verdana, sans-serif", color: theme.text,
+                            }}
+                          >
+                            <div style={{ fontSize: 16, fontWeight: 700 }}>{i.reminder.name}</div>
+                            <div style={{ fontSize: 14, color: completedColor, marginTop: 2 }}>{timeStr} · {rel}</div>
+                          </button>
+                        );
+                      })}
                     </div>
-                    {completed.length > 0 && (
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 16 }}>
-                        {completed.map((i) => (
-                          <CompletedRow key={i.key} label={i.label} color={completedColor} />
-                        ))}
-                      </div>
-                    )}
-                  </>
+                  </div>
                 )}
               </div>
             </div>
