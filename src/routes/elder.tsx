@@ -304,6 +304,16 @@ function ElderHome() {
 
       {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
       {overlay === "call" && <CallPopup onClose={() => setOverlay(null)} theme={theme} />}
+      {openItem && (
+        <ReminderDetailsPopup
+          onClose={() => setOpenItemKey(null)}
+          reminder={openItem.reminder}
+          time={openItem.time}
+          relative={formatRelative(openItem.minutes)}
+          frequency={frequencyLabel(openItem.reminder)}
+          theme={theme}
+        />
+      )}
 
       {/* Floating Phone Button */}
       <button
