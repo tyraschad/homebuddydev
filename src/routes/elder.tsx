@@ -80,6 +80,8 @@ function ElderHome() {
   const { reminders, elder } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
+  const [selected, setSelected] = useState<{ reminder: Reminder; time: string } | null>(null);
+
 
   useEffect(() => {
     setNow(new Date());
