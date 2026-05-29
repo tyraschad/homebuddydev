@@ -29,10 +29,12 @@ export function DeviceListEditor({
   const { theme, cardBorder, buttonBorder, inputBorder } = useSettings();
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const [analyzing, setAnalyzing] = useState(false);
+  const [identifyError, setIdentifyError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [questions, setQuestions] = useState<string[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const identifyFn = useServerFn(identifyDevice);
 
   const inputStyle: CSSProperties = {
     width: "100%", boxSizing: "border-box", padding: "10px 12px",
@@ -51,19 +53,29 @@ export function DeviceListEditor({
   };
   const card: CSSProperties = { background: theme.card, border: cardBorder, borderRadius: 8, padding: 16 };
 
-  const reset = () => { setPhoto(undefined); setName(""); setQuestions([]); setAnalyzing(false); setEditingId(null); };
+  const reset = () => { setPhoto(undefined); setName(""); setQuestions([]); setAnalyzing(false); setIdentifyError(null); setEditingId(null); };
+
+  const runIdentify = async (dataUrl: string) => {
+    setAnalyzing(true);
+    setIdentifyError(null);
+    try {
+      const { name: suggested } = await identifyFn({ data: { dataUrl } });
+      const finalName = suggested || "";
+      setName(finalName);
+      if (finalName) setQuestions(defaultQuestions(finalName));
+    } catch {
+      setIdentifyError("Couldn't identify this device — try again or type the name manually");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   const onFile = (f: File) => {
     const reader = new FileReader();
     reader.onload = () => {
-      setPhoto(String(reader.result));
-      setAnalyzing(true);
-      setTimeout(() => {
-        const g = guessLabel();
-        setName(g.label);
-        setQuestions(QUESTION_HINTS[g.key]);
-        setAnalyzing(false);
-      }, 900);
+      const dataUrl = String(reader.result);
+      setPhoto(dataUrl);
+      void runIdentify(dataUrl);
     };
     reader.readAsDataURL(f);
   };
