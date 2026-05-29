@@ -127,40 +127,62 @@ export function DeviceListEditor({
                 </button>
               )}
               {analyzing ? (
-                <div style={{ color: theme.muted, fontSize: 14 }}>Analyzing device…</div>
-              ) : (
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: theme.muted, marginBottom: 4 }}>Device name</div>
-                  <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., TV Remote" />
-                </div>
-              )}
-            </div>
-            {!analyzing && (
-              <>
-                <div style={{ fontWeight: 700, fontSize: 13, marginTop: 4 }}>What might they ask about it?</div>
-                {questions.map((q, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8 }}>
-                    <input style={inputStyle} value={q}
-                      onChange={(e) => setQuestions(questions.map((x, j) => j === i ? e.target.value : x))}
-                      placeholder="Question…" />
-                    <button type="button" onClick={() => setQuestions(questions.filter((_, j) => j !== i))}
-                      style={{ ...btnSecondary, width: 40, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                      aria-label="Remove"><X size={16} /></button>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, color: theme.muted, marginBottom: 4 }}>Device name</div>
+                <input
+                  style={inputStyle}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={analyzing ? "Identifying…" : "e.g., TV Remote"}
+                  disabled={analyzing}
+                />
+                {photo && (
+                  <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => photo && void runIdentify(photo)}
+                      disabled={analyzing}
+                      style={{
+                        ...btnSecondary, height: 32, padding: "0 12px", fontSize: 13,
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        opacity: analyzing ? 0.6 : 1, cursor: analyzing ? "not-allowed" : "pointer",
+                      }}
+                      aria-label="Try identifying again"
+                    >
+                      {analyzing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                      Try again
+                    </button>
+                    {analyzing && <span style={{ fontSize: 12, color: theme.muted }}>Identifying device…</span>}
                   </div>
-                ))}
-                <button type="button" onClick={() => setQuestions([...questions, ""])} style={{ ...btnSecondary, alignSelf: "flex-start" }}>
-                  + Add question
-                </button>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button type="button" onClick={save} disabled={!name.trim()} style={{
-                    ...btnPrimary,
-                    background: name.trim() ? GREEN : "#9CC2A9",
-                    cursor: name.trim() ? "pointer" : "not-allowed",
-                  }}>{editingId ? "Update device" : "Save device"}</button>
-                  <button type="button" onClick={reset} style={btnSecondary}>Cancel</button>
-                </div>
-              </>
-            )}
+                )}
+                {identifyError && !analyzing && (
+                  <div style={{ marginTop: 6, fontSize: 12, color: "#C0392B" }}>{identifyError}</div>
+                )}
+              </div>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 13, marginTop: 4 }}>What might they ask about it?</div>
+            {questions.map((q, i) => (
+              <div key={i} style={{ display: "flex", gap: 8 }}>
+                <input style={inputStyle} value={q}
+                  onChange={(e) => setQuestions(questions.map((x, j) => j === i ? e.target.value : x))}
+                  placeholder="Question…" />
+                <button type="button" onClick={() => setQuestions(questions.filter((_, j) => j !== i))}
+                  style={{ ...btnSecondary, width: 40, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                  aria-label="Remove"><X size={16} /></button>
+              </div>
+            ))}
+            <button type="button" onClick={() => setQuestions([...questions, ""])} style={{ ...btnSecondary, alignSelf: "flex-start" }}>
+              + Add question
+            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button type="button" onClick={save} disabled={!name.trim() || analyzing} style={{
+                ...btnPrimary,
+                background: name.trim() && !analyzing ? GREEN : "#9CC2A9",
+                cursor: name.trim() && !analyzing ? "pointer" : "not-allowed",
+              }}>{editingId ? "Update device" : "Save device"}</button>
+              <button type="button" onClick={reset} style={btnSecondary}>Cancel</button>
+            </div>
+
           </div>
         )}
         <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
