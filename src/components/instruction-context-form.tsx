@@ -1,26 +1,20 @@
 import { useRef, useState, type CSSProperties } from "react";
-import { Camera, Trash2, X, Edit } from "lucide-react";
+import { Camera, Trash2, X, Edit, RefreshCw, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { useSettings } from "@/lib/settings-store";
 import type { Device } from "@/lib/carer-store";
+import { identifyDevice } from "@/lib/identify-device.functions";
 
 const GREEN = "#2F8F4E";
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
 
-const QUESTION_HINTS: Record<string, string[]> = {
-  remote: ["How do I change the channel?", "How do I turn up the volume?", "How do I switch to Netflix?"],
-  phone: ["How do I make a call?", "How do I answer a call?", "How do I save a contact?"],
-  microwave: ["How do I heat up food?", "How do I set the timer?", "How do I stop it?"],
-  default: ["How do I turn it on?", "How do I use it?", "How do I get help?"],
-};
-
-function guessLabel(): { label: string; key: string } {
-  const options = [
-    { label: "TV Remote", key: "remote" },
-    { label: "Cordless Phone", key: "phone" },
-    { label: "Microwave", key: "microwave" },
-  ];
-  return options[Math.floor(Math.random() * options.length)];
+function defaultQuestions(name: string): string[] {
+  const n = name.toLowerCase();
+  if (/remote|tv/.test(n)) return ["How do I change the channel?", "How do I turn up the volume?", "How do I switch to Netflix?"];
+  if (/phone/.test(n)) return ["How do I make a call?", "How do I answer a call?", "How do I save a contact?"];
+  if (/microwave/.test(n)) return ["How do I heat up food?", "How do I set the timer?", "How do I stop it?"];
+  return ["How do I turn it on?", "How do I use it?", "How do I get help?"];
 }
 
 export function DeviceListEditor({
@@ -35,10 +29,12 @@ export function DeviceListEditor({
   const { theme, cardBorder, buttonBorder, inputBorder } = useSettings();
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const [analyzing, setAnalyzing] = useState(false);
+  const [identifyError, setIdentifyError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [questions, setQuestions] = useState<string[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const identifyFn = useServerFn(identifyDevice);
 
   const inputStyle: CSSProperties = {
     width: "100%", boxSizing: "border-box", padding: "10px 12px",
@@ -57,19 +53,29 @@ export function DeviceListEditor({
   };
   const card: CSSProperties = { background: theme.card, border: cardBorder, borderRadius: 8, padding: 16 };
 
-  const reset = () => { setPhoto(undefined); setName(""); setQuestions([]); setAnalyzing(false); setEditingId(null); };
+  const reset = () => { setPhoto(undefined); setName(""); setQuestions([]); setAnalyzing(false); setIdentifyError(null); setEditingId(null); };
+
+  const runIdentify = async (dataUrl: string) => {
+    setAnalyzing(true);
+    setIdentifyError(null);
+    try {
+      const { name: suggested } = await identifyFn({ data: { dataUrl } });
+      const finalName = suggested || "";
+      setName(finalName);
+      if (finalName) setQuestions(defaultQuestions(finalName));
+    } catch {
+      setIdentifyError("Couldn't identify this device — try again or type the name manually");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   const onFile = (f: File) => {
     const reader = new FileReader();
     reader.onload = () => {
-      setPhoto(String(reader.result));
-      setAnalyzing(true);
-      setTimeout(() => {
-        const g = guessLabel();
-        setName(g.label);
-        setQuestions(QUESTION_HINTS[g.key]);
-        setAnalyzing(false);
-      }, 900);
+      const dataUrl = String(reader.result);
+      setPhoto(dataUrl);
+      void runIdentify(dataUrl);
     };
     reader.readAsDataURL(f);
   };
@@ -120,41 +126,63 @@ export function DeviceListEditor({
                   <Camera size={20} color={theme.muted} />
                 </button>
               )}
-              {analyzing ? (
-                <div style={{ color: theme.muted, fontSize: 14 }}>Analyzing device…</div>
-              ) : (
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: theme.muted, marginBottom: 4 }}>Device name</div>
-                  <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., TV Remote" />
-                </div>
-              )}
-            </div>
-            {!analyzing && (
-              <>
-                <div style={{ fontWeight: 700, fontSize: 13, marginTop: 4 }}>What might they ask about it?</div>
-                {questions.map((q, i) => (
-                  <div key={i} style={{ display: "flex", gap: 8 }}>
-                    <input style={inputStyle} value={q}
-                      onChange={(e) => setQuestions(questions.map((x, j) => j === i ? e.target.value : x))}
-                      placeholder="Question…" />
-                    <button type="button" onClick={() => setQuestions(questions.filter((_, j) => j !== i))}
-                      style={{ ...btnSecondary, width: 40, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                      aria-label="Remove"><X size={16} /></button>
+              
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, color: theme.muted, marginBottom: 4 }}>Device name</div>
+                <input
+                  style={inputStyle}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={analyzing ? "Identifying…" : "e.g., TV Remote"}
+                  disabled={analyzing}
+                />
+                {photo && (
+                  <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => photo && void runIdentify(photo)}
+                      disabled={analyzing}
+                      style={{
+                        ...btnSecondary, height: 32, padding: "0 12px", fontSize: 13,
+                        display: "inline-flex", alignItems: "center", gap: 6,
+                        opacity: analyzing ? 0.6 : 1, cursor: analyzing ? "not-allowed" : "pointer",
+                      }}
+                      aria-label="Try identifying again"
+                    >
+                      {analyzing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                      Try again
+                    </button>
+                    {analyzing && <span style={{ fontSize: 12, color: theme.muted }}>Identifying device…</span>}
                   </div>
-                ))}
-                <button type="button" onClick={() => setQuestions([...questions, ""])} style={{ ...btnSecondary, alignSelf: "flex-start" }}>
-                  + Add question
-                </button>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button type="button" onClick={save} disabled={!name.trim()} style={{
-                    ...btnPrimary,
-                    background: name.trim() ? GREEN : "#9CC2A9",
-                    cursor: name.trim() ? "pointer" : "not-allowed",
-                  }}>{editingId ? "Update device" : "Save device"}</button>
-                  <button type="button" onClick={reset} style={btnSecondary}>Cancel</button>
-                </div>
-              </>
-            )}
+                )}
+                {identifyError && !analyzing && (
+                  <div style={{ marginTop: 6, fontSize: 12, color: "#C0392B" }}>{identifyError}</div>
+                )}
+              </div>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 13, marginTop: 4 }}>What might they ask about it?</div>
+            {questions.map((q, i) => (
+              <div key={i} style={{ display: "flex", gap: 8 }}>
+                <input style={inputStyle} value={q}
+                  onChange={(e) => setQuestions(questions.map((x, j) => j === i ? e.target.value : x))}
+                  placeholder="Question…" />
+                <button type="button" onClick={() => setQuestions(questions.filter((_, j) => j !== i))}
+                  style={{ ...btnSecondary, width: 40, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                  aria-label="Remove"><X size={16} /></button>
+              </div>
+            ))}
+            <button type="button" onClick={() => setQuestions([...questions, ""])} style={{ ...btnSecondary, alignSelf: "flex-start" }}>
+              + Add question
+            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button type="button" onClick={save} disabled={!name.trim() || analyzing} style={{
+                ...btnPrimary,
+                background: name.trim() && !analyzing ? GREEN : "#9CC2A9",
+                cursor: name.trim() && !analyzing ? "pointer" : "not-allowed",
+              }}>{editingId ? "Update device" : "Save device"}</button>
+              <button type="button" onClick={reset} style={btnSecondary}>Cancel</button>
+            </div>
+
           </div>
         )}
         <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
