@@ -1,26 +1,20 @@
 import { useRef, useState, type CSSProperties } from "react";
-import { Camera, Trash2, X, Edit } from "lucide-react";
+import { Camera, Trash2, X, Edit, RefreshCw, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { useSettings } from "@/lib/settings-store";
 import type { Device } from "@/lib/carer-store";
+import { identifyDevice } from "@/lib/identify-device.functions";
 
 const GREEN = "#2F8F4E";
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
 
-const QUESTION_HINTS: Record<string, string[]> = {
-  remote: ["How do I change the channel?", "How do I turn up the volume?", "How do I switch to Netflix?"],
-  phone: ["How do I make a call?", "How do I answer a call?", "How do I save a contact?"],
-  microwave: ["How do I heat up food?", "How do I set the timer?", "How do I stop it?"],
-  default: ["How do I turn it on?", "How do I use it?", "How do I get help?"],
-};
-
-function guessLabel(): { label: string; key: string } {
-  const options = [
-    { label: "TV Remote", key: "remote" },
-    { label: "Cordless Phone", key: "phone" },
-    { label: "Microwave", key: "microwave" },
-  ];
-  return options[Math.floor(Math.random() * options.length)];
+function defaultQuestions(name: string): string[] {
+  const n = name.toLowerCase();
+  if (/remote|tv/.test(n)) return ["How do I change the channel?", "How do I turn up the volume?", "How do I switch to Netflix?"];
+  if (/phone/.test(n)) return ["How do I make a call?", "How do I answer a call?", "How do I save a contact?"];
+  if (/microwave/.test(n)) return ["How do I heat up food?", "How do I set the timer?", "How do I stop it?"];
+  return ["How do I turn it on?", "How do I use it?", "How do I get help?"];
 }
 
 export function DeviceListEditor({
