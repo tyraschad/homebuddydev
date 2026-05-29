@@ -126,7 +126,7 @@ export function DeviceListEditor({
                   <Camera size={20} color={theme.muted} />
                 </button>
               )}
-              {analyzing ? (
+              
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 12, color: theme.muted, marginBottom: 4 }}>Device name</div>
                 <input
