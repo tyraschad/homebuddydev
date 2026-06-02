@@ -180,8 +180,54 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const handleSuggestion = async (s: Suggestion) => {
     const query = s.label;
     if (s.device) { bumpDeviceAccess(s.device.id); await openGuide(query, s.device, null); }
-    else if (s.reminder) await openGuide(query, null, s.reminder);
+    else if (s.reminder) await openReminderChat(s.reminder, query);
     else await handleQuery(query);
+  };
+
+  const openReminderChat = async (reminder: Reminder, initialQuery: string) => {
+    setView({ kind: "loading", label: initialQuery });
+    const userMsg: ChatMsg = { role: "user", content: initialQuery };
+    try {
+      const { answer } = await callReminderChat({
+        data: {
+          reminder: { name: reminder.name, time: reminder.times?.[0], type: reminder.type, dose: reminder.dose, details: reminder.details, notes: reminder.notes },
+          conditions: elder.conditions,
+          messages: [userMsg],
+          stage: "intro",
+        },
+      });
+      const next: ChatMsg = { role: "assistant", content: answer };
+      setView({ kind: "reminderChat", reminder, messages: [userMsg, next], sending: false, stage: "followup" });
+      void playTTS(answer);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Something went wrong";
+      setView({ kind: "answer", query: initialQuery, text: msg, device: null });
+    }
+  };
+
+  const sendReminderReply = async (replyText: string) => {
+    if (view.kind !== "reminderChat" || !replyText.trim() || view.sending) return;
+    stopTTS();
+    const userMsg: ChatMsg = { role: "user", content: replyText.trim() };
+    const newMsgs = [...view.messages, userMsg];
+    setView({ ...view, messages: newMsgs, sending: true });
+    try {
+      const { answer } = await callReminderChat({
+        data: {
+          reminder: { name: view.reminder.name, time: view.reminder.times?.[0], type: view.reminder.type, dose: view.reminder.dose, details: view.reminder.details, notes: view.reminder.notes },
+          conditions: elder.conditions,
+          messages: newMsgs,
+          stage: view.stage,
+        },
+      });
+      const next: ChatMsg = { role: "assistant", content: answer };
+      setView((v) => v.kind === "reminderChat" ? { ...v, messages: [...newMsgs, next], sending: false, stage: "followup" } : v);
+      void playTTS(answer);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Something went wrong";
+      const next: ChatMsg = { role: "assistant", content: msg };
+      setView((v) => v.kind === "reminderChat" ? { ...v, messages: [...newMsgs, next], sending: false } : v);
+    }
   };
 
   const openGuide = async (query: string, device: Device | null, reminder: Reminder | null) => {
@@ -210,13 +256,14 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     const device = matchDevice(query);
     const reminder = matchReminder(query);
     if (device) return openGuide(query, device, null);
+    if (reminder) return openReminderChat(reminder, query);
     setView({ kind: "loading", label: query });
     try {
       const { answer } = await callAnswer({
         data: {
           query,
           device: null,
-          reminder: reminder ? { name: reminder.name, time: reminder.times[0], dose: reminder.dose, notes: reminder.notes } : null,
+          reminder: null,
           conditions: elder.conditions,
           mode: "answer",
         },
