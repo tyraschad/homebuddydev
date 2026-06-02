@@ -430,7 +430,27 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               </button>
             </div>
           </div>
+
+        {view.kind === "reminderChat" && (
+          <ReminderChatView
+            view={view}
+            theme={theme}
+            buttonBorder={buttonBorder}
+            inputBorder={inputBorder}
+            cardBorder={cardBorder}
+            accent={accent}
+            circleBg={circleBg}
+            circleIcon={circleIcon}
+            sizes={sizes}
+            speaking={speaking}
+            voiceOn={voiceOn}
+            onSend={sendReminderReply}
+            onDone={goBack}
+            onToggleVoice={() => setVoiceOn((v) => !v)}
+            onReplayLast={(text) => { if (speaking) stopTTS(); else void playTTS(text); }}
+          />
         )}
+
 
         {view.kind === "default" && (
           <>
