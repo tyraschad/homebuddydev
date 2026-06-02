@@ -185,8 +185,20 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
         <div style={sectionGap}>
           <div>
             <label style={labelStyle}>{nameLabel} <span style={{ color: RED }}>*</span></label>
-            <input type="text" value={r.name} onChange={(e) => setR({ ...r, name: e.target.value })}
-              style={errors.name ? { borderColor: RED } : undefined} />
+            <input
+              type="text"
+              value={r.name}
+              placeholder={namePlaceholder}
+              onFocus={() => setNameFocused(true)}
+              onBlur={() => setNameFocused(false)}
+              onChange={(e) => {
+                setR({ ...r, name: e.target.value });
+                if (errors.name && e.target.value.trim()) {
+                  setErrors((prev) => { const { name: _n, ...rest } = prev; return rest; });
+                }
+              }}
+              style={nameInputStyle}
+            />
             {errors.name && <div style={errStyle}>{errors.name}</div>}
           </div>
 
