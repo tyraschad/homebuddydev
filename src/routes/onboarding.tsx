@@ -465,7 +465,7 @@ function Onboarding() {
         {/* ===== PAGE 9: READY & REVIEW — step 10 ===== */}
         {data.step === 10 && (
           <div>
-            <h1 style={h1}>{elderName}'s HomeBuddy is ready!</h1>
+            <h1 style={h1}>{elderName}'s HomeBuddy — Summary</h1>
             <p style={muted}>Everything is set up. You can edit anytime.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
               <SummaryProfile data={data} card={card} theme={theme} cardBorder={cardBorder} />
