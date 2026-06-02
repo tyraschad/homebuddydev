@@ -501,3 +501,106 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
+
+function ReminderChatView({
+  view, theme, buttonBorder, inputBorder, accent, circleBg, circleIcon, sizes,
+  speaking, voiceOn, onSend, onDone, onToggleVoice, onReplayLast,
+}: {
+  view: Extract<View, { kind: "reminderChat" }>;
+  theme: ReturnType<typeof useSettings>["theme"];
+  buttonBorder: string;
+  inputBorder: string;
+  cardBorder: string;
+  accent: string;
+  circleBg: string;
+  circleIcon: string;
+  sizes: ReturnType<typeof useSettings>["sizes"];
+  speaking: boolean;
+  voiceOn: boolean;
+  onSend: (text: string) => void;
+  onDone: () => void;
+  onToggleVoice: () => void;
+  onReplayLast: (text: string) => void;
+}) {
+  const [draft, setDraft] = useState("");
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [view.messages.length, view.sending]);
+
+  const lastAssistant = [...view.messages].reverse().find((m) => m.role === "assistant")?.content ?? "";
+  const fontSize = sizes.body >= 28 ? 18 : 16;
+
+  const send = () => {
+    const t = draft.trim();
+    if (!t) return;
+    setDraft("");
+    onSend(t);
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, minHeight: 360 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text }}>
+          {view.reminder.name}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button type="button" onClick={onToggleVoice}
+            style={{ background: "transparent", border: buttonBorder, borderRadius: 16, padding: "4px 10px", cursor: "pointer", color: theme.text, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 12 }}>
+            {voiceOn ? <Volume2 size={14} /> : <VolumeX size={14} />} Voice {voiceOn ? "ON" : "OFF"}
+          </button>
+          {lastAssistant && (
+            <button type="button" onClick={() => onReplayLast(lastAssistant)}
+              style={{ background: "transparent", border: buttonBorder, borderRadius: 16, padding: "4px 10px", cursor: "pointer", color: theme.text, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 12 }}>
+              {speaking ? <VolumeX size={14} /> : <Volume2 size={14} />} {speaking ? "Stop" : "Read aloud"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10, padding: "4px 2px", maxHeight: "55vh" }}>
+        {view.messages.map((m, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+            <div style={{
+              maxWidth: "85%",
+              background: m.role === "user" ? accent : theme.bg,
+              color: m.role === "user" ? "#FFFFFF" : theme.text,
+              border: m.role === "user" ? "none" : buttonBorder,
+              borderRadius: 14,
+              padding: "10px 14px",
+              fontFamily: "Verdana, sans-serif",
+              fontSize,
+              lineHeight: 1.5,
+              whiteSpace: "pre-wrap",
+            }}>
+              {m.content}
+            </div>
+          </div>
+        ))}
+        {view.sending && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: theme.muted, fontFamily: "Verdana, sans-serif", fontSize: 13 }}>
+            <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 10, background: theme.card, border: inputBorder, borderRadius: 20, padding: 12, boxSizing: "border-box" }}>
+        <Keyboard size={20} strokeWidth={2} color={theme.text} />
+        <input type="text" value={draft} onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+          placeholder="Tell me what you see…"
+          disabled={view.sending}
+          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text, padding: 6, minWidth: 0 }} />
+        <button type="button" onClick={send} disabled={view.sending || !draft.trim()} aria-label="Send"
+          style={{ width: 40, height: 40, borderRadius: "50%", background: circleBg, border: "none", cursor: view.sending || !draft.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: view.sending || !draft.trim() ? 0.5 : 1 }}>
+          <Send size={18} strokeWidth={2} color={circleIcon} />
+        </button>
+      </div>
+
+      <button type="button" onClick={onDone}
+        style={{ alignSelf: "flex-end", height: 36, padding: "0 14px", borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13 }}>
+        Done
+      </button>
+    </div>
+  );
+}
