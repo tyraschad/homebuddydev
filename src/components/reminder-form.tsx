@@ -104,8 +104,34 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
   const [r, setR] = useState<Reminder>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDoseWarn, setShowDoseWarn] = useState(false);
+  const [nameFocused, setNameFocused] = useState(false);
 
   const nameLabel = r.type === "medication" ? "Medication name" : r.type === "appointment" ? "Appointment name" : r.type === "activity" ? "Activity name" : "Reminder name";
+  const namePlaceholder = r.type === "medication" ? "e.g., Aspirin, Eye drops, Insulin"
+    : r.type === "appointment" ? "e.g., Doctor appointment, Dentist"
+    : r.type === "activity" ? "e.g., Morning walk, Call Sarah"
+    : "e.g., Aspirin, Eye drops, Doctor appointment";
+  const isDark = theme.bg === "#2A2A3E" || theme.bg.toLowerCase().includes("2a2a");
+  const inputBorderDefault = isDark ? "#5A5A6E" : "#D0D0D0";
+  const inputBg = isDark ? theme.card : "#FFFFFF";
+  const nameHasError = !!errors.name;
+  const nameBorderColor = nameHasError ? RED : (nameFocused ? "#6BA24A" : inputBorderDefault);
+  const nameBorderWidth = (nameFocused || nameHasError) ? 2 : 1;
+  const nameInputStyle: CSSProperties = {
+    width: "100%",
+    height: 44,
+    padding: "0 12px",
+    borderRadius: 4,
+    border: `${nameBorderWidth}px solid ${nameBorderColor}`,
+    background: nameHasError ? (isDark ? theme.card : "#FFEBEE") : inputBg,
+    color: theme.text,
+    fontSize: 16,
+    fontFamily: "Verdana, sans-serif",
+    outline: "none",
+    transition: "border-color 0.2s, box-shadow 0.2s, background 0.2s",
+    boxShadow: nameFocused ? "0 2px 4px rgba(0,0,0,0.1)" : "none",
+    boxSizing: "border-box",
+  };
 
   const setTimesCount = (n: number) => {
     const times = [...r.times];
