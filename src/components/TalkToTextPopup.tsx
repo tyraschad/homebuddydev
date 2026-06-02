@@ -430,6 +430,9 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               </button>
             </div>
           </div>
+        )}
+
+
 
         {view.kind === "reminderChat" && (
           <ReminderChatView
