@@ -256,7 +256,7 @@ function ElderHome() {
                                 opacity: 0.6, textDecoration: "line-through",
                               }}
                             >
-                              <div style={{ fontSize: 14, fontWeight: 700 }}>{i.reminder.name}</div>
+                              <div style={{ fontSize: 14 }}>{i.reminder.name}</div>
                               <div style={{ fontSize: 14, marginTop: 2 }}>{timeStr} · {rel}</div>
                             </button>
                           );
@@ -273,8 +273,8 @@ function ElderHome() {
                                 fontFamily: "Verdana, sans-serif",
                               }}
                             >
-                              <div style={{ fontSize: 20, fontWeight: 700 }}>{i.reminder.name}</div>
-                              <div style={{ fontSize: 14, color: completedColor, marginTop: 4 }}>{timeStr} · {rel}</div>
+                              <div style={{ fontSize: 22, fontWeight: 700 }}>{i.reminder.name}</div>
+                              <div style={{ fontSize: 18, color: completedColor, marginTop: 4 }}>{timeStr} · {rel}</div>
                             </button>
                           );
                         }
@@ -288,7 +288,7 @@ function ElderHome() {
                               padding: "12px 16px", fontFamily: "Verdana, sans-serif", color: theme.text,
                             }}
                           >
-                            <div style={{ fontSize: 16, fontWeight: 700 }}>{i.reminder.name}</div>
+                            <div style={{ fontSize: 18 }}>{i.reminder.name}</div>
                             <div style={{ fontSize: 14, color: completedColor, marginTop: 2 }}>{timeStr} · {rel}</div>
                           </button>
                         );
