@@ -589,8 +589,12 @@ function ReminderBlock({ r, time, onClick, appearance }: {
     }}>
       <span style={{ fontWeight: 700, minWidth: 44 }}>{time}</span>
       {iconForType(r.type, 14, color)}
+      {r.type === "medication" && r.dose != null && (
+        <span style={{ fontSize: 14, color: appearance === "dark" ? "#B0B0B0" : "#6B6860" }}>
+          Dose: {r.dose} Pill{r.dose > 1 ? "s" : ""} │
+        </span>
+      )}
       <span style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{r.name}</span>
-      {r.type === "medication" && r.dose != null && <span style={{ opacity: 0.85, fontSize: 12 }}>- {r.dose} pill{r.dose > 1 ? "s" : ""}</span>}
     </button>
   );
 }
