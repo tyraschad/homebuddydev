@@ -87,6 +87,41 @@ function CarerSettings() {
       </section>
 
       <section style={card}>
+        <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 20 }}>Appearance</h2>
+        <p style={{ color: theme.muted, fontSize: 14, marginTop: 6 }}>
+          Light or dark mode for the carer portal. Independent from the elder screen.
+        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
+          <span style={{ fontSize: 16, fontWeight: 700 }}>Light</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={carerAppearance === "dark"}
+            aria-label="Toggle dark mode"
+            onClick={() => setCarerAppearance(carerAppearance === "dark" ? "light" : "dark")}
+            style={{
+              position: "relative", width: 56, height: 30, borderRadius: 999,
+              background: carerAppearance === "dark" ? "#3A3A4E" : "#D0D0D0",
+              border: buttonBorder, cursor: "pointer", padding: 0,
+              transition: "background-color 0.3s ease",
+            }}
+          >
+            <span style={{
+              position: "absolute", top: 2, left: carerAppearance === "dark" ? 28 : 2,
+              width: 22, height: 22, borderRadius: "50%",
+              background: carerAppearance === "dark" ? "#1A1A2E" : "#FFFFFF",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 12, transition: "left 0.3s ease, background-color 0.3s ease",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+            }}>
+              {carerAppearance === "dark" ? "🌙" : "☀️"}
+            </span>
+          </button>
+          <span style={{ fontSize: 16, fontWeight: 700 }}>Dark</span>
+        </div>
+      </section>
+
+      <section style={card}>
         <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 20 }}>Tour</h2>
         <p style={{ color: theme.muted, fontSize: 14, marginTop: 6 }}>
           Show the carer portal walkthrough again.
