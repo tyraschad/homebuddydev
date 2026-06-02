@@ -1,7 +1,9 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useRouterState } from "@tanstack/react-router";
 
 export type AppearanceMode = "light" | "dark";
 export type TextSize = "medium" | "large";
+export type AppearanceScope = "carer" | "elder";
 
 export const lightTheme = {
   bg: "#FFFFFF",
@@ -44,14 +46,24 @@ export const largeSizes = {
 export type Sizes = typeof mediumSizes;
 
 type Ctx = {
+  // Active (scoped) appearance — switches automatically based on route
   appearance: AppearanceMode;
+  setAppearance: (m: AppearanceMode) => void;
+  scope: AppearanceScope;
+
+  // Per-portal appearance — independent
+  carerAppearance: AppearanceMode;
+  elderAppearance: AppearanceMode;
+  setCarerAppearance: (m: AppearanceMode) => void;
+  setElderAppearance: (m: AppearanceMode) => void;
+
   textSize: TextSize;
   highContrast: boolean;
   announcementsEnabled: boolean;
-  setAppearance: (m: AppearanceMode) => void;
   setTextSize: (s: TextSize) => void;
   setHighContrast: (v: boolean) => void;
   setAnnouncementsEnabled: (v: boolean) => void;
+
   theme: Theme;
   sizes: Sizes;
   cardBorder: string;
@@ -63,16 +75,29 @@ type Ctx = {
 
 const SettingsContext = createContext<Ctx | null>(null);
 
+function scopeFromPath(pathname: string): AppearanceScope {
+  if (pathname.startsWith("/carer") || pathname.startsWith("/onboarding")) return "carer";
+  return "elder";
+}
+
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [appearance, setAppearanceState] = useState<AppearanceMode>("light");
+  const [carerAppearance, setCarerState] = useState<AppearanceMode>("light");
+  const [elderAppearance, setElderState] = useState<AppearanceMode>("light");
   const [textSize, setTextSizeState] = useState<TextSize>("medium");
   const [highContrast, setHighContrastState] = useState<boolean>(true);
   const [announcementsEnabled, setAnnouncementsEnabledState] = useState<boolean>(true);
 
+  // Track route to determine which appearance is active
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const scope = scopeFromPath(pathname);
+
   useEffect(() => {
     try {
-      const a = localStorage.getItem("appearanceMode");
-      if (a === "light" || a === "dark") setAppearanceState(a);
+      const legacy = localStorage.getItem("appearanceMode");
+      const e = localStorage.getItem("elderAppearanceMode") ?? legacy;
+      if (e === "light" || e === "dark") setElderState(e);
+      const c = localStorage.getItem("carerAppearanceMode");
+      if (c === "light" || c === "dark") setCarerState(c);
       const t = localStorage.getItem("textSize");
       if (t === "medium" || t === "large") setTextSizeState(t);
       const h = localStorage.getItem("highContrast");
@@ -82,10 +107,22 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, []);
 
-  const setAppearance = (m: AppearanceMode) => {
-    setAppearanceState(m);
-    try { localStorage.setItem("appearanceMode", m); } catch {}
+  const setCarerAppearance = (m: AppearanceMode) => {
+    setCarerState(m);
+    try { localStorage.setItem("carerAppearanceMode", m); } catch {}
   };
+  const setElderAppearance = (m: AppearanceMode) => {
+    setElderState(m);
+    try {
+      localStorage.setItem("elderAppearanceMode", m);
+      localStorage.setItem("appearanceMode", m); // back-compat
+    } catch {}
+  };
+  const setAppearance = (m: AppearanceMode) => {
+    if (scope === "carer") setCarerAppearance(m);
+    else setElderAppearance(m);
+  };
+
   const setTextSize = (s: TextSize) => {
     setTextSizeState(s);
     try { localStorage.setItem("textSize", s); } catch {}
@@ -99,6 +136,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem("announcementsEnabled", String(v)); } catch {}
   };
 
+  const appearance: AppearanceMode = scope === "carer" ? carerAppearance : elderAppearance;
   const theme = appearance === "dark" ? darkTheme : lightTheme;
   const sizes = textSize === "large" ? largeSizes : mediumSizes;
 
@@ -107,26 +145,34 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const buttonBorder = highContrast ? `2px solid ${hcStrongColor}` : `1.5px solid ${theme.border}`;
   const inputBorder = highContrast ? `2px solid ${hcStrongColor}` : `1.5px solid ${theme.border}`;
 
+  const value = useMemo<Ctx>(() => ({
+    appearance,
+    setAppearance,
+    scope,
+    carerAppearance,
+    elderAppearance,
+    setCarerAppearance,
+    setElderAppearance,
+    textSize,
+    highContrast,
+    announcementsEnabled,
+    setTextSize,
+    setHighContrast,
+    setAnnouncementsEnabled,
+    theme,
+    sizes,
+    cardBorder,
+    buttonBorder,
+    inputBorder,
+    hcStrongColor,
+  }), [appearance, scope, carerAppearance, elderAppearance, textSize, highContrast, announcementsEnabled, theme, sizes, cardBorder, buttonBorder, inputBorder, hcStrongColor]);
+
   return (
-    <SettingsContext.Provider
-      value={{
-        appearance,
-        textSize,
-        highContrast,
-        announcementsEnabled,
-        setAppearance,
-        setTextSize,
-        setHighContrast,
-        setAnnouncementsEnabled,
-        theme,
-        sizes,
-        cardBorder,
-        buttonBorder,
-        inputBorder,
-        hcStrongColor,
-      }}
-    >
-      {children}
+    <SettingsContext.Provider value={value}>
+      {/* Smooth transition between light/dark */}
+      <div style={{ transition: "background-color 0.3s ease, color 0.3s ease" }}>
+        {children}
+      </div>
     </SettingsContext.Provider>
   );
 }
