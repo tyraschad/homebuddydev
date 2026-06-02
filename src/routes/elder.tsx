@@ -349,7 +349,7 @@ function ElderHome() {
           e.currentTarget.style.transform = "scale(1)";
         }}
       >
-        <Phone size={32} strokeWidth={2} color="#FFFFFF" />
+        <Phone size={36} strokeWidth={2} color="#FFFFFF" />
       </button>
       <style>{`
         @media (max-width: 1199px) {
