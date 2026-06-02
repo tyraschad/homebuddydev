@@ -15,7 +15,7 @@ export const Route = createFileRoute("/carer/settings")({
 });
 
 function CarerSettings() {
-  const { theme, cardBorder, buttonBorder } = useSettings();
+  const { theme, cardBorder, buttonBorder, carerAppearance, setCarerAppearance } = useSettings();
   const { resetAll } = useCarer();
   const navigate = useNavigate();
   const [onbStep, setOnbStep] = useState<number | null>(null);
