@@ -3,7 +3,7 @@ import { X, Mic, Keyboard, Send, Sparkles, Clock, Phone, HelpCircle, Volume2, Vo
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
-import { generateSteps, answerQuestion, speak } from "@/lib/talk.functions";
+import { generateSteps, answerQuestion, speak, reminderChat } from "@/lib/talk.functions";
 
 type Suggestion = {
   icon: React.ReactNode;
