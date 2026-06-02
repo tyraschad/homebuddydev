@@ -256,7 +256,7 @@ function ElderHome() {
                                 opacity: 0.6, textDecoration: "line-through",
                               }}
                             >
-                              <div style={{ fontSize: 14, fontWeight: 700 }}>{i.reminder.name}</div>
+                              <div style={{ fontSize: 14 }}>{i.reminder.name}</div>
                               <div style={{ fontSize: 14, marginTop: 2 }}>{timeStr} · {rel}</div>
                             </button>
                           );
