@@ -27,6 +27,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const callSteps = useServerFn(generateSteps);
   const callAnswer = useServerFn(answerQuestion);
   const callSpeak = useServerFn(speak);
+  const callReminderChat = useServerFn(reminderChat);
 
   const [recording, setRecording] = useState(false);
   const [text, setText] = useState("");
