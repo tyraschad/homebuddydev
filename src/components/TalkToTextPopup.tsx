@@ -3,7 +3,7 @@ import { X, Mic, Keyboard, Send, Sparkles, Clock, Phone, HelpCircle, Volume2, Vo
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
-import { generateSteps, answerQuestion, speak } from "@/lib/talk.functions";
+import { generateSteps, answerQuestion, speak, reminderChat } from "@/lib/talk.functions";
 
 type Suggestion = {
   icon: React.ReactNode;
@@ -13,11 +13,13 @@ type Suggestion = {
   time?: string;
 };
 
+type ChatMsg = { role: "user" | "assistant"; content: string };
 type View =
   | { kind: "default" }
   | { kind: "loading"; label: string }
   | { kind: "guide"; label: string; device: Device | null; reminder: Reminder | null; steps: string[]; index: number }
-  | { kind: "answer"; query: string; text: string; device: Device | null };
+  | { kind: "answer"; query: string; text: string; device: Device | null }
+  | { kind: "reminderChat"; reminder: Reminder; messages: ChatMsg[]; sending: boolean; stage: "intro" | "followup" };
 
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const { theme, cardBorder, inputBorder, buttonBorder, highContrast, sizes } = useSettings();
@@ -25,6 +27,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const callSteps = useServerFn(generateSteps);
   const callAnswer = useServerFn(answerQuestion);
   const callSpeak = useServerFn(speak);
+  const callReminderChat = useServerFn(reminderChat);
 
   const [recording, setRecording] = useState(false);
   const [text, setText] = useState("");
@@ -177,8 +180,54 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const handleSuggestion = async (s: Suggestion) => {
     const query = s.label;
     if (s.device) { bumpDeviceAccess(s.device.id); await openGuide(query, s.device, null); }
-    else if (s.reminder) await openGuide(query, null, s.reminder);
+    else if (s.reminder) await openReminderChat(s.reminder, query);
     else await handleQuery(query);
+  };
+
+  const openReminderChat = async (reminder: Reminder, initialQuery: string) => {
+    setView({ kind: "loading", label: initialQuery });
+    const userMsg: ChatMsg = { role: "user", content: initialQuery };
+    try {
+      const { answer } = await callReminderChat({
+        data: {
+          reminder: { name: reminder.name, time: reminder.times?.[0], type: reminder.type, dose: reminder.dose, details: reminder.details, notes: reminder.notes },
+          conditions: elder.conditions,
+          messages: [userMsg],
+          stage: "intro",
+        },
+      });
+      const next: ChatMsg = { role: "assistant", content: answer };
+      setView({ kind: "reminderChat", reminder, messages: [userMsg, next], sending: false, stage: "followup" });
+      void playTTS(answer);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Something went wrong";
+      setView({ kind: "answer", query: initialQuery, text: msg, device: null });
+    }
+  };
+
+  const sendReminderReply = async (replyText: string) => {
+    if (view.kind !== "reminderChat" || !replyText.trim() || view.sending) return;
+    stopTTS();
+    const userMsg: ChatMsg = { role: "user", content: replyText.trim() };
+    const newMsgs = [...view.messages, userMsg];
+    setView({ ...view, messages: newMsgs, sending: true });
+    try {
+      const { answer } = await callReminderChat({
+        data: {
+          reminder: { name: view.reminder.name, time: view.reminder.times?.[0], type: view.reminder.type, dose: view.reminder.dose, details: view.reminder.details, notes: view.reminder.notes },
+          conditions: elder.conditions,
+          messages: newMsgs,
+          stage: view.stage,
+        },
+      });
+      const next: ChatMsg = { role: "assistant", content: answer };
+      setView((v) => v.kind === "reminderChat" ? { ...v, messages: [...newMsgs, next], sending: false, stage: "followup" } : v);
+      void playTTS(answer);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Something went wrong";
+      const next: ChatMsg = { role: "assistant", content: msg };
+      setView((v) => v.kind === "reminderChat" ? { ...v, messages: [...newMsgs, next], sending: false } : v);
+    }
   };
 
   const openGuide = async (query: string, device: Device | null, reminder: Reminder | null) => {
@@ -207,13 +256,14 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     const device = matchDevice(query);
     const reminder = matchReminder(query);
     if (device) return openGuide(query, device, null);
+    if (reminder) return openReminderChat(reminder, query);
     setView({ kind: "loading", label: query });
     try {
       const { answer } = await callAnswer({
         data: {
           query,
           device: null,
-          reminder: reminder ? { name: reminder.name, time: reminder.times[0], dose: reminder.dose, notes: reminder.notes } : null,
+          reminder: null,
           conditions: elder.conditions,
           mode: "answer",
         },
@@ -382,6 +432,29 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
+
+
+        {view.kind === "reminderChat" && (
+          <ReminderChatView
+            view={view}
+            theme={theme}
+            buttonBorder={buttonBorder}
+            inputBorder={inputBorder}
+            cardBorder={cardBorder}
+            accent={accent}
+            circleBg={circleBg}
+            circleIcon={circleIcon}
+            sizes={sizes}
+            speaking={speaking}
+            voiceOn={voiceOn}
+            onSend={sendReminderReply}
+            onDone={goBack}
+            onToggleVoice={() => setVoiceOn((v) => !v)}
+            onReplayLast={(text) => { if (speaking) stopTTS(); else void playTTS(text); }}
+          />
+        )}
+
+
         {view.kind === "default" && (
           <>
             <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
@@ -425,6 +498,109 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function ReminderChatView({
+  view, theme, buttonBorder, inputBorder, accent, circleBg, circleIcon, sizes,
+  speaking, voiceOn, onSend, onDone, onToggleVoice, onReplayLast,
+}: {
+  view: Extract<View, { kind: "reminderChat" }>;
+  theme: ReturnType<typeof useSettings>["theme"];
+  buttonBorder: string;
+  inputBorder: string;
+  cardBorder: string;
+  accent: string;
+  circleBg: string;
+  circleIcon: string;
+  sizes: ReturnType<typeof useSettings>["sizes"];
+  speaking: boolean;
+  voiceOn: boolean;
+  onSend: (text: string) => void;
+  onDone: () => void;
+  onToggleVoice: () => void;
+  onReplayLast: (text: string) => void;
+}) {
+  const [draft, setDraft] = useState("");
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [view.messages.length, view.sending]);
+
+  const lastAssistant = [...view.messages].reverse().find((m) => m.role === "assistant")?.content ?? "";
+  const fontSize = sizes.body >= 28 ? 18 : 16;
+
+  const send = () => {
+    const t = draft.trim();
+    if (!t) return;
+    setDraft("");
+    onSend(t);
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, minHeight: 360 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text }}>
+          {view.reminder.name}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button type="button" onClick={onToggleVoice}
+            style={{ background: "transparent", border: buttonBorder, borderRadius: 16, padding: "4px 10px", cursor: "pointer", color: theme.text, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 12 }}>
+            {voiceOn ? <Volume2 size={14} /> : <VolumeX size={14} />} Voice {voiceOn ? "ON" : "OFF"}
+          </button>
+          {lastAssistant && (
+            <button type="button" onClick={() => onReplayLast(lastAssistant)}
+              style={{ background: "transparent", border: buttonBorder, borderRadius: 16, padding: "4px 10px", cursor: "pointer", color: theme.text, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 12 }}>
+              {speaking ? <VolumeX size={14} /> : <Volume2 size={14} />} {speaking ? "Stop" : "Read aloud"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10, padding: "4px 2px", maxHeight: "55vh" }}>
+        {view.messages.map((m, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+            <div style={{
+              maxWidth: "85%",
+              background: m.role === "user" ? accent : theme.bg,
+              color: m.role === "user" ? "#FFFFFF" : theme.text,
+              border: m.role === "user" ? "none" : buttonBorder,
+              borderRadius: 14,
+              padding: "10px 14px",
+              fontFamily: "Verdana, sans-serif",
+              fontSize,
+              lineHeight: 1.5,
+              whiteSpace: "pre-wrap",
+            }}>
+              {m.content}
+            </div>
+          </div>
+        ))}
+        {view.sending && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: theme.muted, fontFamily: "Verdana, sans-serif", fontSize: 13 }}>
+            <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 10, background: theme.card, border: inputBorder, borderRadius: 20, padding: 12, boxSizing: "border-box" }}>
+        <Keyboard size={20} strokeWidth={2} color={theme.text} />
+        <input type="text" value={draft} onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+          placeholder="Tell me what you see…"
+          disabled={view.sending}
+          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text, padding: 6, minWidth: 0 }} />
+        <button type="button" onClick={send} disabled={view.sending || !draft.trim()} aria-label="Send"
+          style={{ width: 40, height: 40, borderRadius: "50%", background: circleBg, border: "none", cursor: view.sending || !draft.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: view.sending || !draft.trim() ? 0.5 : 1 }}>
+          <Send size={18} strokeWidth={2} color={circleIcon} />
+        </button>
+      </div>
+
+      <button type="button" onClick={onDone}
+        style={{ alignSelf: "flex-end", height: 36, padding: "0 14px", borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13 }}>
+        Done
+      </button>
     </div>
   );
 }

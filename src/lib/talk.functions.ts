@@ -110,6 +110,63 @@ export const answerQuestion = createServerFn({ method: "POST" })
     return { answer: String(answer).trim() };
   });
 
+type ReminderChatInput = {
+  reminder: { name: string; time?: string; type?: string; dose?: number; details?: string; notes?: string };
+  conditions: string[];
+  messages: { role: "user" | "assistant"; content: string }[];
+  stage: "intro" | "followup";
+};
+
+export const reminderChat = createServerFn({ method: "POST" })
+  .inputValidator((d: ReminderChatInput) => d)
+  .handler(async ({ data }) => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("LOVABLE_API_KEY not configured");
+    const base = buildSystem(data.conditions);
+    const r = data.reminder;
+    const reminderFacts = [
+      `Name: ${r.name}`,
+      r.type ? `Type: ${r.type}` : null,
+      r.time ? `Scheduled time: ${r.time}` : null,
+      r.dose ? `Dose: ${r.dose} pill(s)` : null,
+      r.details ? `Details/location: ${r.details}` : null,
+      r.notes ? `Notes / what to bring: ${r.notes}` : null,
+    ].filter(Boolean).join("\n");
+
+    const introInstruction =
+      `Reply in TWO short paragraphs.\n` +
+      `Paragraph 1: Conversationally tell them about this reminder. Include the time. If location/details exist, include them. If notes mention what to bring, include that.\n` +
+      `Paragraph 2: Ask an open-ended context question like "What do you see around you right now? Are you at home, in the car, or somewhere else?". Keep it warm.\n` +
+      `Do NOT use lists. Do NOT mention any device.`;
+
+    const followupInstruction =
+      `The user just told you where they are or what they see. Give warm, contextual next-step guidance based on their location and this reminder.\n` +
+      `Use a short intro sentence, then a brief numbered list (2-5 short steps) of what to do next.\n` +
+      `Do NOT mention any device by name. Keep it conversational and reassuring.`;
+
+    const system = `${base}\n\nYou are helping with a single reminder. Here are the reminder facts:\n${reminderFacts}\n\n${data.stage === "intro" ? introInstruction : followupInstruction}`;
+
+    const res = await fetch(AI_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: system },
+          ...data.messages,
+        ],
+      }),
+    });
+    if (!res.ok) {
+      if (res.status === 429) throw new Error("Rate limit. Please wait and try again.");
+      if (res.status === 402) throw new Error("AI credits exhausted.");
+      throw new Error(`AI error ${res.status}`);
+    }
+    const json = await res.json();
+    const answer = json.choices?.[0]?.message?.content ?? "";
+    return { answer: String(answer).trim() };
+  });
+
 export const speak = createServerFn({ method: "POST" })
   .inputValidator((d: { text: string }) => d)
   .handler(async ({ data }) => {
