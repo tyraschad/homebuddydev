@@ -708,6 +708,18 @@ function DevicesPage({ data, update, theme, btnPrimary, h1, muted, onNext, elder
 function PhoneNumbersPage({ data, update, elderName, theme, card, btnPrimary, btnSecondary, inputStyle, h1, muted, onNext }: any) {
   const contacts = data.contacts as OnbContact[];
   const setContacts = (cs: OnbContact[]) => update({ contacts: cs });
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  const canSave = name.trim().length > 0 && phone.trim().length > 0;
+  const save = () => {
+    if (!canSave) return;
+    setContacts([...contacts, { id: uid(), name: name.trim(), phone: phone.trim(), visible: true }]);
+    setName("");
+    setPhone("");
+    nameRef.current?.focus();
+  };
 
   return (
     <div>
@@ -715,32 +727,56 @@ function PhoneNumbersPage({ data, update, elderName, theme, card, btnPrimary, bt
       <p style={muted}>Add key contacts for {elderName}. These will appear on the Phone screen.</p>
 
       <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, marginTop: 24, marginBottom: 8 }}>Main Contacts</h3>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {contacts.map((c, i) => (
-          <div key={c.id} style={{ ...card, display: "flex", flexDirection: "column", gap: 8 }}>
-            <input style={inputStyle} placeholder="e.g., Sarah (Daughter)" value={c.name}
-              onChange={(e) => setContacts(contacts.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} />
-            <input style={inputStyle} type="tel" placeholder="e.g., 604-555-1234" value={c.phone}
-              onChange={(e) => setContacts(contacts.map((x, j) => j === i ? { ...x, phone: e.target.value } : x))} />
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 14, color: theme.text }}>
-                <Toggle value={c.visible} onChange={(v) => setContacts(contacts.map((x, j) => j === i ? { ...x, visible: v } : x))} />
-                {c.visible ? <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Eye size={14} /> Visible</span>
-                  : <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><EyeOff size={14} /> Hidden</span>}
-              </label>
+
+      <div style={{ ...card, display: "flex", flexDirection: "column", gap: 10 }}>
+        <input
+          ref={nameRef}
+          style={inputStyle}
+          placeholder="Sarah (daughter)"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); save(); } }}
+        />
+        <input
+          style={inputStyle}
+          type="tel"
+          placeholder="(604) 555-1234"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); save(); } }}
+        />
+        <button
+          type="button"
+          onClick={save}
+          disabled={!canSave}
+          style={{
+            ...btnPrimary(),
+            width: "100%",
+            height: 44,
+            opacity: canSave ? 1 : 0.5,
+            cursor: canSave ? "pointer" : "not-allowed",
+          }}
+        >
+          Save
+        </button>
+      </div>
+
+      {contacts.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+          {contacts.map((c, i) => (
+            <div key={c.id} style={{ ...card, display: "flex", alignItems: "center", gap: 12, padding: 12 }}>
+              <div style={{ flex: 1, fontSize: 14, color: theme.text }}>
+                <span style={{ fontWeight: 700 }}>{c.name}</span>
+                <span style={{ color: theme.muted }}> — {c.phone}</span>
+              </div>
               <button type="button" onClick={() => setContacts(contacts.filter((_, j) => j !== i))}
                 style={iconBtn(theme)} aria-label="Delete"><X size={16} /></button>
             </div>
-          </div>
-        ))}
-      </div>
-      <button type="button"
-        onClick={() => setContacts([...contacts, { id: uid(), name: "", phone: "", visible: true }])}
-        style={{ ...btnSecondary, marginTop: 12, display: "inline-flex", alignItems: "center", gap: 8 }}>
-        <Plus size={16} /> Add contact
-      </button>
+          ))}
+        </div>
+      )}
 
-      <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, marginTop: 24, marginBottom: 8 }}>Emergency</h3>
+      <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, marginTop: 24, marginBottom: 8 }}>Emergency Contacts</h3>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <EmergencyRow label="Emergency Services" phone="911" visible={data.emergencyVisible.ems}
           onToggle={(v: boolean) => update({ emergencyVisible: { ...data.emergencyVisible, ems: v } })}
