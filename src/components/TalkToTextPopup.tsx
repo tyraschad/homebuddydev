@@ -13,11 +13,13 @@ type Suggestion = {
   time?: string;
 };
 
+type ChatMsg = { role: "user" | "assistant"; content: string };
 type View =
   | { kind: "default" }
   | { kind: "loading"; label: string }
   | { kind: "guide"; label: string; device: Device | null; reminder: Reminder | null; steps: string[]; index: number }
-  | { kind: "answer"; query: string; text: string; device: Device | null };
+  | { kind: "answer"; query: string; text: string; device: Device | null }
+  | { kind: "reminderChat"; reminder: Reminder; messages: ChatMsg[]; sending: boolean; stage: "intro" | "followup" };
 
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const { theme, cardBorder, inputBorder, buttonBorder, highContrast, sizes } = useSettings();
