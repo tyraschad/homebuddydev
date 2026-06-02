@@ -273,8 +273,8 @@ function ElderHome() {
                                 fontFamily: "Verdana, sans-serif",
                               }}
                             >
-                              <div style={{ fontSize: 20, fontWeight: 700 }}>{i.reminder.name}</div>
-                              <div style={{ fontSize: 14, color: completedColor, marginTop: 4 }}>{timeStr} · {rel}</div>
+                              <div style={{ fontSize: 22, fontWeight: 700 }}>{i.reminder.name}</div>
+                              <div style={{ fontSize: 18, color: completedColor, marginTop: 4 }}>{timeStr} · {rel}</div>
                             </button>
                           );
                         }
