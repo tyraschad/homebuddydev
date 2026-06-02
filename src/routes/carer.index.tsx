@@ -181,7 +181,7 @@ function CarerPortal() {
     { ref: icRef, title: "Instruction Context", body: "Add devices from their home so HomeBuddy can give personalized help." },
     { ref: scheduleRef, title: "Schedule controls", body: "Create reminders for medication, appointments, and activities — switch between day, week, month, and list." },
     { ref: calendarRef, title: "Calendar", body: "All reminders are shown here. Tap any reminder to view or edit it." },
-    { ref: todayBtnRef, title: "Jump to today", body: "Tap this button to jump back to today's date from any view." },
+    
   ];
 
   return (
