@@ -347,7 +347,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     streamAssistant("Well done! Let me know if you need anything else.");
   };
 
-  const showSuggestions = messages.length <= 1 && !guide && !reminderCtx;
+  // (suggestions are always shown above input when available)
   const bodyFontSize = sizes.body >= 28 ? 18 : 16;
   const sendDisabled = sending || (!text.trim() && !pendingTranscript);
 
