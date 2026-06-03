@@ -694,16 +694,33 @@ function ReminderChatView({
 
       <div style={{ display: "flex", alignItems: "center", gap: 10, background: theme.card, border: inputBorder, borderRadius: 20, padding: 12, boxSizing: "border-box" }}>
         <Keyboard size={20} strokeWidth={2} color={theme.text} />
-        <input type="text" value={draft} onChange={(e) => setDraft(e.target.value)}
+        <input type="text" value={draft}
+          onChange={(e) => { setDraft(e.target.value); if (pendingVoice) setPendingVoice(null); }}
           onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-          placeholder="Tell me what you see…"
-          disabled={view.sending}
+          placeholder={voice.status === "recording" ? "Listening…" : "Tell me what you see…"}
+          disabled={view.sending || voice.status === "recording" || voice.status === "transcribing"}
           style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text, padding: 6, minWidth: 0 }} />
+        <InlineMicButton status={voice.status} error={voice.error}
+          onStart={voice.start} onStop={voice.stop} onReset={voice.reset}
+          disabled={view.sending} accent={accent} />
         <button type="button" onClick={send} disabled={view.sending || !draft.trim()} aria-label="Send"
           style={{ width: 40, height: 40, borderRadius: "50%", background: circleBg, border: "none", cursor: view.sending || !draft.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: view.sending || !draft.trim() ? 0.5 : 1 }}>
           <Send size={18} strokeWidth={2} color={circleIcon} />
         </button>
       </div>
+      {voice.error && <div style={{ color: "#DC2626", fontSize: 12 }}>{voice.error}</div>}
+      {pendingVoice && (
+        <div style={{ display: "flex", gap: 8 }}>
+          <button type="button" onClick={() => { setDraft(""); setPendingVoice(null); voice.reset(); voice.start(); }}
+            style={{ flex: 1, height: 40, borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13 }}>
+            <RotateCcw size={14} /> Retry
+          </button>
+          <button type="button" onClick={() => { setPendingVoice(null); send(); }}
+            style={{ flex: 1, height: 40, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13 }}>
+            Submit
+          </button>
+        </div>
+      )}
 
       <button type="button" onClick={onDone}
         style={{ alignSelf: "flex-end", height: 36, padding: "0 14px", borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13 }}>
