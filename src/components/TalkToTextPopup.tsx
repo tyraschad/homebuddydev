@@ -487,44 +487,12 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
 
         {view.kind === "default" && (
-          <>
-            <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
-              <button type="button" onClick={() => setRecording((r) => !r)} aria-label={recording ? "Stop recording" : "Start recording"}
-                style={{ width: 120, height: 120, borderRadius: "50%", background: circleBg, border: `3px solid ${theme.text}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", animation: recording ? "ttt-pulse 1.4s infinite" : undefined, padding: 0 }}>
-                <Mic size={60} strokeWidth={2} color={circleIcon} />
-              </button>
-            </div>
-            <div style={{ marginTop: 16, textAlign: "center", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-              {recording ? (<><span>Listening</span>{[0, 1, 2].map((i) => (<span key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: theme.text, display: "inline-block", animation: `ttt-dots 1.2s ${i * 0.2}s infinite` }} />))}</>) : (<span>Tap to talk</span>)}
-            </div>
-            <div style={{ marginTop: 20, textAlign: "center" }}>
-              <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 20, color: theme.text }}>Ask me anything</div>
-              <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 8 }}>How to use a device, your reminders, or to call someone.</div>
-            </div>
-            {suggestions.length > 0 ? (
-              <div style={{ marginTop: 30, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-                {suggestions.map((s) => (
-                  <button key={s.label} type="button" onClick={() => handleSuggestion(s)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 10, background: theme.card, color: theme.text, border: buttonBorder, borderRadius: 20, padding: "8px 12px", height: 44, fontFamily: "Verdana, sans-serif", fontWeight: highContrast ? 800 : 700, fontSize: 14, cursor: "pointer", lineHeight: 1.2, whiteSpace: "nowrap" }}>
-                    {s.icon}<span>{s.label}</span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div style={{ marginTop: 30, textAlign: "center" }}>
-                <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>No devices or reminders set up yet</div>
-                <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: theme.muted, marginTop: 4 }}>Talk to your caregiver to add them</div>
-              </div>
-            )}
           <DefaultViewBody
-            recordingBig={recording}
-            setRecordingBig={setRecording}
             text={text}
             setText={setText}
             onSubmit={submit}
             onTranscribed={(t) => { setText(""); void handleQuery(t); }}
             theme={theme}
-            cardBorder={cardBorder}
             inputBorder={inputBorder}
             buttonBorder={buttonBorder}
             circleBg={circleBg}
@@ -539,6 +507,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
+
 
 function DefaultViewBody({
   text, setText, onSubmit, onTranscribed, theme, inputBorder, buttonBorder, circleBg, circleIcon, accent, highContrast, suggestions, handleSuggestion,
