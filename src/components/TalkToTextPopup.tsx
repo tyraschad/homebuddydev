@@ -23,6 +23,7 @@ type Guide = {
 type Suggestion = {
   icon: React.ReactNode;
   label: string;
+  photo?: string;
   device?: Device | null;
   reminder?: Reminder | null;
 };
