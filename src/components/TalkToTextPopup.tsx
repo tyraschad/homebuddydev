@@ -1,9 +1,40 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, Mic, Keyboard, Send, Sparkles, Clock, Phone, HelpCircle, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { X, Mic, Keyboard, Send, Sparkles, Clock, Phone, HelpCircle, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2, RotateCcw } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
 import { generateSteps, answerQuestion, speak, reminderChat } from "@/lib/talk.functions";
+import { useVoiceRecorder, type VoiceStatus } from "@/lib/use-voice-recorder";
+
+function InlineMicButton({ status, error, onStart, onStop, onReset, disabled, accent }: {
+  status: VoiceStatus; error: string | null;
+  onStart: () => void; onStop: () => void; onReset: () => void;
+  disabled?: boolean; accent: string;
+}) {
+  const isRec = status === "recording";
+  const isBusy = status === "transcribing";
+  const handleClick = () => {
+    if (disabled) return;
+    if (isRec) onStop();
+    else if (status === "error") { onReset(); onStart(); }
+    else if (!isBusy) onStart();
+  };
+  const title = error || (isRec ? "Tap to stop" : isBusy ? "Transcribing…" : "Tap to speak");
+  return (
+    <button type="button" onClick={handleClick} disabled={disabled || isBusy} aria-label={title} title={title}
+      style={{
+        width: 32, height: 32, borderRadius: "50%",
+        background: isRec ? "#DC2626" : accent,
+        border: "none", cursor: disabled || isBusy ? "default" : "pointer",
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        opacity: disabled ? 0.4 : 1,
+        animation: isRec ? "ttt-pulse 1.2s infinite" : undefined,
+      }}>
+      {isBusy ? <Loader2 size={16} color="#FFFFFF" style={{ animation: "spin 1s linear infinite" }} /> : <Mic size={16} color="#FFFFFF" />}
+    </button>
+  );
+}
+
 
 type Suggestion = {
   icon: React.ReactNode;
