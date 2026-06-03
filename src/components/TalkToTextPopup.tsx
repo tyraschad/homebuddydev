@@ -23,6 +23,7 @@ type Guide = {
 type Suggestion = {
   icon: React.ReactNode;
   label: string;
+  photo?: string;
   device?: Device | null;
   reminder?: Reminder | null;
 };
@@ -166,14 +167,14 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         const timeScore = timeCats.includes(cat) ? 100 : 50;
         return { d, score: freq * 0.5 + timeScore * 0.3 + 50 * 0.2 };
       }).sort((a, b) => b.score - a.score);
-      const pick = scored.slice(0, 2);
+      const pick = scored.slice(0, 3);
       if (pick.length === 1) {
         for (const q of pick[0].d.questions.slice(0, 2))
-          result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), device: pick[0].d });
+          result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), photo: pick[0].d.photo, device: pick[0].d });
       } else {
         for (const { d } of pick) {
           const q = d.questions[0];
-          if (q) result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), device: d });
+          if (q) result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), photo: d.photo, device: d });
         }
       }
     }
@@ -346,7 +347,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     streamAssistant("Well done! Let me know if you need anything else.");
   };
 
-  const showSuggestions = messages.length <= 1 && !guide && !reminderCtx;
+  // (suggestions are always shown above input when available)
   const bodyFontSize = sizes.body >= 28 ? 18 : 16;
   const sendDisabled = sending || (!text.trim() && !pendingTranscript);
 
@@ -409,17 +410,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* Suggestions chips (empty state) */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div style={{ marginTop: 8, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-              {suggestions.map((s) => (
-                <button key={s.label} type="button" onClick={() => handleSuggestion(s)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 8, background: theme.card, color: theme.text, border: cardBorder, borderRadius: 20, padding: "8px 14px", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer", lineHeight: 1.2 }}>
-                  {s.icon}<span>{s.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          {/* (Quick actions moved to a persistent strip above the input) */}
         </div>
 
         {/* Instructions area (conditional) */}
@@ -490,6 +481,29 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
         {recorder.error && (
           <div style={{ flexShrink: 0, padding: "0 16px 6px", color: "#DC2626", fontSize: 13, textAlign: "center" }}>{recorder.error}</div>
+        )}
+
+        {/* Quick actions strip (persistent, above input) */}
+        {!guide && suggestions.length > 0 && (
+          <div style={{ flexShrink: 0, padding: "10px 16px 0", display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "thin" }}>
+            {suggestions.map((s) => (
+              <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  background: theme.card, color: theme.text, border: cardBorder,
+                  borderRadius: 20, padding: s.photo ? "4px 12px 4px 4px" : "8px 12px",
+                  fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13,
+                  cursor: sending ? "not-allowed" : "pointer", lineHeight: 1.2,
+                  whiteSpace: "nowrap", flexShrink: 0, opacity: sending ? 0.5 : 1,
+                  height: 36,
+                }}>
+                {s.photo
+                  ? <img src={s.photo} alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                  : s.icon}
+                <span>{s.label}</span>
+              </button>
+            ))}
+          </div>
         )}
 
         {/* Input area */}
