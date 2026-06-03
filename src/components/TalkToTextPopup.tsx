@@ -167,14 +167,14 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         const timeScore = timeCats.includes(cat) ? 100 : 50;
         return { d, score: freq * 0.5 + timeScore * 0.3 + 50 * 0.2 };
       }).sort((a, b) => b.score - a.score);
-      const pick = scored.slice(0, 2);
+      const pick = scored.slice(0, 3);
       if (pick.length === 1) {
         for (const q of pick[0].d.questions.slice(0, 2))
-          result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), device: pick[0].d });
+          result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), photo: pick[0].d.photo, device: pick[0].d });
       } else {
         for (const { d } of pick) {
           const q = d.questions[0];
-          if (q) result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), device: d });
+          if (q) result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), photo: d.photo, device: d });
         }
       }
     }
