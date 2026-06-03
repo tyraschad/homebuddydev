@@ -520,8 +520,11 @@ function DefaultViewBody({
   suggestions: Suggestion[]; handleSuggestion: (s: Suggestion) => void | Promise<void>;
 }) {
   const [pendingTranscript, setPendingTranscript] = useState<string | null>(null);
-  const big = useVoiceRecorder((t) => { onTranscribed(t); });
-  const inline = useVoiceRecorder((t) => { setPendingTranscript(t); setText(t); });
+  const big = useVoiceRecorder({ onFinal: (t) => { onTranscribed(t); } });
+  const inline = useVoiceRecorder({
+    onLiveText: (t) => { setText(t); },
+    onFinal: (t) => { setPendingTranscript(t); setText(t); },
+  });
 
   const isBigRec = big.status === "recording";
   const submitPending = () => {
@@ -630,7 +633,10 @@ function ReminderChatView({
 }) {
   const [draft, setDraft] = useState("");
   const [pendingVoice, setPendingVoice] = useState<string | null>(null);
-  const voice = useVoiceRecorder((t) => { setDraft(t); setPendingVoice(t); });
+  const voice = useVoiceRecorder({
+    onLiveText: (t) => { setDraft(t); },
+    onFinal: (t) => { setDraft(t); setPendingVoice(t); },
+  });
   const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
