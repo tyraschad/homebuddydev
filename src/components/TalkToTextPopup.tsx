@@ -4,7 +4,7 @@ import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
 import { generateSteps, answerQuestion, speak, reminderChat } from "@/lib/talk.functions";
-import { useVoiceRecorder, type VoiceStatus } from "@/lib/use-voice-recorder";
+import { useRealtimeVoice as useVoiceRecorder, type VoiceStatus } from "@/lib/use-realtime-voice";
 
 function InlineMicButton({ status, error, onStart, onStop, onReset, disabled, accent }: {
   status: VoiceStatus; error: string | null;
@@ -50,7 +50,8 @@ type View =
   | { kind: "loading"; label: string }
   | { kind: "guide"; label: string; device: Device | null; reminder: Reminder | null; steps: string[]; index: number }
   | { kind: "answer"; query: string; text: string; device: Device | null }
-  | { kind: "reminderChat"; reminder: Reminder; messages: ChatMsg[]; sending: boolean; stage: "intro" | "followup" };
+  | { kind: "reminderChat"; reminder: Reminder; messages: ChatMsg[]; sending: boolean; stage: "intro" | "followup" }
+  | { kind: "wellDone"; label: string; device: Device | null; reminder: Reminder | null; steps: string[] };
 
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const { theme, cardBorder, inputBorder, buttonBorder, highContrast, sizes } = useSettings();
@@ -380,7 +381,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                 <ChevronLeft size={18} /> Back
               </button>
               {isLast ? (
-                <button type="button" onClick={goBack} style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
+                <button type="button" onClick={() => { stopTTS(); setView({ kind: "wellDone", label: view.label, device: view.device, reminder: view.reminder, steps: view.steps }); }} style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
                   Done
                 </button>
               ) : (
@@ -442,6 +443,42 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         )}
 
         {view.kind === "guide" && renderGuide()}
+
+        {view.kind === "wellDone" && (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 24px", gap: 20 }}>
+            <div style={{
+              width: 72, height: 72, borderRadius: "50%", background: accent,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#FFFFFF", fontSize: 40, fontWeight: 700,
+            }}>✓</div>
+            <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontSize: 36, fontWeight: 700, color: accent, textAlign: "center" }}>
+              Well Done!
+            </div>
+            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 18, color: theme.muted, textAlign: "center", lineHeight: 1.4 }}>
+              You completed {view.label}!
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 360, marginTop: 8 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setView({ kind: "guide", label: view.label, device: view.device, reminder: view.reminder, steps: view.steps, index: 0 });
+                  setVoiceOn(true);
+                  void playTTS(view.steps[0]);
+                }}
+                style={{ width: "100%", height: 44, borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+              >
+                <RotateCcw size={18} /> Restart
+              </button>
+              <button
+                type="button"
+                onClick={goBack}
+                style={{ width: "100%", height: 44, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}
+              >
+                Ask Another Question
+              </button>
+            </div>
+          </div>
+        )}
 
         {view.kind === "answer" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 20, padding: "10px 0" }}>
@@ -520,8 +557,11 @@ function DefaultViewBody({
   suggestions: Suggestion[]; handleSuggestion: (s: Suggestion) => void | Promise<void>;
 }) {
   const [pendingTranscript, setPendingTranscript] = useState<string | null>(null);
-  const big = useVoiceRecorder((t) => { onTranscribed(t); });
-  const inline = useVoiceRecorder((t) => { setPendingTranscript(t); setText(t); });
+  const big = useVoiceRecorder({ onFinal: (t) => { onTranscribed(t); } });
+  const inline = useVoiceRecorder({
+    onLiveText: (t) => { setText(t); },
+    onFinal: (t) => { setPendingTranscript(t); setText(t); },
+  });
 
   const isBigRec = big.status === "recording";
   const submitPending = () => {
@@ -630,7 +670,10 @@ function ReminderChatView({
 }) {
   const [draft, setDraft] = useState("");
   const [pendingVoice, setPendingVoice] = useState<string | null>(null);
-  const voice = useVoiceRecorder((t) => { setDraft(t); setPendingVoice(t); });
+  const voice = useVoiceRecorder({
+    onLiveText: (t) => { setDraft(t); },
+    onFinal: (t) => { setDraft(t); setPendingVoice(t); },
+  });
   const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
