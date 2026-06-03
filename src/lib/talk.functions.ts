@@ -219,19 +219,3 @@ export const transcribe = createServerFn({ method: "POST" })
     const json = await res.json();
     return { text: String(json.text || "").trim() };
   });
-
-export const realtimeScribeToken = createServerFn({ method: "POST" })
-  .handler(async () => {
-    const key = process.env.ELEVENLABS_API_KEY;
-    if (!key) throw new Error("ELEVENLABS_API_KEY not configured");
-    const res = await fetch(
-      "https://api.elevenlabs.io/v1/single-use-token/realtime_scribe",
-      { method: "POST", headers: { "xi-api-key": key } },
-    );
-    if (!res.ok) {
-      const t = await res.text();
-      throw new Error(`Token request failed (${res.status}): ${t.slice(0, 200)}`);
-    }
-    const json = await res.json();
-    return { token: String(json.token || "") };
-  });
