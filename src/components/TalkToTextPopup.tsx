@@ -1,15 +1,39 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, Mic, Keyboard, Send, Sparkles, Clock, Phone, HelpCircle, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2, RotateCcw } from "lucide-react";
+import { X, Mic, Send, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2, RotateCcw, Clock, HelpCircle } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
 import { generateSteps, answerQuestion, speak, reminderChat } from "@/lib/talk.functions";
 import { useVoiceRecorder, type VoiceStatus } from "@/lib/use-voice-recorder";
 
-function InlineMicButton({ status, error, onStart, onStop, onReset, disabled, accent }: {
+type ChatMsg = {
+  role: "user" | "assistant";
+  content: string;
+  streaming?: boolean; // when true, render with blinking cursor
+};
+
+type Guide = {
+  label: string;
+  device: Device | null;
+  reminder: Reminder | null;
+  steps: string[];
+  index: number;
+};
+
+type Suggestion = {
+  icon: React.ReactNode;
+  label: string;
+  device?: Device | null;
+  reminder?: Reminder | null;
+};
+
+const ACCENT = "#6BA24A";
+const ACCENT_DARK = "#588936";
+
+function InlineMicButton({ status, error, onStart, onStop, onReset, disabled }: {
   status: VoiceStatus; error: string | null;
   onStart: () => void; onStop: () => void; onReset: () => void;
-  disabled?: boolean; accent: string;
+  disabled?: boolean;
 }) {
   const isRec = status === "recording";
   const isBusy = status === "transcribing";
@@ -19,54 +43,55 @@ function InlineMicButton({ status, error, onStart, onStop, onReset, disabled, ac
     else if (status === "error") { onReset(); onStart(); }
     else if (!isBusy) onStart();
   };
-  const title = error || (isRec ? "Tap to stop" : isBusy ? "Transcribing…" : "Tap to speak");
+  const title = error || (isRec ? "Tap to stop" : isBusy ? "Transcribing…" : "Click to talk");
   return (
     <button type="button" onClick={handleClick} disabled={disabled || isBusy} aria-label={title} title={title}
       style={{
-        width: 32, height: 32, borderRadius: "50%",
-        background: isRec ? "#DC2626" : accent,
-        border: "none", cursor: disabled || isBusy ? "default" : "pointer",
+        width: 36, height: 36, borderRadius: "50%",
+        background: isRec ? "#DC2626" : ACCENT,
+        border: isRec ? "2px solid #DC2626" : "none",
+        cursor: disabled || isBusy ? "default" : "pointer",
         display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         opacity: disabled ? 0.4 : 1,
-        animation: isRec ? "ttt-pulse 1.2s infinite" : undefined,
+        animation: isRec ? "ttt-pulse 0.6s infinite" : undefined,
+        transition: "background 0.2s",
       }}>
-      {isBusy ? <Loader2 size={16} color="#FFFFFF" style={{ animation: "spin 1s linear infinite" }} /> : <Mic size={16} color="#FFFFFF" />}
+      {isBusy
+        ? <Loader2 size={18} color="#FFFFFF" style={{ animation: "spin 1s linear infinite" }} />
+        : isRec
+          ? <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#FFFFFF", animation: "ttt-rec-dot 1s infinite" }} />
+          : <Mic size={20} color="#FFFFFF" />}
     </button>
   );
 }
 
-
-type Suggestion = {
-  icon: React.ReactNode;
-  label: string;
-  device?: Device | null;
-  reminder?: Reminder | null;
-  time?: string;
-};
-
-type ChatMsg = { role: "user" | "assistant"; content: string };
-type View =
-  | { kind: "default" }
-  | { kind: "loading"; label: string }
-  | { kind: "guide"; label: string; device: Device | null; reminder: Reminder | null; steps: string[]; index: number }
-  | { kind: "answer"; query: string; text: string; device: Device | null }
-  | { kind: "reminderChat"; reminder: Reminder; messages: ChatMsg[]; sending: boolean; stage: "intro" | "followup" };
-
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
-  const { theme, cardBorder, inputBorder, buttonBorder, highContrast, sizes } = useSettings();
+  const { theme, cardBorder, inputBorder, sizes } = useSettings();
   const { reminders, elder, bumpDeviceAccess } = useCarer();
   const callSteps = useServerFn(generateSteps);
   const callAnswer = useServerFn(answerQuestion);
   const callSpeak = useServerFn(speak);
   const callReminderChat = useServerFn(reminderChat);
 
-  const [recording, setRecording] = useState(false);
+  const isDark = theme.bg !== "#FFFFFF";
+  const aiBubbleBg = isDark ? "#4A4A5E" : "#F0F0F0";
+  const aiBubbleText = isDark ? "#E8E8E8" : "#1A1A2E";
+
+  const welcome = `Hi ${elder.name || "there"}! What would you like to know? Ask about a device, your reminders, or to call someone.`;
+  const [messages, setMessages] = useState<ChatMsg[]>([
+    { role: "assistant", content: welcome },
+  ]);
   const [text, setText] = useState("");
-  const [view, setView] = useState<View>({ kind: "default" });
+  const [pendingTranscript, setPendingTranscript] = useState<string | null>(null);
+  const [guide, setGuide] = useState<Guide | null>(null);
+  const [reminderCtx, setReminderCtx] = useState<{ reminder: Reminder; stage: "intro" | "followup" } | null>(null);
+  const [sending, setSending] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [speaking, setSpeaking] = useState(false);
   const [nowTick, setNowTick] = useState(() => Date.now());
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNowTick(Date.now()), 60_000);
@@ -74,22 +99,16 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   }, []);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (view.kind !== "default") setView({ kind: "default" });
-        else onClose();
-      }
-    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, view.kind]);
+  }, [onClose]);
+
+  useEffect(() => () => { audioRef.current?.pause(); audioRef.current = null; }, []);
 
   useEffect(() => {
-    return () => {
-      audioRef.current?.pause();
-      audioRef.current = null;
-    };
-  }, []);
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, guide, sending]);
 
   const playTTS = async (textToRead: string) => {
     if (!voiceOn || !textToRead.trim()) return;
@@ -114,59 +133,50 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     setSpeaking(false);
   };
 
+  // Stream a string into the last assistant message word-by-word
+  const streamAssistant = (full: string) => {
+    const words = full.split(/(\s+)/); // keep whitespace
+    let i = 0;
+    setMessages((m) => [...m, { role: "assistant", content: "", streaming: true }]);
+    const tick = () => {
+      i += 2; // word + following whitespace
+      const partial = words.slice(0, i).join("");
+      setMessages((m) => {
+        const next = [...m];
+        const last = next[next.length - 1];
+        if (last && last.role === "assistant") next[next.length - 1] = { ...last, content: partial, streaming: i < words.length };
+        return next;
+      });
+      if (i < words.length) setTimeout(tick, 35);
+    };
+    setTimeout(tick, 35);
+  };
+
   const suggestions: Suggestion[] = useMemo(() => {
     const result: Suggestion[] = [];
     const truncate = (s: string, n = 40) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
-
-    // ---- Device relevance scoring (Frequency 50% + Time 30% + Health 20%) ----
-    const devices = elder.devices.filter((d) => !!d.name && !!d.photo && Array.isArray(d.questions) && d.questions.length > 0);
+    const devices = elder.devices.filter((d) => !!d.name && Array.isArray(d.questions) && d.questions.length > 0);
     if (devices.length > 0) {
       const maxAccess = Math.max(1, ...devices.map((d) => d.accessCount ?? 0));
       const period = currentTimePeriod(new Date(nowTick));
       const timeCats = timeCategoryDevices(period);
-      const conditions = (elder.conditions || []).map((c) => c.toLowerCase());
-      const hasLowVision = conditions.some((c) => c.includes("vision") || c.includes("blind"));
-      const hasHearing = conditions.some((c) => c.includes("hear"));
-      const hasCognitive = conditions.some((c) => c.includes("cogni") || c.includes("dementia") || c.includes("memory"));
-
-      const healthScore = (d: Device) => {
-        const n = d.name.toLowerCase();
-        let matches = 0; let possible = 0;
-        if (hasLowVision) { possible++; if (/remote|phone|tv|button|large/.test(n)) matches++; }
-        if (hasHearing) { possible++; if (/tv|hearing|volume|speaker|phone/.test(n)) matches++; }
-        if (hasCognitive) { possible++; if (/pill|medic|alarm|simple/.test(n)) matches++; }
-        if (possible === 0) return 50;
-        const ratio = matches / possible;
-        return ratio === 1 ? 100 : ratio > 0 ? 75 : 50;
-      };
-
       const scored = devices.map((d) => {
         const cat = d.category ?? inferDeviceCategory(d.name);
         const freq = ((d.accessCount ?? 0) / maxAccess) * 100;
-        const timeBase = timeCats.includes(cat) ? 100 : 50;
-        const time = timeCats.includes(cat) ? Math.min(100, freq * 1.3 + 30) : Math.max(0, freq - 20) || timeBase;
-        // Simpler & per-spec: time score is just category match
         const timeScore = timeCats.includes(cat) ? 100 : 50;
-        const health = healthScore(d);
-        const score = freq * 0.5 + timeScore * 0.3 + health * 0.2;
-        return { d, score };
+        return { d, score: freq * 0.5 + timeScore * 0.3 + 50 * 0.2 };
       }).sort((a, b) => b.score - a.score);
-
       const pick = scored.slice(0, 2);
-      // If only 1 device, take its top 2 questions
       if (pick.length === 1) {
-        for (const q of pick[0].d.questions.slice(0, 2)) {
-          result.push({ icon: <HelpCircle size={18} strokeWidth={2} color={theme.text} />, label: truncate(q), device: pick[0].d });
-        }
+        for (const q of pick[0].d.questions.slice(0, 2))
+          result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), device: pick[0].d });
       } else {
         for (const { d } of pick) {
           const q = d.questions[0];
-          if (q) result.push({ icon: <HelpCircle size={18} strokeWidth={2} color={theme.text} />, label: truncate(q), device: d });
+          if (q) result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), device: d });
         }
       }
     }
-
-    // ---- Next upcoming reminder ----
     const now = new Date(nowTick);
     const nowMin = now.getHours() * 60 + now.getMinutes();
     const upcoming = reminders
@@ -177,27 +187,13 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       .filter((x) => x.mins > nowMin)
       .sort((a, b) => a.mins - b.mins)[0];
     if (upcoming) {
-      const diff = upcoming.mins - nowMin;
-      let time: string;
-      if (diff < 1) time = "now";
-      else if (diff < 60) time = `${diff} minute${diff === 1 ? "" : "s"}`;
-      else {
-        const h = Math.floor(diff / 60); const m = diff % 60;
-        time = m === 0 ? `${h} hour${h === 1 ? "" : "s"}` : `${h} hour${h === 1 ? "" : "s"} ${m} minute${m === 1 ? "" : "s"}`;
-      }
       const [hh, mm] = upcoming.t.split(":").map(Number);
       const d = new Date(); d.setHours(hh || 0, mm || 0, 0, 0);
       const timeStr = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-      result.push({
-        icon: <Clock size={18} strokeWidth={2} color={theme.text} />,
-        label: truncate(`${upcoming.r.name} at ${timeStr} in ${time}`, 60),
-        reminder: upcoming.r,
-        time: upcoming.t,
-      });
+      result.push({ icon: <Clock size={16} color={theme.text} />, label: truncate(`${upcoming.r.name} at ${timeStr}`, 50), reminder: upcoming.r });
     }
-
     return result;
-  }, [reminders, elder.devices, elder.conditions, theme.text, nowTick]);
+  }, [reminders, elder.devices, theme.text, nowTick]);
 
   const matchDevice = (q: string): Device | null => {
     const lower = q.toLowerCase();
@@ -208,61 +204,10 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     return reminders.find((r) => lower.includes(r.name.toLowerCase())) ?? null;
   };
 
-  const handleSuggestion = async (s: Suggestion) => {
-    const query = s.label;
-    if (s.device) { bumpDeviceAccess(s.device.id); await openGuide(query, s.device, null); }
-    else if (s.reminder) await openReminderChat(s.reminder, query);
-    else await handleQuery(query);
-  };
+  const pushUser = (content: string) => setMessages((m) => [...m, { role: "user", content }]);
 
-  const openReminderChat = async (reminder: Reminder, initialQuery: string) => {
-    setView({ kind: "loading", label: initialQuery });
-    const userMsg: ChatMsg = { role: "user", content: initialQuery };
-    try {
-      const { answer } = await callReminderChat({
-        data: {
-          reminder: { name: reminder.name, time: reminder.times?.[0], type: reminder.type, dose: reminder.dose, details: reminder.details, notes: reminder.notes },
-          conditions: elder.conditions,
-          messages: [userMsg],
-          stage: "intro",
-        },
-      });
-      const next: ChatMsg = { role: "assistant", content: answer };
-      setView({ kind: "reminderChat", reminder, messages: [userMsg, next], sending: false, stage: "followup" });
-      void playTTS(answer);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Something went wrong";
-      setView({ kind: "answer", query: initialQuery, text: msg, device: null });
-    }
-  };
-
-  const sendReminderReply = async (replyText: string) => {
-    if (view.kind !== "reminderChat" || !replyText.trim() || view.sending) return;
-    stopTTS();
-    const userMsg: ChatMsg = { role: "user", content: replyText.trim() };
-    const newMsgs = [...view.messages, userMsg];
-    setView({ ...view, messages: newMsgs, sending: true });
-    try {
-      const { answer } = await callReminderChat({
-        data: {
-          reminder: { name: view.reminder.name, time: view.reminder.times?.[0], type: view.reminder.type, dose: view.reminder.dose, details: view.reminder.details, notes: view.reminder.notes },
-          conditions: elder.conditions,
-          messages: newMsgs,
-          stage: view.stage,
-        },
-      });
-      const next: ChatMsg = { role: "assistant", content: answer };
-      setView((v) => v.kind === "reminderChat" ? { ...v, messages: [...newMsgs, next], sending: false, stage: "followup" } : v);
-      void playTTS(answer);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Something went wrong";
-      const next: ChatMsg = { role: "assistant", content: msg };
-      setView((v) => v.kind === "reminderChat" ? { ...v, messages: [...newMsgs, next], sending: false } : v);
-    }
-  };
-
-  const openGuide = async (query: string, device: Device | null, reminder: Reminder | null) => {
-    setView({ kind: "loading", label: query });
+  const startGuide = async (query: string, device: Device | null, reminder: Reminder | null) => {
+    setSending(true);
     try {
       const { steps } = await callSteps({
         data: {
@@ -274,458 +219,313 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         },
       });
       if (!steps.length) throw new Error("No steps returned");
-      setView({ kind: "guide", label: query, device, reminder, steps, index: 0 });
+      const intro = `Here's how — I'll walk you through ${steps.length} step${steps.length === 1 ? "" : "s"}.`;
+      streamAssistant(intro);
+      setGuide({ label: query, device, reminder, steps, index: 0 });
       void playTTS(steps[0]);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Something went wrong";
-      setView({ kind: "answer", query, text: msg, device: null });
+      streamAssistant(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setSending(false);
     }
   };
 
-  const handleQuery = async (query: string) => {
-    if (!query.trim()) return;
-    const device = matchDevice(query);
-    const reminder = matchReminder(query);
-    if (device) return openGuide(query, device, null);
-    if (reminder) return openReminderChat(reminder, query);
-    setView({ kind: "loading", label: query });
+  const startReminderChat = async (reminder: Reminder) => {
+    setSending(true);
+    setReminderCtx({ reminder, stage: "intro" });
     try {
-      const { answer } = await callAnswer({
+      const userMsg = messages.filter((m) => m.role === "user").slice(-1)[0]?.content ?? reminder.name;
+      const { answer } = await callReminderChat({
         data: {
-          query,
-          device: null,
-          reminder: null,
+          reminder: { name: reminder.name, time: reminder.times?.[0], type: reminder.type, dose: reminder.dose, details: reminder.details, notes: reminder.notes },
           conditions: elder.conditions,
-          mode: "answer",
+          messages: [{ role: "user", content: userMsg }],
+          stage: "intro",
         },
       });
-      setView({ kind: "answer", query, text: answer, device: null });
+      streamAssistant(answer);
+      setReminderCtx({ reminder, stage: "followup" });
       void playTTS(answer);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Something went wrong";
-      setView({ kind: "answer", query, text: msg, device: null });
+      streamAssistant(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setSending(false);
     }
+  };
+
+  const handleQuery = async (raw: string) => {
+    const query = raw.trim();
+    if (!query || sending) return;
+    pushUser(query);
+
+    // Continue an active reminder conversation
+    if (reminderCtx) {
+      setSending(true);
+      try {
+        const convo: { role: "user" | "assistant"; content: string }[] = [
+          ...messages.map((m) => ({ role: m.role, content: m.content })),
+          { role: "user", content: query },
+        ];
+        const { answer } = await callReminderChat({
+          data: {
+            reminder: { name: reminderCtx.reminder.name, time: reminderCtx.reminder.times?.[0], type: reminderCtx.reminder.type, dose: reminderCtx.reminder.dose, details: reminderCtx.reminder.details, notes: reminderCtx.reminder.notes },
+            conditions: elder.conditions,
+            messages: convo,
+            stage: reminderCtx.stage,
+          },
+        });
+        streamAssistant(answer);
+        setReminderCtx({ ...reminderCtx, stage: "followup" });
+        void playTTS(answer);
+      } catch (e) {
+        streamAssistant(e instanceof Error ? e.message : "Something went wrong");
+      } finally {
+        setSending(false);
+      }
+      return;
+    }
+
+    const device = matchDevice(query);
+    const reminder = matchReminder(query);
+    if (device) { bumpDeviceAccess(device.id); return startGuide(query, device, null); }
+    if (reminder) return startReminderChat(reminder);
+
+    setSending(true);
+    try {
+      const { answer } = await callAnswer({
+        data: { query, device: null, reminder: null, conditions: elder.conditions, mode: "answer" },
+      });
+      streamAssistant(answer);
+      void playTTS(answer);
+    } catch (e) {
+      streamAssistant(e instanceof Error ? e.message : "Something went wrong");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleSuggestion = async (s: Suggestion) => {
+    pushUser(s.label);
+    if (s.device) { bumpDeviceAccess(s.device.id); await startGuide(s.label, s.device, null); }
+    else if (s.reminder) await startReminderChat(s.reminder);
+    else await handleQuery(s.label);
   };
 
   const submit = () => {
-    if (!text.trim()) return;
-    const q = text.trim();
-    setText("");
+    const q = (pendingTranscript || text).trim();
+    if (!q) return;
+    setText(""); setPendingTranscript(null);
     void handleQuery(q);
   };
 
-  const goBack = () => {
+  // Voice recorder writes transcript into the input field
+  const recorder = useVoiceRecorder((t) => {
+    setText(t);
+    setPendingTranscript(t);
+    inputRef.current?.focus();
+  });
+
+  const retryRecording = () => {
+    setText(""); setPendingTranscript(null);
+    recorder.reset();
+    recorder.start();
+  };
+
+  const advanceGuide = (delta: 1 | -1) => {
+    if (!guide) return;
     stopTTS();
-    setView({ kind: "default" });
+    const next = guide.index + delta;
+    if (next < 0 || next >= guide.steps.length) return;
+    setGuide({ ...guide, index: next });
+    void playTTS(guide.steps[next]);
   };
 
-  const circleBg = theme.bg === "#FFFFFF" ? "#1A1A2E" : "#E8E8E8";
-  const circleIcon = theme.bg === "#FFFFFF" ? "#FFFFFF" : "#1A1A2E";
-  const accent = "#6BA24A";
-
-  const renderGuide = () => {
-    if (view.kind !== "guide") return null;
-    const step = view.steps[view.index];
-    const isLast = view.index === view.steps.length - 1;
-    const isFirst = view.index === 0;
-    return (
-      <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: 16 }}>
-        <div style={{ display: "flex", gap: 20, flex: 1, minHeight: 0 }}>
-          <div style={{ flex: "0 0 60%", background: theme.bg, border: cardBorder, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", minHeight: 220 }}>
-            {view.device?.photo ? (
-              <img src={view.device.photo} alt={view.device.name} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
-            ) : (
-              <div style={{ textAlign: "center", padding: 24 }}>
-                <Sparkles size={48} color={theme.muted} />
-                <div style={{ marginTop: 12, color: theme.muted, fontFamily: "Verdana, sans-serif", fontSize: 14 }}>
-                  {view.reminder ? view.reminder.name : view.label}
-                </div>
-              </div>
-            )}
-          </div>
-          <div style={{ flex: "0 0 40%", display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: theme.muted }}>
-                Step {view.index + 1} of {view.steps.length}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  if (speaking) stopTTS();
-                  else if (voiceOn) void playTTS(step);
-                  setVoiceOn((v) => !v);
-                }}
-                style={{ background: "transparent", border: buttonBorder, borderRadius: 16, padding: "4px 10px", cursor: "pointer", color: theme.text, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 12 }}
-                aria-label={voiceOn ? "Turn voice off" : "Turn voice on"}
-              >
-                {voiceOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
-                Voice {voiceOn ? "ON" : "OFF"}
-              </button>
-            </div>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: sizes.body >= 28 ? 18 : 16, color: theme.text, lineHeight: 1.5, flex: 1, overflowY: "auto" }}>
-              {step}
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button
-                type="button"
-                disabled={isFirst}
-                onClick={() => {
-                  stopTTS();
-                  const next = view.index - 1;
-                  setView({ ...view, index: next });
-                  void playTTS(view.steps[next]);
-                }}
-                style={{ flex: 1, height: 44, borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: isFirst ? "not-allowed" : "pointer", opacity: isFirst ? 0.4 : 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}
-              >
-                <ChevronLeft size={18} /> Back
-              </button>
-              {isLast ? (
-                <button type="button" onClick={goBack} style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
-                  Done
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    stopTTS();
-                    const next = view.index + 1;
-                    setView({ ...view, index: next });
-                    void playTTS(view.steps[next]);
-                  }}
-                  style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}
-                >
-                  Next <ChevronRight size={18} />
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  const finishGuide = () => {
+    stopTTS();
+    setGuide(null);
+    streamAssistant("Well done! Let me know if you need anything else.");
   };
+
+  const showSuggestions = messages.length <= 1 && !guide && !reminderCtx;
+  const bodyFontSize = sizes.body >= 28 ? 18 : 16;
+  const sendDisabled = sending || (!text.trim() && !pendingTranscript);
 
   return (
-    <div
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      style={{
-        position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 16, zIndex: 2000, boxSizing: "border-box",
-      }}
-    >
+    <div onClick={onClose} role="dialog" aria-modal="true"
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 2000, boxSizing: "border-box" }}>
       <style>{`
-        @keyframes ttt-pulse { 0% { box-shadow: 0 0 0 0 rgba(220,38,38,0.5); } 70% { box-shadow: 0 0 0 18px rgba(220,38,38,0); } 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); } }
-        @keyframes ttt-dots { 0%,20% { opacity: 0.2 } 50% { opacity: 1 } 80%,100% { opacity: 0.2 } }
+        @keyframes ttt-pulse { 0% { box-shadow: 0 0 0 0 rgba(107,162,74,0.5); } 70% { box-shadow: 0 0 0 12px rgba(107,162,74,0); } 100% { box-shadow: 0 0 0 0 rgba(107,162,74,0); } }
+        @keyframes ttt-rec-dot { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
+        @keyframes ttt-cursor { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
+        @keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
       `}</style>
-      <div
-        onClick={(e) => e.stopPropagation()}
+
+      <div onClick={(e) => e.stopPropagation()}
         style={{
-          position: "relative", background: theme.card, border: cardBorder, borderRadius: 12, padding: 30,
-          width: "95%", maxWidth: 820, maxHeight: "92vh", overflowY: "auto",
-          color: theme.text, boxSizing: "border-box", lineHeight: 1.5,
-        }}
-      >
-        <button type="button" onClick={onClose} aria-label="Close"
-          style={{ position: "absolute", top: 16, right: 16, background: "transparent", border: "none", cursor: "pointer", padding: 4, color: theme.text, zIndex: 2 }}>
-          <X size={24} strokeWidth={2} color={theme.text} />
-        </button>
+          position: "relative", background: theme.card, border: cardBorder, borderRadius: 12,
+          width: "95%", maxWidth: 820, height: "92vh", maxHeight: 800,
+          color: theme.text, boxSizing: "border-box",
+          display: "flex", flexDirection: "column", overflow: "hidden",
+        }}>
 
-        {view.kind === "loading" && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px", gap: 16 }}>
-            <Loader2 size={48} className="" style={{ animation: "spin 1s linear infinite", color: theme.text }} />
-            <style>{`@keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text }}>Preparing instructions…</div>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 13, color: theme.muted }}>"{view.label}"</div>
-          </div>
-        )}
-
-        {view.kind === "guide" && renderGuide()}
-
-        {view.kind === "answer" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 20, padding: "10px 0" }}>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 13, color: theme.muted }}>You asked</div>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text }}>"{view.query}"</div>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 18, color: theme.text, lineHeight: 1.6, marginTop: 8 }}>
-              {view.text}
-            </div>
-            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-              <button type="button" onClick={() => { if (speaking) stopTTS(); else void playTTS(view.text); }}
-                style={{ height: 44, padding: "0 16px", borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
-                {speaking ? <VolumeX size={18} /> : <Volume2 size={18} />} {speaking ? "Stop" : "Read aloud"}
-              </button>
-              <button type="button" onClick={goBack}
-                style={{ height: 44, padding: "0 16px", borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
-                Done
-              </button>
-            </div>
-          </div>
-        )}
-
-
-
-        {view.kind === "reminderChat" && (
-          <ReminderChatView
-            view={view}
-            theme={theme}
-            buttonBorder={buttonBorder}
-            inputBorder={inputBorder}
-            cardBorder={cardBorder}
-            accent={accent}
-            circleBg={circleBg}
-            circleIcon={circleIcon}
-            sizes={sizes}
-            speaking={speaking}
-            voiceOn={voiceOn}
-            onSend={sendReminderReply}
-            onDone={goBack}
-            onToggleVoice={() => setVoiceOn((v) => !v)}
-            onReplayLast={(text) => { if (speaking) stopTTS(); else void playTTS(text); }}
-          />
-        )}
-
-
-        {view.kind === "default" && (
-          <DefaultViewBody
-            text={text}
-            setText={setText}
-            onSubmit={submit}
-            onTranscribed={(t) => { setText(""); void handleQuery(t); }}
-            theme={theme}
-            inputBorder={inputBorder}
-            buttonBorder={buttonBorder}
-            circleBg={circleBg}
-            circleIcon={circleIcon}
-            accent={accent}
-            highContrast={highContrast}
-            suggestions={suggestions}
-            handleSuggestion={handleSuggestion}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-
-function DefaultViewBody({
-  text, setText, onSubmit, onTranscribed, theme, inputBorder, buttonBorder, circleBg, circleIcon, accent, highContrast, suggestions, handleSuggestion,
-}: {
-  text: string; setText: (v: string) => void;
-  onSubmit: () => void; onTranscribed: (t: string) => void;
-  theme: ReturnType<typeof useSettings>["theme"];
-  inputBorder: string; buttonBorder: string;
-  circleBg: string; circleIcon: string; accent: string; highContrast: boolean;
-  suggestions: Suggestion[]; handleSuggestion: (s: Suggestion) => void | Promise<void>;
-}) {
-  const [pendingTranscript, setPendingTranscript] = useState<string | null>(null);
-  const big = useVoiceRecorder((t) => { onTranscribed(t); });
-  const inline = useVoiceRecorder((t) => { setPendingTranscript(t); setText(t); });
-
-  const isBigRec = big.status === "recording";
-  const submitPending = () => {
-    if (!pendingTranscript) return onSubmit();
-    const q = pendingTranscript;
-    setPendingTranscript(null);
-    setText("");
-    onTranscribed(q);
-  };
-  const retryPending = () => {
-    setPendingTranscript(null);
-    setText("");
-    inline.reset();
-    inline.start();
-  };
-
-  return (
-    <>
-      <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
-        <button type="button"
-          onClick={() => isBigRec ? big.stop() : big.start()}
-          disabled={big.status === "transcribing"}
-          aria-label={isBigRec ? "Stop recording" : "Start recording"}
-          style={{ width: 120, height: 120, borderRadius: "50%", background: circleBg, border: `3px solid ${theme.text}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", animation: isBigRec ? "ttt-pulse 1.4s infinite" : undefined, padding: 0 }}>
-          {big.status === "transcribing"
-            ? <Loader2 size={60} color={circleIcon} style={{ animation: "spin 1s linear infinite" }} />
-            : <Mic size={60} strokeWidth={2} color={circleIcon} />}
-        </button>
-      </div>
-      <div style={{ marginTop: 16, textAlign: "center", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-        {isBigRec ? (<><span>Listening — tap to stop</span>{[0, 1, 2].map((i) => (<span key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: theme.text, display: "inline-block", animation: `ttt-dots 1.2s ${i * 0.2}s infinite` }} />))}</>)
-          : big.status === "transcribing" ? <span>Transcribing…</span>
-          : <span>Tap to talk</span>}
-      </div>
-      {big.error && <div style={{ marginTop: 8, textAlign: "center", color: "#DC2626", fontSize: 13 }}>{big.error}</div>}
-      <div style={{ marginTop: 20, textAlign: "center" }}>
-        <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 20, color: theme.text }}>Ask me anything</div>
-        <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 8 }}>How to use a device, your reminders, or to call someone.</div>
-      </div>
-      {suggestions.length > 0 ? (
-        <div style={{ marginTop: 30, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-          {suggestions.map((s) => (
-            <button key={s.label} type="button" onClick={() => handleSuggestion(s)}
-              style={{ display: "inline-flex", alignItems: "center", gap: 10, background: theme.card, color: theme.text, border: buttonBorder, borderRadius: 20, padding: "8px 12px", height: 44, fontFamily: "Verdana, sans-serif", fontWeight: highContrast ? 800 : 700, fontSize: 14, cursor: "pointer", lineHeight: 1.2, whiteSpace: "nowrap" }}>
-              {s.icon}<span>{s.label}</span>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: cardBorder, background: isDark ? theme.card : "#F9F9F9", flexShrink: 0 }}>
+          <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16, color: theme.text }}>Chat</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button type="button" onClick={() => { if (speaking) stopTTS(); setVoiceOn((v) => !v); }}
+              title={voiceOn ? "Voice on" : "Voice off"}
+              style={{ background: "transparent", border: "none", cursor: "pointer", color: theme.text, padding: 6, display: "flex", alignItems: "center" }}>
+              {voiceOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
             </button>
+            <button type="button" onClick={onClose} aria-label="Close"
+              style={{ background: "transparent", border: "none", cursor: "pointer", color: theme.text, padding: 4, display: "flex", alignItems: "center" }}>
+              <X size={28} strokeWidth={2} color={theme.text} />
+            </button>
+          </div>
+        </div>
+
+        {/* Chat history */}
+        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "20px 16px", display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
+          {messages.map((m, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+              <div style={{
+                maxWidth: "70%",
+                background: m.role === "user" ? ACCENT : aiBubbleBg,
+                color: m.role === "user" ? "#FFFFFF" : aiBubbleText,
+                borderRadius: 16, padding: "12px 16px",
+                fontFamily: "'Trebuchet MS', sans-serif", fontSize: bodyFontSize, lineHeight: 1.5,
+                whiteSpace: "pre-wrap", wordBreak: "break-word",
+              }}>
+                {m.content}
+                {m.streaming && (
+                  <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? "#FFFFFF" : aiBubbleText, marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
+                )}
+              </div>
+            </div>
           ))}
-        </div>
-      ) : (
-        <div style={{ marginTop: 30, textAlign: "center" }}>
-          <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>No devices or reminders set up yet</div>
-          <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: theme.muted, marginTop: 4 }}>Talk to your caregiver to add them</div>
-        </div>
-      )}
-      <div style={{ marginTop: 30, display: "flex", alignItems: "center", gap: 12, background: theme.card, border: inputBorder, borderRadius: 20, padding: 16, boxSizing: "border-box" }}>
-        <Keyboard size={24} strokeWidth={2} color={theme.text} />
-        <input type="text" value={text}
-          onChange={(e) => { setText(e.target.value); if (pendingTranscript) setPendingTranscript(null); }}
-          onKeyDown={(e) => { if (e.key === "Enter") submitPending(); }}
-          placeholder={inline.status === "recording" ? "Listening…" : "Type your request or tap mic…"}
-          disabled={inline.status === "recording" || inline.status === "transcribing"}
-          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text, padding: 8, minWidth: 0 }} />
-        <InlineMicButton status={inline.status} error={inline.error}
-          onStart={inline.start} onStop={inline.stop} onReset={inline.reset} accent={accent} />
-        <button type="button" onClick={submitPending} aria-label="Send"
-          style={{ width: 44, height: 44, borderRadius: "50%", background: circleBg, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <Send size={20} strokeWidth={2} color={circleIcon} />
-        </button>
-      </div>
-      {inline.error && <div style={{ marginTop: 8, textAlign: "center", color: "#DC2626", fontSize: 13 }}>{inline.error}</div>}
-      {pendingTranscript && (
-        <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-          <button type="button" onClick={retryPending}
-            style={{ flex: 1, height: 44, borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
-            <RotateCcw size={16} /> Retry
-          </button>
-          <button type="button" onClick={submitPending}
-            style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
-            Submit
-          </button>
-        </div>
-      )}
-    </>
-  );
-}
+          {sending && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: theme.muted, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 13, paddingLeft: 4 }}>
+              <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
+            </div>
+          )}
 
-function ReminderChatView({
-  view, theme, buttonBorder, inputBorder, accent, circleBg, circleIcon, sizes,
-  speaking, voiceOn, onSend, onDone, onToggleVoice, onReplayLast,
-}: {
-  view: Extract<View, { kind: "reminderChat" }>;
-  theme: ReturnType<typeof useSettings>["theme"];
-  buttonBorder: string;
-  inputBorder: string;
-  cardBorder: string;
-  accent: string;
-  circleBg: string;
-  circleIcon: string;
-  sizes: ReturnType<typeof useSettings>["sizes"];
-  speaking: boolean;
-  voiceOn: boolean;
-  onSend: (text: string) => void;
-  onDone: () => void;
-  onToggleVoice: () => void;
-  onReplayLast: (text: string) => void;
-}) {
-  const [draft, setDraft] = useState("");
-  const [pendingVoice, setPendingVoice] = useState<string | null>(null);
-  const voice = useVoiceRecorder((t) => { setDraft(t); setPendingVoice(t); });
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [view.messages.length, view.sending]);
-
-  const lastAssistant = [...view.messages].reverse().find((m) => m.role === "assistant")?.content ?? "";
-  const fontSize = sizes.body >= 28 ? 18 : 16;
-
-  const send = () => {
-    const t = draft.trim();
-    if (!t) return;
-    setDraft("");
-    onSend(t);
-  };
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12, minHeight: 360 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text }}>
-          {view.reminder.name}
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button type="button" onClick={onToggleVoice}
-            style={{ background: "transparent", border: buttonBorder, borderRadius: 16, padding: "4px 10px", cursor: "pointer", color: theme.text, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 12 }}>
-            {voiceOn ? <Volume2 size={14} /> : <VolumeX size={14} />} Voice {voiceOn ? "ON" : "OFF"}
-          </button>
-          {lastAssistant && (
-            <button type="button" onClick={() => onReplayLast(lastAssistant)}
-              style={{ background: "transparent", border: buttonBorder, borderRadius: 16, padding: "4px 10px", cursor: "pointer", color: theme.text, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 12 }}>
-              {speaking ? <VolumeX size={14} /> : <Volume2 size={14} />} {speaking ? "Stop" : "Read aloud"}
-            </button>
+          {/* Suggestions chips (empty state) */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div style={{ marginTop: 8, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+              {suggestions.map((s) => (
+                <button key={s.label} type="button" onClick={() => handleSuggestion(s)}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 8, background: theme.card, color: theme.text, border: cardBorder, borderRadius: 20, padding: "8px 14px", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer", lineHeight: 1.2 }}>
+                  {s.icon}<span>{s.label}</span>
+                </button>
+              ))}
+            </div>
           )}
         </div>
-      </div>
 
-      <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10, padding: "4px 2px", maxHeight: "55vh" }}>
-        {view.messages.map((m, i) => (
-          <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+        {/* Instructions area (conditional) */}
+        {guide && (
+          <div style={{ flexShrink: 0, padding: "0 16px 12px" }}>
             <div style={{
-              maxWidth: "85%",
-              background: m.role === "user" ? accent : theme.bg,
-              color: m.role === "user" ? "#FFFFFF" : theme.text,
-              border: m.role === "user" ? "none" : buttonBorder,
-              borderRadius: 14,
-              padding: "10px 14px",
-              fontFamily: "Verdana, sans-serif",
-              fontSize,
-              lineHeight: 1.5,
-              whiteSpace: "pre-wrap",
+              background: isDark ? "#1E3A4F" : "#E3F2FD",
+              border: `1px solid ${isDark ? "#3A5A7A" : "#BBDEFB"}`,
+              borderRadius: 8, padding: 16,
+              display: "flex", flexDirection: "column", gap: 12,
             }}>
-              {m.content}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontFamily: "'Trebuchet MS', sans-serif", fontSize: 14, color: theme.muted, fontWeight: 700 }}>
+                  Step {guide.index + 1} of {guide.steps.length}
+                </span>
+                <button type="button"
+                  onClick={() => { if (speaking) stopTTS(); else if (voiceOn) void playTTS(guide.steps[guide.index]); setVoiceOn((v) => !v); }}
+                  style={{ background: "transparent", border: `1px solid ${theme.muted}`, borderRadius: 16, padding: "4px 10px", cursor: "pointer", color: theme.text, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 12 }}>
+                  {voiceOn ? <Volume2 size={14} /> : <VolumeX size={14} />} Voice {voiceOn ? "ON" : "OFF"}
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: 16 }}>
+                {guide.device?.photo && (
+                  <div style={{ flex: "0 0 40%", maxHeight: 180, background: "#FFFFFF", borderRadius: 4, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <img src={guide.device.photo} alt={guide.device.name} style={{ maxWidth: "100%", maxHeight: 180, objectFit: "contain" }} />
+                  </div>
+                )}
+                <div style={{ flex: 1, fontFamily: "'Trebuchet MS', sans-serif", fontSize: bodyFontSize, color: aiBubbleText, lineHeight: 1.5 }}>
+                  {guide.steps[guide.index]}
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                {guide.index > 0 && (
+                  <button type="button" onClick={() => advanceGuide(-1)}
+                    style={{ flex: 1, height: 44, borderRadius: 8, border: `1.5px solid ${theme.text}`, background: "transparent", color: theme.text, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
+                    <ChevronLeft size={18} /> Back
+                  </button>
+                )}
+                {guide.index < guide.steps.length - 1 ? (
+                  <button type="button" onClick={() => advanceGuide(1)}
+                    style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: ACCENT, color: "#FFFFFF", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
+                    Next <ChevronRight size={18} />
+                  </button>
+                ) : (
+                  <button type="button" onClick={finishGuide}
+                    style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: ACCENT, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
+                    Done
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        ))}
-        {view.sending && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, color: theme.muted, fontFamily: "Verdana, sans-serif", fontSize: 13 }}>
-            <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
+        )}
+
+        {/* Transcription retry/submit strip */}
+        {pendingTranscript && (
+          <div style={{ flexShrink: 0, padding: "0 16px 8px", display: "flex", gap: 8 }}>
+            <button type="button" onClick={retryRecording}
+              style={{ flex: 1, height: 40, borderRadius: 8, border: `1.5px solid ${theme.text}`, background: "transparent", color: theme.text, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14 }}>
+              <RotateCcw size={14} /> Retry
+            </button>
+            <button type="button" onClick={submit}
+              style={{ flex: 1, height: 40, borderRadius: 8, border: "none", background: ACCENT, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14 }}>
+              Send
+            </button>
           </div>
         )}
-      </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 10, background: theme.card, border: inputBorder, borderRadius: 20, padding: 12, boxSizing: "border-box" }}>
-        <Keyboard size={20} strokeWidth={2} color={theme.text} />
-        <input type="text" value={draft}
-          onChange={(e) => { setDraft(e.target.value); if (pendingVoice) setPendingVoice(null); }}
-          onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-          placeholder={voice.status === "recording" ? "Listening…" : "Tell me what you see…"}
-          disabled={view.sending || voice.status === "recording" || voice.status === "transcribing"}
-          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text, padding: 6, minWidth: 0 }} />
-        <InlineMicButton status={voice.status} error={voice.error}
-          onStart={voice.start} onStop={voice.stop} onReset={voice.reset}
-          disabled={view.sending} accent={accent} />
-        <button type="button" onClick={send} disabled={view.sending || !draft.trim()} aria-label="Send"
-          style={{ width: 40, height: 40, borderRadius: "50%", background: circleBg, border: "none", cursor: view.sending || !draft.trim() ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: view.sending || !draft.trim() ? 0.5 : 1 }}>
-          <Send size={18} strokeWidth={2} color={circleIcon} />
-        </button>
-      </div>
-      {voice.error && <div style={{ color: "#DC2626", fontSize: 12 }}>{voice.error}</div>}
-      {pendingVoice && (
-        <div style={{ display: "flex", gap: 8 }}>
-          <button type="button" onClick={() => { setDraft(""); setPendingVoice(null); voice.reset(); voice.start(); }}
-            style={{ flex: 1, height: 40, borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13 }}>
-            <RotateCcw size={14} /> Retry
-          </button>
-          <button type="button" onClick={() => { setPendingVoice(null); send(); }}
-            style={{ flex: 1, height: 40, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13 }}>
-            Submit
+        {recorder.error && (
+          <div style={{ flexShrink: 0, padding: "0 16px 6px", color: "#DC2626", fontSize: 13, textAlign: "center" }}>{recorder.error}</div>
+        )}
+
+        {/* Input area */}
+        <div style={{ flexShrink: 0, padding: "12px 16px 16px", display: "flex", alignItems: "center", gap: 8, borderTop: cardBorder, background: theme.card }}>
+          <div style={{
+            flex: 1, display: "flex", alignItems: "center", gap: 8,
+            background: "#FFFFFF",
+            border: `${recorder.status === "recording" ? "2px" : "1px"} solid ${recorder.status === "recording" ? ACCENT : "#D0D0D0"}`,
+            borderRadius: 24, padding: "0 8px 0 16px", height: 48,
+            boxShadow: recorder.status === "recording" ? "0 2px 4px rgba(0,0,0,0.08)" : "none",
+            transition: "border-color 0.2s, box-shadow 0.2s",
+          }}>
+            <input ref={inputRef} type="text" value={text}
+              onChange={(e) => { setText(e.target.value); if (pendingTranscript) setPendingTranscript(null); }}
+              onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
+              placeholder={recorder.status === "recording" ? "Listening…" : "Type your request or click to talk..."}
+              disabled={sending || recorder.status === "transcribing"}
+              style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "'Trebuchet MS', sans-serif", fontSize: 16, color: "#1A1A2E", padding: 0, minWidth: 0, height: "100%" }} />
+            <InlineMicButton status={recorder.status} error={recorder.error}
+              onStart={recorder.start} onStop={recorder.stop} onReset={recorder.reset} disabled={sending} />
+          </div>
+          <button type="button" onClick={submit} disabled={sendDisabled} aria-label="Send"
+            onMouseDown={(e) => e.preventDefault()}
+            style={{
+              width: 48, height: 48, borderRadius: "50%",
+              background: sendDisabled ? "#B5B5B5" : ACCENT,
+              border: "none", cursor: sendDisabled ? "not-allowed" : "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => { if (!sendDisabled) (e.currentTarget as HTMLButtonElement).style.background = ACCENT_DARK; }}
+            onMouseLeave={(e) => { if (!sendDisabled) (e.currentTarget as HTMLButtonElement).style.background = ACCENT; }}>
+            <Send size={24} color="#FFFFFF" />
           </button>
         </div>
-      )}
-
-      <button type="button" onClick={onDone}
-        style={{ alignSelf: "flex-end", height: 36, padding: "0 14px", borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13 }}>
-        Done
-      </button>
+      </div>
     </div>
   );
 }
