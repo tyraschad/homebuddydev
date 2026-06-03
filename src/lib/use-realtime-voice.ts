@@ -54,6 +54,7 @@ export function useRealtimeVoice(opts: {
   });
 
   const supported = typeof window !== "undefined"
+    && typeof navigator !== "undefined"
     && !!navigator.mediaDevices?.getUserMedia
     && typeof window.MediaRecorder !== "undefined";
 
