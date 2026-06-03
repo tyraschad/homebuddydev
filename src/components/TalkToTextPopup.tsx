@@ -410,17 +410,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* Suggestions chips (empty state) */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div style={{ marginTop: 8, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
-              {suggestions.map((s) => (
-                <button key={s.label} type="button" onClick={() => handleSuggestion(s)}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 8, background: theme.card, color: theme.text, border: cardBorder, borderRadius: 20, padding: "8px 14px", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer", lineHeight: 1.2 }}>
-                  {s.icon}<span>{s.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          {/* (Quick actions moved to a persistent strip above the input) */}
         </div>
 
         {/* Instructions area (conditional) */}
