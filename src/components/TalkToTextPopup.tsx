@@ -4,7 +4,7 @@ import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
 import { generateSteps, answerQuestion, speak, reminderChat } from "@/lib/talk.functions";
-import { useVoiceRecorder, type VoiceStatus } from "@/lib/use-voice-recorder";
+import { useRealtimeVoice as useVoiceRecorder, type VoiceStatus } from "@/lib/use-realtime-voice";
 
 function InlineMicButton({ status, error, onStart, onStop, onReset, disabled, accent }: {
   status: VoiceStatus; error: string | null;
