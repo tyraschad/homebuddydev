@@ -193,3 +193,29 @@ export const speak = createServerFn({ method: "POST" })
     const base64 = Buffer.from(buf).toString("base64");
     return { audio: base64, mime: "audio/mpeg" };
   });
+
+export const transcribe = createServerFn({ method: "POST" })
+  .inputValidator((d: { audio: string; mime?: string }) => d)
+  .handler(async ({ data }) => {
+    const key = process.env.ELEVENLABS_API_KEY;
+    if (!key) throw new Error("ELEVENLABS_API_KEY not configured");
+    const bytes = Buffer.from(data.audio, "base64");
+    const mime = data.mime || "audio/webm";
+    const ext = mime.includes("mp4") ? "mp4" : mime.includes("ogg") ? "ogg" : mime.includes("wav") ? "wav" : "webm";
+    const form = new FormData();
+    form.append("file", new Blob([bytes], { type: mime }), `audio.${ext}`);
+    form.append("model_id", "scribe_v2");
+    form.append("language_code", "eng");
+    const res = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+      method: "POST",
+      headers: { "xi-api-key": key },
+      body: form,
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      if (res.status === 429) throw new Error("Rate limit. Please try again.");
+      throw new Error(`Transcription failed (${res.status}): ${t.slice(0, 200)}`);
+    }
+    const json = await res.json();
+    return { text: String(json.text || "").trim() };
+  });
