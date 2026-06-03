@@ -516,44 +516,129 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                 <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: theme.muted, marginTop: 4 }}>Talk to your caregiver to add them</div>
               </div>
             )}
-            <div style={{ marginTop: 30, display: "flex", alignItems: "center", gap: 12, background: theme.card, border: inputBorder, borderRadius: 20, padding: 16, boxSizing: "border-box" }}>
-              <Keyboard size={24} strokeWidth={2} color={theme.text} />
-              <input type="text" value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
-                placeholder="Type your request..."
-                style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text, padding: 8, minWidth: 0 }} />
-              <button type="button" onClick={submit} aria-label="Send"
-                style={{ width: 44, height: 44, borderRadius: "50%", background: circleBg, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Send size={20} strokeWidth={2} color={circleIcon} />
-              </button>
-            </div>
-          </>
+          <DefaultViewBody
+            recordingBig={recording}
+            setRecordingBig={setRecording}
+            text={text}
+            setText={setText}
+            onSubmit={submit}
+            onTranscribed={(t) => { setText(""); void handleQuery(t); }}
+            theme={theme}
+            cardBorder={cardBorder}
+            inputBorder={inputBorder}
+            buttonBorder={buttonBorder}
+            circleBg={circleBg}
+            circleIcon={circleIcon}
+            accent={accent}
+            highContrast={highContrast}
+            suggestions={suggestions}
+            handleSuggestion={handleSuggestion}
+          />
         )}
       </div>
     </div>
   );
 }
 
-function ReminderChatView({
-  view, theme, buttonBorder, inputBorder, accent, circleBg, circleIcon, sizes,
-  speaking, voiceOn, onSend, onDone, onToggleVoice, onReplayLast,
+function DefaultViewBody({
+  text, setText, onSubmit, onTranscribed, theme, inputBorder, buttonBorder, circleBg, circleIcon, accent, highContrast, suggestions, handleSuggestion,
 }: {
-  view: Extract<View, { kind: "reminderChat" }>;
+  recordingBig: boolean; setRecordingBig: (v: boolean) => void;
+  text: string; setText: (v: string) => void;
+  onSubmit: () => void; onTranscribed: (t: string) => void;
   theme: ReturnType<typeof useSettings>["theme"];
-  buttonBorder: string;
-  inputBorder: string;
-  cardBorder: string;
-  accent: string;
-  circleBg: string;
-  circleIcon: string;
-  sizes: ReturnType<typeof useSettings>["sizes"];
-  speaking: boolean;
-  voiceOn: boolean;
-  onSend: (text: string) => void;
-  onDone: () => void;
-  onToggleVoice: () => void;
-  onReplayLast: (text: string) => void;
+  cardBorder: string; inputBorder: string; buttonBorder: string;
+  circleBg: string; circleIcon: string; accent: string; highContrast: boolean;
+  suggestions: Suggestion[]; handleSuggestion: (s: Suggestion) => void | Promise<void>;
 }) {
-  const [draft, setDraft] = useState("");
+  const [pendingTranscript, setPendingTranscript] = useState<string | null>(null);
+  const big = useVoiceRecorder((t) => { onTranscribed(t); });
+  const inline = useVoiceRecorder((t) => { setPendingTranscript(t); setText(t); });
+
+  const isBigRec = big.status === "recording";
+  const submitPending = () => {
+    if (!pendingTranscript) return onSubmit();
+    const q = pendingTranscript;
+    setPendingTranscript(null);
+    setText("");
+    onTranscribed(q);
+  };
+  const retryPending = () => {
+    setPendingTranscript(null);
+    setText("");
+    inline.reset();
+    inline.start();
+  };
+
+  return (
+    <>
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 20 }}>
+        <button type="button"
+          onClick={() => isBigRec ? big.stop() : big.start()}
+          disabled={big.status === "transcribing"}
+          aria-label={isBigRec ? "Stop recording" : "Start recording"}
+          style={{ width: 120, height: 120, borderRadius: "50%", background: circleBg, border: `3px solid ${theme.text}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", animation: isBigRec ? "ttt-pulse 1.4s infinite" : undefined, padding: 0 }}>
+          {big.status === "transcribing"
+            ? <Loader2 size={60} color={circleIcon} style={{ animation: "spin 1s linear infinite" }} />
+            : <Mic size={60} strokeWidth={2} color={circleIcon} />}
+        </button>
+      </div>
+      <div style={{ marginTop: 16, textAlign: "center", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+        {isBigRec ? (<><span>Listening — tap to stop</span>{[0, 1, 2].map((i) => (<span key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: theme.text, display: "inline-block", animation: `ttt-dots 1.2s ${i * 0.2}s infinite` }} />))}</>)
+          : big.status === "transcribing" ? <span>Transcribing…</span>
+          : <span>Tap to talk</span>}
+      </div>
+      {big.error && <div style={{ marginTop: 8, textAlign: "center", color: "#DC2626", fontSize: 13 }}>{big.error}</div>}
+      <div style={{ marginTop: 20, textAlign: "center" }}>
+        <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 20, color: theme.text }}>Ask me anything</div>
+        <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 8 }}>How to use a device, your reminders, or to call someone.</div>
+      </div>
+      {suggestions.length > 0 ? (
+        <div style={{ marginTop: 30, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+          {suggestions.map((s) => (
+            <button key={s.label} type="button" onClick={() => handleSuggestion(s)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 10, background: theme.card, color: theme.text, border: buttonBorder, borderRadius: 20, padding: "8px 12px", height: 44, fontFamily: "Verdana, sans-serif", fontWeight: highContrast ? 800 : 700, fontSize: 14, cursor: "pointer", lineHeight: 1.2, whiteSpace: "nowrap" }}>
+              {s.icon}<span>{s.label}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div style={{ marginTop: 30, textAlign: "center" }}>
+          <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>No devices or reminders set up yet</div>
+          <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 12, color: theme.muted, marginTop: 4 }}>Talk to your caregiver to add them</div>
+        </div>
+      )}
+      <div style={{ marginTop: 30, display: "flex", alignItems: "center", gap: 12, background: theme.card, border: inputBorder, borderRadius: 20, padding: 16, boxSizing: "border-box" }}>
+        <Keyboard size={24} strokeWidth={2} color={theme.text} />
+        <input type="text" value={text}
+          onChange={(e) => { setText(e.target.value); if (pendingTranscript) setPendingTranscript(null); }}
+          onKeyDown={(e) => { if (e.key === "Enter") submitPending(); }}
+          placeholder={inline.status === "recording" ? "Listening…" : "Type your request or tap mic…"}
+          disabled={inline.status === "recording" || inline.status === "transcribing"}
+          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "Verdana, sans-serif", fontSize: 16, color: theme.text, padding: 8, minWidth: 0 }} />
+        <InlineMicButton status={inline.status} error={inline.error}
+          onStart={inline.start} onStop={inline.stop} onReset={inline.reset} accent={accent} />
+        <button type="button" onClick={submitPending} aria-label="Send"
+          style={{ width: 44, height: 44, borderRadius: "50%", background: circleBg, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Send size={20} strokeWidth={2} color={circleIcon} />
+        </button>
+      </div>
+      {inline.error && <div style={{ marginTop: 8, textAlign: "center", color: "#DC2626", fontSize: 13 }}>{inline.error}</div>}
+      {pendingTranscript && (
+        <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
+          <button type="button" onClick={retryPending}
+            style={{ flex: 1, height: 44, borderRadius: 8, border: buttonBorder, background: "transparent", color: theme.text, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
+            <RotateCcw size={16} /> Retry
+          </button>
+          <button type="button" onClick={submitPending}
+            style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
+            Submit
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
   const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
