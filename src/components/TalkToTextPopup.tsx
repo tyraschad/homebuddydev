@@ -381,7 +381,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                 <ChevronLeft size={18} /> Back
               </button>
               {isLast ? (
-                <button type="button" onClick={goBack} style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
+                <button type="button" onClick={() => { stopTTS(); setView({ kind: "wellDone", label: view.label, device: view.device, reminder: view.reminder, steps: view.steps }); }} style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: accent, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
                   Done
                 </button>
               ) : (
