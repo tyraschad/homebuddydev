@@ -483,6 +483,29 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           <div style={{ flexShrink: 0, padding: "0 16px 6px", color: "#DC2626", fontSize: 13, textAlign: "center" }}>{recorder.error}</div>
         )}
 
+        {/* Quick actions strip (persistent, above input) */}
+        {!guide && suggestions.length > 0 && (
+          <div style={{ flexShrink: 0, padding: "10px 16px 0", display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "thin" }}>
+            {suggestions.map((s) => (
+              <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  background: theme.card, color: theme.text, border: cardBorder,
+                  borderRadius: 20, padding: s.photo ? "4px 12px 4px 4px" : "8px 12px",
+                  fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13,
+                  cursor: sending ? "not-allowed" : "pointer", lineHeight: 1.2,
+                  whiteSpace: "nowrap", flexShrink: 0, opacity: sending ? 0.5 : 1,
+                  height: 36,
+                }}>
+                {s.photo
+                  ? <img src={s.photo} alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                  : s.icon}
+                <span>{s.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Input area */}
         <div style={{ flexShrink: 0, padding: "12px 16px 16px", display: "flex", alignItems: "center", gap: 8, borderTop: cardBorder, background: theme.card }}>
           <div style={{
