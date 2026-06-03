@@ -50,7 +50,8 @@ type View =
   | { kind: "loading"; label: string }
   | { kind: "guide"; label: string; device: Device | null; reminder: Reminder | null; steps: string[]; index: number }
   | { kind: "answer"; query: string; text: string; device: Device | null }
-  | { kind: "reminderChat"; reminder: Reminder; messages: ChatMsg[]; sending: boolean; stage: "intro" | "followup" };
+  | { kind: "reminderChat"; reminder: Reminder; messages: ChatMsg[]; sending: boolean; stage: "intro" | "followup" }
+  | { kind: "wellDone"; label: string; device: Device | null; reminder: Reminder | null; steps: string[] };
 
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const { theme, cardBorder, inputBorder, buttonBorder, highContrast, sizes } = useSettings();
