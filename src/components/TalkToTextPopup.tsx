@@ -512,11 +512,10 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 function DefaultViewBody({
   text, setText, onSubmit, onTranscribed, theme, inputBorder, buttonBorder, circleBg, circleIcon, accent, highContrast, suggestions, handleSuggestion,
 }: {
-  recordingBig: boolean; setRecordingBig: (v: boolean) => void;
   text: string; setText: (v: string) => void;
   onSubmit: () => void; onTranscribed: (t: string) => void;
   theme: ReturnType<typeof useSettings>["theme"];
-  cardBorder: string; inputBorder: string; buttonBorder: string;
+  inputBorder: string; buttonBorder: string;
   circleBg: string; circleIcon: string; accent: string; highContrast: boolean;
   suggestions: Suggestion[]; handleSuggestion: (s: Suggestion) => void | Promise<void>;
 }) {
