@@ -608,6 +608,30 @@ function DefaultViewBody({
     </>
   );
 }
+
+function ReminderChatView({
+  view, theme, buttonBorder, inputBorder, accent, circleBg, circleIcon, sizes,
+  speaking, voiceOn, onSend, onDone, onToggleVoice, onReplayLast,
+}: {
+  view: Extract<View, { kind: "reminderChat" }>;
+  theme: ReturnType<typeof useSettings>["theme"];
+  buttonBorder: string;
+  inputBorder: string;
+  cardBorder: string;
+  accent: string;
+  circleBg: string;
+  circleIcon: string;
+  sizes: ReturnType<typeof useSettings>["sizes"];
+  speaking: boolean;
+  voiceOn: boolean;
+  onSend: (text: string) => void;
+  onDone: () => void;
+  onToggleVoice: () => void;
+  onReplayLast: (text: string) => void;
+}) {
+  const [draft, setDraft] = useState("");
+  const [pendingVoice, setPendingVoice] = useState<string | null>(null);
+  const voice = useVoiceRecorder((t) => { setDraft(t); setPendingVoice(t); });
   const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
