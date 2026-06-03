@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useScribe } from "@elevenlabs/react";
+import { useScribe, CommitStrategy } from "@elevenlabs/react";
 import { useServerFn } from "@tanstack/react-start";
 import { realtimeScribeToken } from "@/lib/talk.functions";
 
@@ -38,7 +38,7 @@ export function useRealtimeVoice(opts: {
 
   const scribe = useScribe({
     modelId: "scribe_v2_realtime",
-    commitStrategy: "vad",
+    commitStrategy: CommitStrategy.VAD,
     onPartialTranscript: (data: any) => {
       partialRef.current = String(data?.text || "");
       emitLive();
@@ -82,9 +82,7 @@ export function useRealtimeVoice(opts: {
   }, [getToken, scribe, supported]);
 
   const stop = useCallback(async () => {
-    try {
-      await scribe.disconnect();
-    } catch {}
+    try { scribe.disconnect(); } catch {}
     const finalText = (committedRef.current + " " + partialRef.current).trim();
     partialRef.current = "";
     committedRef.current = finalText;
@@ -105,7 +103,7 @@ export function useRealtimeVoice(opts: {
     setStatus("idle");
   }, []);
 
-  useEffect(() => () => { void scribe.disconnect().catch(() => {}); }, [scribe]);
+  useEffect(() => () => { try { scribe.disconnect(); } catch {} }, [scribe]);
 
   return { status, error, start, stop, reset, supported };
 }
