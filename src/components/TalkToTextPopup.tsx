@@ -488,20 +488,21 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
         {/* Quick actions strip (persistent, above input) */}
         {!guide && suggestions.length > 0 && (
-          <div style={{ flexShrink: 0, padding: "10px 16px 0", display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "thin" }}>
+          <div style={{ flexShrink: 0, padding: "10px 16px 16px", display: "flex", gap: 12, overflowX: "auto", scrollbarWidth: "thin" }}>
             {suggestions.map((s) => (
               <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
+                className="suggestion-chip"
                 style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  background: theme.card, color: theme.text, border: cardBorder,
-                  borderRadius: 20, padding: s.photo ? "4px 12px 4px 4px" : "8px 12px",
-                  fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13,
+                  display: "inline-flex", alignItems: "center", gap: 10,
+                  background: "#FFFFFF", color: "#1A1A2E", border: "1px solid #D0D0D0",
+                  borderRadius: 26, padding: s.photo ? "8px 16px 8px 8px" : "12px 16px",
+                  fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16,
                   cursor: sending ? "not-allowed" : "pointer", lineHeight: 1.2,
                   whiteSpace: "nowrap", flexShrink: 0, opacity: sending ? 0.5 : 1,
-                  height: 36,
+                  height: 52, boxSizing: "border-box",
                 }}>
                 {s.photo
-                  ? <img src={s.photo} alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                  ? <img src={s.photo} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
                   : s.icon}
                 <span>{s.label}</span>
               </button>
