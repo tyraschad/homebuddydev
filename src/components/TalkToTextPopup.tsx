@@ -38,31 +38,52 @@ function InlineMicButton({ status, error, onStart, onStop, onReset, disabled }: 
 }) {
   const isRec = status === "recording";
   const isBusy = status === "transcribing";
+  const [hovered, setHovered] = useState(false);
   const handleClick = () => {
     if (disabled) return;
     if (isRec) onStop();
     else if (status === "error") { onReset(); onStart(); }
     else if (!isBusy) onStart();
   };
-  const title = error || (isRec ? "Tap to stop" : isBusy ? "Transcribing…" : "Click to talk");
+  const label = error || (isRec ? "Tap to stop" : isBusy ? "Transcribing…" : "Click to talk");
+  const labelColor = isRec ? "#DC2626" : "#888888";
   return (
-    <button type="button" onClick={handleClick} disabled={disabled || isBusy} aria-label={title} title={title}
-      style={{
-        width: 36, height: 36, borderRadius: "50%",
-        background: isRec ? "#DC2626" : ACCENT,
-        border: isRec ? "2px solid #DC2626" : "none",
-        cursor: disabled || isBusy ? "default" : "pointer",
-        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-        opacity: disabled ? 0.4 : 1,
-        animation: isRec ? "ttt-pulse 0.6s infinite" : undefined,
-        transition: "background 0.2s",
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
+      <button type="button" onClick={handleClick} disabled={disabled || isBusy} aria-label={label}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          width: 48, height: 48, borderRadius: "50%",
+          background: hovered && !disabled && !isBusy && !isRec ? ACCENT_DARK : ACCENT,
+          border: isRec ? `2px solid ${ACCENT}` : "none",
+          cursor: disabled || isBusy ? "default" : "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          opacity: disabled ? 0.4 : 1,
+          animation: isRec ? "ttt-pulse 0.8s infinite" : undefined,
+          transition: "background 0.2s, box-shadow 0.2s",
+          boxShadow: hovered && !disabled && !isBusy && !isRec ? `0 2px 8px ${ACCENT}40` : "none",
+        }}>
+        {isBusy
+          ? <Loader2 size={24} color="#FFFFFF" style={{ animation: "spin 1s linear infinite" }} />
+          : isRec
+            ? <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#FFFFFF", animation: "ttt-rec-dot 1s infinite" }} />
+            : <Mic size={24} color="#FFFFFF" />}
+      </button>
+      <span style={{
+        position: "absolute",
+        top: 52,
+        left: "50%",
+        transform: "translateX(-50%)",
+        fontSize: 12,
+        color: labelColor,
+        fontFamily: "'Trebuchet MS', sans-serif",
+        whiteSpace: "nowrap",
+        pointerEvents: "none",
+        lineHeight: 1.2,
       }}>
-      {isBusy
-        ? <Loader2 size={18} color="#FFFFFF" style={{ animation: "spin 1s linear infinite" }} />
-        : isRec
-          ? <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#FFFFFF", animation: "ttt-rec-dot 1s infinite" }} />
-          : <Mic size={20} color="#FFFFFF" />}
-    </button>
+        {label}
+      </span>
+    </div>
   );
 }
 
