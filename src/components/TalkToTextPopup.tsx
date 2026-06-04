@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, Mic, Send, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2, RotateCcw, Clock, HelpCircle } from "lucide-react";
+import { X, Mic, Send, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2, Clock, HelpCircle } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
@@ -38,31 +38,52 @@ function InlineMicButton({ status, error, onStart, onStop, onReset, disabled }: 
 }) {
   const isRec = status === "recording";
   const isBusy = status === "transcribing";
+  const [hovered, setHovered] = useState(false);
   const handleClick = () => {
     if (disabled) return;
     if (isRec) onStop();
     else if (status === "error") { onReset(); onStart(); }
     else if (!isBusy) onStart();
   };
-  const title = error || (isRec ? "Tap to stop" : isBusy ? "Transcribing…" : "Click to talk");
+  const label = error || (isRec ? "Tap to stop" : isBusy ? "Transcribing…" : "Click to talk");
+  const labelColor = isRec ? "#DC2626" : "#888888";
   return (
-    <button type="button" onClick={handleClick} disabled={disabled || isBusy} aria-label={title} title={title}
-      style={{
-        width: 36, height: 36, borderRadius: "50%",
-        background: isRec ? "#DC2626" : ACCENT,
-        border: isRec ? "2px solid #DC2626" : "none",
-        cursor: disabled || isBusy ? "default" : "pointer",
-        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-        opacity: disabled ? 0.4 : 1,
-        animation: isRec ? "ttt-pulse 0.6s infinite" : undefined,
-        transition: "background 0.2s",
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
+      <button type="button" onClick={handleClick} disabled={disabled || isBusy} aria-label={label}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          width: 48, height: 48, borderRadius: "50%",
+          background: hovered && !disabled && !isBusy && !isRec ? ACCENT_DARK : ACCENT,
+          border: isRec ? `2px solid ${ACCENT}` : "none",
+          cursor: disabled || isBusy ? "default" : "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          opacity: disabled ? 0.4 : 1,
+          animation: isRec ? "ttt-pulse 0.8s infinite" : undefined,
+          transition: "background 0.2s, box-shadow 0.2s",
+          boxShadow: hovered && !disabled && !isBusy && !isRec ? `0 2px 8px ${ACCENT}40` : "none",
+        }}>
+        {isBusy
+          ? <Loader2 size={24} color="#FFFFFF" style={{ animation: "spin 1s linear infinite" }} />
+          : isRec
+            ? <span style={{ width: 12, height: 12, borderRadius: "50%", background: "#FFFFFF", animation: "ttt-rec-dot 1s infinite" }} />
+            : <Mic size={24} color="#FFFFFF" />}
+      </button>
+      <span style={{
+        position: "absolute",
+        top: 52,
+        left: "50%",
+        transform: "translateX(-50%)",
+        fontSize: 12,
+        color: labelColor,
+        fontFamily: "'Trebuchet MS', sans-serif",
+        whiteSpace: "nowrap",
+        pointerEvents: "none",
+        lineHeight: 1.2,
       }}>
-      {isBusy
-        ? <Loader2 size={18} color="#FFFFFF" style={{ animation: "spin 1s linear infinite" }} />
-        : isRec
-          ? <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#FFFFFF", animation: "ttt-rec-dot 1s infinite" }} />
-          : <Mic size={20} color="#FFFFFF" />}
-    </button>
+        {label}
+      </span>
+    </div>
   );
 }
 
@@ -83,7 +104,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     { role: "assistant", content: welcome },
   ]);
   const [text, setText] = useState("");
-  const [pendingTranscript, setPendingTranscript] = useState<string | null>(null);
+  
   const [guide, setGuide] = useState<Guide | null>(null);
   const [reminderCtx, setReminderCtx] = useState<{ reminder: Reminder; stage: "intro" | "followup" } | null>(null);
   const [sending, setSending] = useState(false);
@@ -170,11 +191,11 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       const pick = scored.slice(0, 3);
       if (pick.length === 1) {
         for (const q of pick[0].d.questions.slice(0, 2))
-          result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), photo: pick[0].d.photo, device: pick[0].d });
+          result.push({ icon: <HelpCircle size={20} color={theme.text} />, label: truncate(q), photo: pick[0].d.photo, device: pick[0].d });
       } else {
         for (const { d } of pick) {
           const q = d.questions[0];
-          if (q) result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), photo: d.photo, device: d });
+          if (q) result.push({ icon: <HelpCircle size={20} color={theme.text} />, label: truncate(q), photo: d.photo, device: d });
         }
       }
     }
@@ -191,7 +212,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       const [hh, mm] = upcoming.t.split(":").map(Number);
       const d = new Date(); d.setHours(hh || 0, mm || 0, 0, 0);
       const timeStr = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-      result.push({ icon: <Clock size={16} color={theme.text} />, label: truncate(`${upcoming.r.name} at ${timeStr}`, 50), reminder: upcoming.r });
+      result.push({ icon: <Clock size={20} color={theme.text} />, label: truncate(`${upcoming.r.name} at ${timeStr}`, 50), reminder: upcoming.r });
     }
     return result;
   }, [reminders, elder.devices, theme.text, nowTick]);
@@ -313,24 +334,18 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   };
 
   const submit = () => {
-    const q = (pendingTranscript || text).trim();
+    const q = text.trim();
     if (!q) return;
-    setText(""); setPendingTranscript(null);
+    setText("");
     void handleQuery(q);
   };
 
   // Voice recorder writes transcript into the input field
   const recorder = useVoiceRecorder((t) => {
     setText(t);
-    setPendingTranscript(t);
     inputRef.current?.focus();
   });
 
-  const retryRecording = () => {
-    setText(""); setPendingTranscript(null);
-    recorder.reset();
-    recorder.start();
-  };
 
   const advanceGuide = (delta: 1 | -1) => {
     if (!guide) return;
@@ -349,16 +364,18 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
   // (suggestions are always shown above input when available)
   const bodyFontSize = sizes.body >= 28 ? 18 : 16;
-  const sendDisabled = sending || (!text.trim() && !pendingTranscript);
+  const sendDisabled = sending || !text.trim();
 
   return (
     <div onClick={onClose} role="dialog" aria-modal="true"
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 2000, boxSizing: "border-box" }}>
       <style>{`
-        @keyframes ttt-pulse { 0% { box-shadow: 0 0 0 0 rgba(107,162,74,0.5); } 70% { box-shadow: 0 0 0 12px rgba(107,162,74,0); } 100% { box-shadow: 0 0 0 0 rgba(107,162,74,0); } }
+        @keyframes ttt-pulse { 0% { box-shadow: 0 0 0 0 rgba(107,162,74,0.5); } 70% { box-shadow: 0 0 0 14px rgba(107,162,74,0); } 100% { box-shadow: 0 0 0 0 rgba(107,162,74,0); } }
         @keyframes ttt-rec-dot { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
         @keyframes ttt-cursor { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
         @keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+        .suggestion-chip { transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; }
+        .suggestion-chip:hover { border: 2px solid #D0D0D0 !important; background: #F9F9F9 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important; }
       `}</style>
 
       <div onClick={(e) => e.stopPropagation()}
@@ -386,7 +403,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Chat history */}
-        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "20px 16px", display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
+        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "20px 16px 24px", display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
           {messages.map((m, i) => (
             <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
               <div style={{
@@ -465,40 +482,27 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {/* Transcription retry/submit strip */}
-        {pendingTranscript && (
-          <div style={{ flexShrink: 0, padding: "0 16px 8px", display: "flex", gap: 8 }}>
-            <button type="button" onClick={retryRecording}
-              style={{ flex: 1, height: 40, borderRadius: 8, border: `1.5px solid ${theme.text}`, background: "transparent", color: theme.text, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14 }}>
-              <RotateCcw size={14} /> Retry
-            </button>
-            <button type="button" onClick={submit}
-              style={{ flex: 1, height: 40, borderRadius: 8, border: "none", background: ACCENT, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14 }}>
-              Send
-            </button>
-          </div>
-        )}
-
         {recorder.error && (
           <div style={{ flexShrink: 0, padding: "0 16px 6px", color: "#DC2626", fontSize: 13, textAlign: "center" }}>{recorder.error}</div>
         )}
 
         {/* Quick actions strip (persistent, above input) */}
         {!guide && suggestions.length > 0 && (
-          <div style={{ flexShrink: 0, padding: "10px 16px 0", display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "thin" }}>
+          <div style={{ flexShrink: 0, padding: "10px 16px 16px", display: "flex", gap: 12, overflowX: "auto", scrollbarWidth: "thin" }}>
             {suggestions.map((s) => (
               <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
+                className="suggestion-chip"
                 style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  background: theme.card, color: theme.text, border: cardBorder,
-                  borderRadius: 20, padding: s.photo ? "4px 12px 4px 4px" : "8px 12px",
-                  fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13,
+                  display: "inline-flex", alignItems: "center", gap: 10,
+                  background: "#FFFFFF", color: "#1A1A2E", border: "1px solid #D0D0D0",
+                  borderRadius: 26, padding: s.photo ? "8px 16px 8px 8px" : "12px 16px",
+                  fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16,
                   cursor: sending ? "not-allowed" : "pointer", lineHeight: 1.2,
                   whiteSpace: "nowrap", flexShrink: 0, opacity: sending ? 0.5 : 1,
-                  height: 36,
+                  height: 52, boxSizing: "border-box",
                 }}>
                 {s.photo
-                  ? <img src={s.photo} alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                  ? <img src={s.photo} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
                   : s.icon}
                 <span>{s.label}</span>
               </button>
@@ -517,7 +521,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             transition: "border-color 0.2s, box-shadow 0.2s",
           }}>
             <input ref={inputRef} type="text" value={text}
-              onChange={(e) => { setText(e.target.value); if (pendingTranscript) setPendingTranscript(null); }}
+              onChange={(e) => { setText(e.target.value); }}
               onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
               placeholder={recorder.status === "recording" ? "Listening…" : "Type your request or click to talk..."}
               disabled={sending || recorder.status === "transcribing"}
