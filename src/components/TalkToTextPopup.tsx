@@ -518,7 +518,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             transition: "border-color 0.2s, box-shadow 0.2s",
           }}>
             <input ref={inputRef} type="text" value={text}
-              onChange={(e) => { setText(e.target.value); if (pendingTranscript) setPendingTranscript(null); }}
+              onChange={(e) => { setText(e.target.value); }}
               onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
               placeholder={recorder.status === "recording" ? "Listening…" : "Type your request or click to talk..."}
               disabled={sending || recorder.status === "transcribing"}
