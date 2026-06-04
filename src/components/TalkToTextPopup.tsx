@@ -334,24 +334,18 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   };
 
   const submit = () => {
-    const q = (pendingTranscript || text).trim();
+    const q = text.trim();
     if (!q) return;
-    setText(""); setPendingTranscript(null);
+    setText("");
     void handleQuery(q);
   };
 
   // Voice recorder writes transcript into the input field
   const recorder = useVoiceRecorder((t) => {
     setText(t);
-    setPendingTranscript(t);
     inputRef.current?.focus();
   });
 
-  const retryRecording = () => {
-    setText(""); setPendingTranscript(null);
-    recorder.reset();
-    recorder.start();
-  };
 
   const advanceGuide = (delta: 1 | -1) => {
     if (!guide) return;
