@@ -364,7 +364,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
   // (suggestions are always shown above input when available)
   const bodyFontSize = sizes.body >= 28 ? 18 : 16;
-  const sendDisabled = sending || (!text.trim() && !pendingTranscript);
+  const sendDisabled = sending || !text.trim();
 
   return (
     <div onClick={onClose} role="dialog" aria-modal="true"
