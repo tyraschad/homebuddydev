@@ -104,7 +104,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     { role: "assistant", content: welcome },
   ]);
   const [text, setText] = useState("");
-  const [pendingTranscript, setPendingTranscript] = useState<string | null>(null);
+  
   const [guide, setGuide] = useState<Guide | null>(null);
   const [reminderCtx, setReminderCtx] = useState<{ reminder: Reminder; stage: "intro" | "followup" } | null>(null);
   const [sending, setSending] = useState(false);
