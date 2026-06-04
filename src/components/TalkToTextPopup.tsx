@@ -370,10 +370,12 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     <div onClick={onClose} role="dialog" aria-modal="true"
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 2000, boxSizing: "border-box" }}>
       <style>{`
-        @keyframes ttt-pulse { 0% { box-shadow: 0 0 0 0 rgba(107,162,74,0.5); } 70% { box-shadow: 0 0 0 12px rgba(107,162,74,0); } 100% { box-shadow: 0 0 0 0 rgba(107,162,74,0); } }
+        @keyframes ttt-pulse { 0% { box-shadow: 0 0 0 0 rgba(107,162,74,0.5); } 70% { box-shadow: 0 0 0 14px rgba(107,162,74,0); } 100% { box-shadow: 0 0 0 0 rgba(107,162,74,0); } }
         @keyframes ttt-rec-dot { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
         @keyframes ttt-cursor { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
         @keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+        .suggestion-chip { transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; }
+        .suggestion-chip:hover { border: 2px solid #D0D0D0 !important; background: #F9F9F9 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important; }
       `}</style>
 
       <div onClick={(e) => e.stopPropagation()}
