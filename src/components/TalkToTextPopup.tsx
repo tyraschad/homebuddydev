@@ -403,7 +403,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Chat history */}
-        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "20px 16px", display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
+        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "20px 16px 24px", display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
           {messages.map((m, i) => (
             <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
               <div style={{
