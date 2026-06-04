@@ -480,18 +480,8 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {/* Transcription retry/submit strip */}
-        {pendingTranscript && (
-          <div style={{ flexShrink: 0, padding: "0 16px 8px", display: "flex", gap: 8 }}>
-            <button type="button" onClick={retryRecording}
-              style={{ flex: 1, height: 40, borderRadius: 8, border: `1.5px solid ${theme.text}`, background: "transparent", color: theme.text, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14 }}>
-              <RotateCcw size={14} /> Retry
-            </button>
-            <button type="button" onClick={submit}
-              style={{ flex: 1, height: 40, borderRadius: 8, border: "none", background: ACCENT, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14 }}>
-              Send
-            </button>
-          </div>
+        {recorder.error && (
+          <div style={{ flexShrink: 0, padding: "0 16px 6px", color: "#DC2626", fontSize: 13, textAlign: "center" }}>{recorder.error}</div>
         )}
 
         {recorder.error && (
