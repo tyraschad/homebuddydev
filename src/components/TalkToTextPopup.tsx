@@ -484,10 +484,6 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           <div style={{ flexShrink: 0, padding: "0 16px 6px", color: "#DC2626", fontSize: 13, textAlign: "center" }}>{recorder.error}</div>
         )}
 
-        {recorder.error && (
-          <div style={{ flexShrink: 0, padding: "0 16px 6px", color: "#DC2626", fontSize: 13, textAlign: "center" }}>{recorder.error}</div>
-        )}
-
         {/* Quick actions strip (persistent, above input) */}
         {!guide && suggestions.length > 0 && (
           <div style={{ flexShrink: 0, padding: "10px 16px 0", display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "thin" }}>
