@@ -191,11 +191,11 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       const pick = scored.slice(0, 3);
       if (pick.length === 1) {
         for (const q of pick[0].d.questions.slice(0, 2))
-          result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), photo: pick[0].d.photo, device: pick[0].d });
+          result.push({ icon: <HelpCircle size={20} color={theme.text} />, label: truncate(q), photo: pick[0].d.photo, device: pick[0].d });
       } else {
         for (const { d } of pick) {
           const q = d.questions[0];
-          if (q) result.push({ icon: <HelpCircle size={16} color={theme.text} />, label: truncate(q), photo: d.photo, device: d });
+          if (q) result.push({ icon: <HelpCircle size={20} color={theme.text} />, label: truncate(q), photo: d.photo, device: d });
         }
       }
     }
@@ -212,7 +212,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       const [hh, mm] = upcoming.t.split(":").map(Number);
       const d = new Date(); d.setHours(hh || 0, mm || 0, 0, 0);
       const timeStr = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-      result.push({ icon: <Clock size={16} color={theme.text} />, label: truncate(`${upcoming.r.name} at ${timeStr}`, 50), reminder: upcoming.r });
+      result.push({ icon: <Clock size={20} color={theme.text} />, label: truncate(`${upcoming.r.name} at ${timeStr}`, 50), reminder: upcoming.r });
     }
     return result;
   }, [reminders, elder.devices, theme.text, nowTick]);
