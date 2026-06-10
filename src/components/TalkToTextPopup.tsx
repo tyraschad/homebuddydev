@@ -729,7 +729,9 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   opacity: sendDisabled ? 0.6 : 1, transition: "background 0.2s",
                 }}>
-                <Send size={v2 ? 20 : 24} color={v2 ? "#888888" : "#FFFFFF"} style={v2 ? { transform: "rotate(-90deg)" } : undefined} />
+                {v2
+                  ? <ArrowUp size={20} color="#888888" />
+                  : <Send size={24} color="#FFFFFF" />}
               </button>
 
             </div>
