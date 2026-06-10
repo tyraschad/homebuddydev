@@ -80,10 +80,10 @@ function ElderHome() {
   const { theme, appearance, textSize, announcementsEnabled, highContrast } = useSettings();
   const v2 = !highContrast;
 
-  // V2 design tokens
-  const pageBg = v2
-    ? "linear-gradient(to bottom, #4A7C59 0%, #A8D5BA 100%)"
-    : PAGE_BG;
+  // V2 design tokens — V2 uses a fixed time-based grainy background layer
+  // rendered below content; the wrapper itself stays transparent in V2.
+  const pageBg = v2 ? "transparent" : PAGE_BG;
+
   const cardBg = v2 ? "rgba(255,255,255,0.85)" : "#FFFFFF";
   const cardBorderStyle = v2 ? "1px solid #D0E8D0" : CARD_BORDER;
   const cardRadius = v2 ? 16 : 4;
