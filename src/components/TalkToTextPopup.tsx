@@ -555,13 +555,14 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                 disabled={sending || recorder.status === "transcribing" || recorder.status === "recording"}
                 style={{
                   width: "100%", height: "100%", boxSizing: "border-box",
-                  padding: "16px 72px 16px 16px", border: "none", outline: "none", resize: "none",
+                  padding: "12px 66px 12px 12px", border: "none", outline: "none", resize: "none",
                   background: "transparent",
                   fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#000000",
+                  fontStyle: text ? "normal" : "italic",
                 }} />
               <button type="button" onClick={submit} disabled={sendDisabled} aria-label="Send"
                 style={{
-                  position: "absolute", right: 8, bottom: 8,
+                  position: "absolute", right: 6, bottom: 6,
                   width: 48, height: 48, borderRadius: "50%",
                   background: sendDisabled ? "#B5D4A3" : ACCENT,
                   border: "none", cursor: sendDisabled ? "not-allowed" : "pointer",
@@ -570,6 +571,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                 }}>
                 <Send size={24} color="#FFFFFF" />
               </button>
+
             </div>
           </div>
 
