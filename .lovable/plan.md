@@ -1,62 +1,70 @@
-# Carer Portal Enhancement Plan
+# Elder Screen — WCAG v3 Layout Redesign
 
-This is a large multi-feature update. I'll group it into 6 implementation chunks so it ships coherently. Storage stays in the existing `carer-store` (localStorage) — no DB migration since Lovable Cloud isn't enabled. If you want real DB sync, say the word and I'll enable Lovable Cloud as a follow-up.
+Rebuild the visual shell of `/elder` while keeping all existing behavior intact (clock, reminder announcements, TalkToText popup, phone call overlay).
 
-## 1. Elder Profile Card — Expandable sections with inline edit
+## 1. Page shell
 
-- Card header stays: avatar, name, age, single expand/collapse arrow.
-- When expanded, render 3 collapsible **sub-sections**: Health Conditions, Notes, Phone Contacts. Each sub-section header shows a pencil (16px) on the right that opens a focused edit modal for just that section.
-- Instruction Context is removed from this card (moved to its own card, see §2). No edit pencil for read-only data.
-- Replace the single `EditProfileModal` with three smaller modals: `EditConditionsModal`, `EditNotesModal`, `EditContactsModal`. They reuse the existing form fields/validation.
-- Fallback copy when empty: "No notes added", "No contacts added", "No health conditions added" (italic, muted).
+- Page background: `#8F8F8F` (replace current themed bg on this route only — settings theme stays for other screens).
+- Outer padding: 16px margins around the grid.
+- Layout: CSS grid, 2 equal columns (50/50) below the header. Stacks to 1 column under ~720px.
 
-## 2. Instruction Context — Standalone card
+## 2. Header (full width, on gray bg)
 
-- New card directly below Elder Profile Card, same border/typography.
-- Collapsed header: title "Instruction Context" + preview "{n} devices added" + arrow.
-- Expanded body: list rows with 30×30 thumbnail + device name. Empty state: "No devices added".
-- Edit pencil appears in header only when expanded → opens `EditInstructionContextModal`.
-- Modal reuses the onboarding Page 7B flow: upload photo, simulated AI label, generate questions, list existing devices with edit/delete, Save/Cancel.
-- Extract the device-entry UI from `onboarding.tsx` into `src/components/instruction-context-form.tsx` and import it from both onboarding and the new modal so behavior stays identical.
-- Extend `ElderProfile` in `carer-store` with `devices: Device[]` (`{ id, name, photo, questions: string[] }`); onboarding completion writes into this field.
+- Left cluster: white SVG logo (use the uploaded `WhiteSVGLogo.svg`, 24px) + 12px gap + "Good {Morning|Afternoon|Evening}, {elder.name}" — white, bold Inter.
+- Right cluster: "Settings" white bold Inter + 12px gap + gear icon (28px white). Wraps in `<Link to="/carer/settings">`.
+- Padding: 16px left/right, 12px top/bottom.
+- Add the logo file at `src/assets/white-logo.svg` (copied from upload) and import.
 
-## 3. Calendar — "Go to today" floating button
+## 3. Left column
 
-- Pill button fixed at bottom-right of the calendar area (16px margin), 44px height, outline style with 1.5px border, Verdana 14px bold.
-- Visible only when the viewed date/range is not today; smooth 0.3s opacity fade.
-- Click resets the cursor based on view mode (day → today, week → week containing today, month → current month, list → scroll-to/today highlight).
-- Respects light/dark theme.
+**Clock card** (top): white bg, existing date + time content/styling preserved (Georgia/Newsreader bold), wrapped in a new white card frame matching the new card style (1px light gray border, 4px radius, 16px padding).
 
-## 4. Settings recovery + Tour entry
+**Ask a Question card** (below clock):
+- White bg, 1px `#D0D0D0` border, 4px radius, 16px padding, centered content.
+- 150px circular button, white bg, 2px black border, black mic icon ~80px, centered.
+- Label below: "Tap to Ask a Question", 16px black bold Inter, 16px top padding.
+- Click opens existing `TalkToTextPopup` (sets `overlay = "chat"`).
+- Remove the old large mic button block from current layout.
 
-- Settings page was previously deleted. Restore a slim `/carer/settings` route with just:
-  - **Back to setup** (outline 44px): visible only if `localStorage[homebuddy.onboarding.v2]` exists with `step < 10 && !completed`. Navigates to `/setup` (rename `/onboarding` → `/setup` via TanStack alias route).
-  - **Restart setup** (outline 44px): opens confirm modal with "Cancel" + destructive "Yes, restart"; clears onboarding storage + carer data and navigates to `/setup`.
-  - **Take tour** (outline 44px): clears `homebuddy.tour.completed` and re-runs the carer-portal tutorial.
-- Add a small "settings" gear icon back to the carer header (top-right) linking here.
+## 4. Right column — Today's Reminders
 
-## 5. Tutorial tour (first visit)
+White card (same border/radius/padding as above).
 
-- Add `src/components/portal-tour.tsx`: semi-transparent overlay + cutout highlight around each anchor element by ref, tooltip card (white/dark, 1.5px border, 14px) with copy from the spec, Next / Skip / Finish buttons.
-- Steps in order: Header → Elder Profile Card → Instruction Context → Schedule Header → Calendar → Go-to-today button.
-- Auto-start on first visit when `localStorage['homebuddy.tour.completed.v1']` is absent; mark completed on Finish/Skip.
-- Re-triggerable via Settings → "Take tour".
+- Header: "Today's Reminders" 18px black bold Inter, 12px bottom padding.
+- Build today's list from `reminders` filtered by repeat schedule + `oneTimeDate`, expanded per `times[]`, sorted ascending.
+- Vertical 2px `#D0D0D0` timeline line on the left of the list; each row indents past it with an icon node.
 
-## 6. Fallbacks, routing, and naming
+Row variants:
+- **Completed** (time already passed): strikethrough, `#6B6860`, 0.6 opacity, 14px Inter. Format `[icon] 8:00 AM — Aspirin`.
+- **Next upcoming** (first future row): black 1px border box, 4px radius, 12px/16px padding. Bold black 16px name; second line: gray 14px `H:MM AM — in X hour/min` countdown computed from `now`.
+- **Other upcoming**: black 16px Inter (not bold), gray 14px time. No border.
 
-- Routing: add `/setup` route that re-uses the onboarding component; keep `/onboarding` as a redirect for now. `/carer` and `/elder` already exist.
-- Root redirect (`/`): if onboarding incomplete → `/setup`; else `/carer`. (Today it lands on the marketing index — I'll keep the index but add an auto-redirect when carer data is empty.)
-- Confirm fallback strings everywhere: calendar empty day, list view empty, devices empty, notes empty, contacts empty.
+Icon mapping (20px, 8px gap, left of name) — reuse the existing per-type icon mapping from carer portal:
+- medication → Pill, appointment → CalendarDays, activity → PersonStanding (walking), other → Circle.
 
-## Out of scope (call out explicitly)
-- Real backend / Lovable Cloud sync — staying on `carer-store` (localStorage). Mention this so we can enable Cloud as a separate task if you want true cross-device sync and the elder/carer screens to share a DB.
-- Talk-to-Text integration on the elder screen — not changing elder UI in this pass beyond reading the same store. Happy to do it next if you confirm.
-- Auth / login — no auth layer added (project has no auth today).
+Overflow handling:
+- If completed rows exist and total list overflows card height, hide completed by default behind a collapsible `Completed Today (X) ▾` header (chevron toggles). Upcoming always visible.
+- Card body scrolls internally if upcoming list itself exceeds a max height.
 
-## Technical notes
+## 5. Phone button
 
-- New files: `src/components/instruction-context-form.tsx`, `src/components/portal-tour.tsx`, `src/routes/carer.settings.tsx`, `src/routes/setup.tsx`.
-- Edited files: `src/lib/carer-store.tsx` (add `devices`, tour flag helpers), `src/routes/carer.index.tsx` (split profile card, add IC card, today button, tour mount, settings gear), `src/routes/onboarding.tsx` (use shared instruction-context form, write devices into store), `src/routes/index.tsx` (redirect logic).
-- No package additions; tour built with plain absolute-positioned overlay measuring anchor refs via `getBoundingClientRect()` + `ResizeObserver`.
+Unchanged: 64px green circle, white phone icon 36px, fixed bottom-right 24px margins. Opens existing call overlay.
 
-Approve to proceed, or tell me which chunks to drop / reorder.
+## 6. Typography & colors (this route only)
+
+- Headers/labels on gray bg: white bold Inter.
+- Card body text: black Inter; secondary/completed: `#6B6860`.
+- Spec says "Headers: Bold Newsreader" but also "bold inter" — I'll use **bold Inter** for header text (matches the repeated "bold inter" lines and current font availability). The clock keeps Georgia/Newsreader as today.
+
+## 7. Files
+
+- Edit: `src/routes/elder.tsx` (full layout rewrite; keep announcement scheduler, overlay state, TalkToTextPopup, call overlay logic).
+- Add: `src/assets/white-logo.svg` (from the uploaded `WhiteSVGLogo.svg`).
+- No changes to carer store, settings, or other routes.
+
+## Out of scope
+
+- No changes to TalkToTextPopup internals, reminder data model, or carer screens.
+- Dark/light theme toggle won't affect this route's gray background (route-scoped override). Say the word if you want it theme-aware instead.
+
+Approve to build.
