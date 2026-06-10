@@ -11,6 +11,7 @@ import {
 import appCss from "../styles.css?url";
 import { SettingsProvider } from "@/lib/settings-store";
 import { CarerProvider } from "@/lib/carer-store";
+import { TextReader } from "@/components/text-reader";
 
 function NotFoundComponent() {
   return (
