@@ -165,16 +165,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     textSize,
     highContrast,
     announcementsEnabled,
+    textReader,
     setTextSize,
     setHighContrast,
     setAnnouncementsEnabled,
+    setTextReader,
     theme,
     sizes,
     cardBorder,
     buttonBorder,
     inputBorder,
     hcStrongColor,
-  }), [appearance, scope, carerAppearance, elderAppearance, textSize, highContrast, announcementsEnabled, theme, sizes, cardBorder, buttonBorder, inputBorder, hcStrongColor]);
+  }), [appearance, scope, carerAppearance, elderAppearance, textSize, highContrast, announcementsEnabled, textReader, theme, sizes, cardBorder, buttonBorder, inputBorder, hcStrongColor]);
 
   return (
     <SettingsContext.Provider value={value}>
