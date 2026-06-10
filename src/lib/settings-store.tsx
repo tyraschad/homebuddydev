@@ -15,11 +15,11 @@ export const lightTheme = {
 };
 
 export const darkTheme = {
-  bg: "#2A2A3E",
-  card: "#3A3A4E",
+  bg: "#25483A",
+  card: "#2D5A45",
   text: "#E8E8E8",
   muted: "#B0B0B8",
-  border: "#5A5A6E",
+  border: "#5A6E5A",
   overlay: "rgba(0,0,0,0.7)",
 };
 
