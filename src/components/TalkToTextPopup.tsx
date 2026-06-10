@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { X, Mic, Send, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2, Clock, HelpCircle, Check } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
-import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, type Device, type Reminder } from "@/lib/carer-store";
+import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, cleanQuickActionLabel, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
 import { generateSteps, answerQuestion, speak, reminderChat } from "@/lib/talk.functions";
 import { useVoiceRecorder, type VoiceStatus } from "@/lib/use-voice-recorder";
@@ -174,7 +174,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
   const suggestions: Suggestion[] = useMemo(() => {
     const result: Suggestion[] = [];
-    const truncate = (s: string, n = 40) => (s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s);
+    const formatAction = (s: string) => cleanQuickActionLabel(s);
     const devices = elder.devices.filter((d) => !!d.name && Array.isArray(d.questions) && d.questions.length > 0);
     if (devices.length > 0) {
       const maxAccess = Math.max(1, ...devices.map((d) => d.accessCount ?? 0));
@@ -189,11 +189,11 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       const pick = scored.slice(0, 3);
       if (pick.length === 1) {
         for (const q of pick[0].d.questions.slice(0, 2))
-          result.push({ icon: <HelpCircle size={20} color={theme.text} />, label: truncate(q), photo: pick[0].d.photo, device: pick[0].d });
+          result.push({ icon: <HelpCircle size={20} color={theme.text} />, label: formatAction(q), photo: pick[0].d.photo, device: pick[0].d });
       } else {
         for (const { d } of pick) {
           const q = d.questions[0];
-          if (q) result.push({ icon: <HelpCircle size={20} color={theme.text} />, label: truncate(q), photo: d.photo, device: d });
+          if (q) result.push({ icon: <HelpCircle size={20} color={theme.text} />, label: formatAction(q), photo: d.photo, device: d });
         }
       }
     }
@@ -210,7 +210,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       const [hh, mm] = upcoming.t.split(":").map(Number);
       const d = new Date(); d.setHours(hh || 0, mm || 0, 0, 0);
       const timeStr = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-      result.push({ icon: <Clock size={20} color={theme.text} />, label: truncate(`${upcoming.r.name} at ${timeStr}`, 50), reminder: upcoming.r });
+      result.push({ icon: <Clock size={20} color={theme.text} />, label: formatAction(`${upcoming.r.name} at ${timeStr}`), reminder: upcoming.r });
     }
     return result;
   }, [reminders, elder.devices, theme.text, nowTick]);
