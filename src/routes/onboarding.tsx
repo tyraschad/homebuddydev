@@ -574,7 +574,7 @@ function ToggleRow({ label, value, onChange, theme, cardBorder }: {
   return (
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: 12, border: cardBorder, borderRadius: 8, background: theme.card,
+      padding: 12, border: cardBorder, borderRadius: 8, background: "#FFFFFF",
     }}>
       <span style={{ fontSize: 14, color: ONB_TEXT }}>{label}</span>
       <Toggle value={value} onChange={onChange} />
