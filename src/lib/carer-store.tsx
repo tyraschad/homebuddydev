@@ -42,6 +42,52 @@ export type Device = {
 
 export type DeviceCategory = "kitchen" | "health" | "bathroom" | "entertainment" | "household" | "communication" | "bedroom" | "emergency" | "other";
 
+const QUICK_ACTION_REWRITES: Record<string, string> = {
+  "change the channel": "Change channel",
+  "change channel": "Change channel",
+  "turn on the tv": "Turn on TV",
+  "turn the tv on": "Turn on TV",
+  "turn on tv": "Turn on TV",
+  "adjust the thermostat": "Adjust thermostat",
+  "find netflix shows": "Find Netflix",
+  "find netflix": "Find Netflix",
+  "search netflix": "Search Netflix",
+  "prepare for doctor": "Prepare for appointment",
+  "prepare for appointment": "Prepare for appointment",
+  "take my medication": "Take medication",
+  "take medication": "Take medication",
+  "pack for my trip": "Pack for trip",
+  "pack for trip": "Pack for trip",
+  "turn up the volume": "Turn up volume",
+  "turn up volume": "Turn up volume",
+};
+
+export function cleanQuickActionLabel(label: string): string {
+  const withoutPrefix = label
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/^how\s+(?:do\s+i|to|can\s+i|should\s+i)\s+/i, "")
+    .replace(/\?+$/g, "")
+    .trim();
+  const rewrite = QUICK_ACTION_REWRITES[withoutPrefix.toLowerCase()];
+  if (rewrite) return rewrite;
+  const capitalized = withoutPrefix ? withoutPrefix.charAt(0).toUpperCase() + withoutPrefix.slice(1) : "Get help";
+  if (capitalized.length <= 25) return capitalized;
+  const compact = capitalized
+    .replace(/\b(the|a|an|my|your|please|for|to|with|of)\b\s*/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (compact.length <= 25) return compact;
+  return compact.split(" ").slice(0, 3).join(" ") || "Get help";
+}
+
+function cleanDevices(devices: Device[] = []): Device[] {
+  return devices.map((device) => ({
+    ...device,
+    questions: (device.questions ?? []).map(cleanQuickActionLabel).filter(Boolean),
+  }));
+}
+
 export function inferDeviceCategory(name: string): DeviceCategory {
   const n = name.toLowerCase();
   if (/microwave|oven|stove|coffee|kettle|blender|fridge|toaster|kitchen/.test(n)) return "kitchen";
@@ -166,8 +212,8 @@ export function CarerProvider({ children }: { children: ReactNode }) {
       const e = localStorage.getItem(ELDER_KEY);
       if (e) {
         const parsed = JSON.parse(e);
-        // Back-compat: ensure devices field exists
-        setElderState({ ...defaultElder, ...parsed, devices: parsed.devices ?? [] });
+        // Back-compat: ensure devices field exists and old question-style shortcuts are cleaned.
+        setElderState({ ...defaultElder, ...parsed, devices: cleanDevices(parsed.devices ?? []) });
       }
       const r = localStorage.getItem(REMINDERS_KEY);
       if (r) setRemindersState(JSON.parse(r));
@@ -175,8 +221,9 @@ export function CarerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setElder = (e: ElderProfile) => {
-    setElderState(e);
-    try { localStorage.setItem(ELDER_KEY, JSON.stringify(e)); } catch {}
+    const cleaned = { ...e, devices: cleanDevices(e.devices ?? []) };
+    setElderState(cleaned);
+    try { localStorage.setItem(ELDER_KEY, JSON.stringify(cleaned)); } catch {}
   };
   const setReminders = (list: Reminder[]) => {
     setRemindersState(list);
