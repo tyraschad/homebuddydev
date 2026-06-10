@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, Mic, Send, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2, Clock, HelpCircle, Check } from "lucide-react";
+import { X, Mic, Send, ArrowUp, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2, Clock, HelpCircle, Check } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, cleanQuickActionLabel, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
@@ -556,31 +556,37 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           )}
 
           {guide && (
-            <div style={{ background: "#FFFFFF", border: "2px solid #000000", borderRadius: 8, padding: 20, color: "#000000" }}>
+            <div style={{
+              background: "#FFFFFF",
+              border: v2 ? "1px solid #E5E5E5" : "2px solid #000000",
+              borderRadius: v2 ? 12 : 8,
+              padding: 20,
+              color: v2 ? TEAL : "#000000",
+            }}>
               <div style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
                 <div style={{ width: "40%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   {guide.device?.photo ? (
                     <img src={guide.device.photo} alt={guide.device.name}
-                      style={{ width: "100%", height: 180, objectFit: "cover", border: "1px solid #D0D0D0", borderRadius: 4 }} />
+                      style={{ width: "100%", height: 180, objectFit: "cover", border: "1px solid #D0D0D0", borderRadius: v2 ? 8 : 4 }} />
                   ) : (
-                    <div style={{ width: "100%", height: 180, border: "1px solid #D0D0D0", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", color: "#999", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14 }}>
+                    <div style={{ width: "100%", height: 180, border: "1px solid #D0D0D0", borderRadius: v2 ? 8 : 4, display: "flex", alignItems: "center", justifyContent: "center", color: "#999", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14 }}>
                       No image
                     </div>
                   )}
                 </div>
                 <div style={{ width: "60%", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16 }}>
                   <div>
-                    <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, color: "#6B6860", fontWeight: 700, marginBottom: 6 }}>
+                    <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, color: v2 ? "#6B8E8E" : "#6B6860", fontWeight: 700, marginBottom: 6 }}>
                       Step {guide.index + 1} of {guide.steps.length}
                     </div>
-                    <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 18, color: "#000000", lineHeight: 1.4 }}>
+                    <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: v2 ? 16 : 18, color: v2 ? TEAL : "#000000", lineHeight: 1.4 }}>
                       {guide.steps[guide.index]}
                     </div>
                   </div>
                   <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
                     <button type="button" onClick={() => advanceGuide(-1)} disabled={guide.index === 0}
-                      style={{ height: 44, padding: "0 20px", borderRadius: 8, border: "none",
-                        background: "#E5E5E5", color: "#000000", cursor: guide.index === 0 ? "not-allowed" : "pointer",
+                      style={{ height: 44, padding: "0 20px", borderRadius: v2 ? 12 : 8, border: "none",
+                        background: "#E5E5E5", color: v2 ? TEAL : "#000000", cursor: guide.index === 0 ? "not-allowed" : "pointer",
                         opacity: guide.index === 0 ? 0.5 : 1,
                         fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
                         display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -588,7 +594,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                     </button>
                     {guide.index < guide.steps.length - 1 ? (
                       <button type="button" onClick={() => advanceGuide(1)}
-                        style={{ height: 44, padding: "0 20px", borderRadius: 8, border: "none",
+                        style={{ height: 44, padding: "0 20px", borderRadius: v2 ? 12 : 8, border: "none",
                           background: ACCENT, color: "#FFFFFF", cursor: "pointer",
                           fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
                           display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -596,7 +602,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                       </button>
                     ) : (
                       <button type="button" onClick={finishGuide}
-                        style={{ height: 44, padding: "0 24px", borderRadius: 8, border: "none",
+                        style={{ height: 44, padding: "0 24px", borderRadius: v2 ? 12 : 8, border: "none",
                           background: ACCENT, color: "#FFFFFF", cursor: "pointer",
                           fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16 }}>
                         Done
@@ -609,17 +615,22 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           )}
 
           {wellDone && !guide && (
-            <div style={{ background: "#FFFFFF", border: "2px solid #000000", borderRadius: 8, padding: 32, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 64, height: 64, borderRadius: "50%", background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Check size={40} color="#FFFFFF" strokeWidth={3} />
-              </div>
-              <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 28, color: "#000000" }}>Well Done!</div>
-              <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 18, color: "#6B6860" }}>
+            <div style={{
+              background: "#FFFFFF",
+              border: v2 ? "1px solid #E5E5E5" : "2px solid #000000",
+              borderRadius: v2 ? 12 : 8,
+              padding: 32, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
+            }}>
+              <div style={{ fontSize: 56, lineHeight: 1, color: ACCENT, fontWeight: 900 }}>✓</div>
+              <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 28, color: v2 ? TEAL : "#000000" }}>Well Done!</div>
+              <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 18, color: v2 ? "#888888" : "#6B6860" }}>
                 You completed {wellDone}
               </div>
               <button type="button" onClick={() => setWellDone(null)}
-                style={{ marginTop: 8, height: 44, padding: "0 20px", borderRadius: 8, border: "2px solid #000000",
-                  background: "#FFFFFF", color: "#000000", cursor: "pointer",
+                style={{ marginTop: 8, height: 44, padding: "0 20px",
+                  borderRadius: v2 ? 12 : 8,
+                  border: v2 ? "1px solid #E5E5E5" : "2px solid #000000",
+                  background: "#FFFFFF", color: v2 ? TEAL : "#000000", cursor: "pointer",
                   fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16 }}>
                 Back to Chat
               </button>
@@ -729,7 +740,9 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   opacity: sendDisabled ? 0.6 : 1, transition: "background 0.2s",
                 }}>
-                <Send size={v2 ? 20 : 24} color={v2 ? "#888888" : "#FFFFFF"} style={v2 ? { transform: "rotate(-90deg)" } : undefined} />
+                {v2
+                  ? <ArrowUp size={20} color="#888888" />
+                  : <Send size={24} color="#FFFFFF" />}
               </button>
 
             </div>
