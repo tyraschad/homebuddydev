@@ -73,7 +73,28 @@ function buildAnnouncement(name: string, reminderName: string, offsetMin: number
 
 
 function ElderHome() {
-  const { theme, appearance, textSize, announcementsEnabled } = useSettings();
+  const { theme, appearance, textSize, announcementsEnabled, highContrast } = useSettings();
+  const v2 = !highContrast;
+
+  // V2 design tokens
+  const pageBg = v2
+    ? "linear-gradient(to bottom, #4A7C59 0%, #A8D5BA 100%)"
+    : PAGE_BG;
+  const cardBg = v2 ? "rgba(255,255,255,0.85)" : "#FFFFFF";
+  const cardBorderStyle = v2 ? "1px solid #D0E8D0" : CARD_BORDER;
+  const cardRadius = v2 ? 16 : 4;
+  const cardShadow = v2 ? "0 4px 8px rgba(0,0,0,0.1)" : "none";
+  const cardText = v2 ? "#1B5E5E" : "#1A1A2E";
+  const cardTextBlack = v2 ? "#1B5E5E" : "#000000";
+  const headerTextShadow = v2 ? "0 2px 4px rgba(0,0,0,0.3)" : "none";
+  const micBorderColor = v2 ? "#6BA24A" : "#000000";
+  const micIconColor = v2 ? "#1B5E5E" : "#000000";
+  const micSize = v2 ? 150 : 120;
+  const micIconPx = v2 ? 80 : 80;
+  const nextBorderV = v2 ? "1px solid #1B5E5E" : "1px solid #000000";
+  const remIconColor = v2 ? "#1B5E5E" : "#000000";
+  const fabBg = v2 ? "#FFFFFF" : "#6BA24A";
+  const fabIconColor = v2 ? "#6BA24A" : "#FFFFFF";
   const { reminders, elder } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
