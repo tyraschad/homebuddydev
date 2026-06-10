@@ -213,6 +213,7 @@ function ElderHome() {
         position: "relative",
       }}
     >
+      {v2 && <GrainyLandscape />}
       <header
         style={{
           display: "flex",
