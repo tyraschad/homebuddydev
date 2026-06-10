@@ -1,14 +1,15 @@
 import { useEffect, useRef } from "react";
 
 type Palette = {
+  sky: [number, number, number];
   top: [number, number, number];
   mid: [number, number, number];
   bot: [number, number, number];
 };
 
-const MORNING: Palette = { top: [212, 200, 92], mid: [168, 184, 85], bot: [122, 150, 64] };
-const GOLDEN: Palette = { top: [196, 184, 69], mid: [154, 154, 53], bot: [107, 116, 32] };
-const NIGHT: Palette = { top: [42, 56, 71], mid: [31, 58, 64], bot: [15, 42, 53] };
+const MORNING: Palette = { sky: [173, 207, 230], top: [212, 200, 92], mid: [168, 184, 85], bot: [122, 150, 64] };
+const GOLDEN: Palette = { sky: [240, 180, 120], top: [196, 184, 69], mid: [154, 154, 53], bot: [107, 116, 32] };
+const NIGHT: Palette = { sky: [30, 40, 70], top: [42, 56, 71], mid: [31, 58, 64], bot: [15, 42, 53] };
 
 function paletteForHour(h: number): Palette {
   if (h >= 6 && h < 15) return MORNING; // morning + noon gap (12–2:59 PM)
@@ -22,7 +23,7 @@ function lerp(a: number, b: number, t: number) {
 function lerpPalette(a: Palette, b: Palette, t: number): Palette {
   const m = (x: [number, number, number], y: [number, number, number]) =>
     [lerp(x[0], y[0], t), lerp(x[1], y[1], t), lerp(x[2], y[2], t)] as [number, number, number];
-  return { top: m(a.top, b.top), mid: m(a.mid, b.mid), bot: m(a.bot, b.bot) };
+  return { sky: m(a.sky, b.sky), top: m(a.top, b.top), mid: m(a.mid, b.mid), bot: m(a.bot, b.bot) };
 }
 function rgb([r, g, b]: [number, number, number], a = 1) {
   return `rgba(${r | 0},${g | 0},${b | 0},${a})`;
@@ -110,8 +111,9 @@ export function GrainyLandscape() {
       ctx.translate(driftX, 0);
 
       const grad = ctx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, rgb(pal.top));
-      grad.addColorStop(0.5, rgb(pal.mid));
+      grad.addColorStop(0, rgb(pal.sky));
+      grad.addColorStop(0.25, rgb(pal.top));
+      grad.addColorStop(0.6, rgb(pal.mid));
       grad.addColorStop(1, rgb(pal.bot));
       ctx.fillStyle = grad;
       ctx.fillRect(-w * 0.2, 0, w * 1.4, h);
