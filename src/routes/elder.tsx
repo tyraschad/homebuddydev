@@ -6,7 +6,6 @@ import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { speak } from "@/lib/talk.functions";
 import whiteLogo from "@/assets/white-logo.svg";
-import { TimeBackground } from "@/components/time-background";
 
 const PAGE_BG = "#8F8F8F";
 const CARD_BORDER = "1px solid #D0D0D0";
@@ -82,7 +81,9 @@ function ElderHome() {
   const v2 = !highContrast;
 
   // V2 design tokens
-  const pageBg = v2 ? "transparent" : PAGE_BG;
+  const pageBg = v2
+    ? "linear-gradient(to bottom, #4A7C59 0%, #A8D5BA 100%)"
+    : PAGE_BG;
   const cardBg = v2 ? "rgba(255,255,255,0.85)" : "#FFFFFF";
   const cardBorderStyle = v2 ? "1px solid #D0E8D0" : CARD_BORDER;
   const cardRadius = v2 ? 16 : 4;
@@ -213,7 +214,6 @@ function ElderHome() {
         position: "relative",
       }}
     >
-      {v2 && <TimeBackground />}
       <header
         style={{
           display: "flex",
