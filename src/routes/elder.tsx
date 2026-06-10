@@ -262,7 +262,10 @@ function ElderHome() {
           gridTemplateColumns: "1fr 1fr",
           gap: 16,
           alignItems: "stretch",
+          position: "relative",
+          zIndex: 1,
         }}
+
         className="elder-grid"
       >
         {/* LEFT COLUMN */}
