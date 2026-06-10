@@ -267,10 +267,10 @@ function ElderHome() {
               boxShadow: cardShadow,
             }}
           >
-            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: cardText, lineHeight: 1.3, marginBottom: 8 }}>
+            <div data-readable="true" style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: cardText, lineHeight: 1.3, marginBottom: 8 }}>
               {dateDayStr}
             </div>
-            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: cardText, lineHeight: 1.2 }}>
+            <div data-readable="true" style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: cardText, lineHeight: 1.2 }}>
               {timeStr}
             </div>
           </div>
