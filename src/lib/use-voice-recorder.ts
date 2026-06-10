@@ -41,9 +41,26 @@ export function useVoiceRecorder(onTranscript: (text: string) => void) {
       setStatus("error");
       return;
     }
+    // Guard against double-start (e.g. tapping again during permission prompt).
+    if (recRef.current || streamRef.current) return;
     setError(null);
+    let stream: MediaStream;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      cleanup();
+      setStatus("error");
+      const name = (e as DOMException)?.name;
+      if (name === "NotAllowedError" || name === "SecurityError") {
+        setError("Microphone permission denied. Enable mic access and try again.");
+      } else if (name === "NotFoundError") {
+        setError("No microphone found.");
+      } else {
+        setError(e instanceof Error ? e.message : "Could not access microphone.");
+      }
+      return;
+    }
+    try {
       streamRef.current = stream;
       const mime = pickMime();
       mimeRef.current = mime;
@@ -85,9 +102,7 @@ export function useVoiceRecorder(onTranscript: (text: string) => void) {
     } catch (e) {
       cleanup();
       setStatus("error");
-      setError(e instanceof Error && e.name === "NotAllowedError"
-        ? "Microphone permission denied."
-        : "Could not access microphone.");
+      setError(e instanceof Error ? e.message : "Could not start recording.");
     }
   }, [callTranscribe, cleanup, onTranscript, supported]);
 
