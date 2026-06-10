@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Accessibility, Volume2, Type } from "lucide-react";
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
 
 import { useSettings } from "@/lib/settings-store";
 
@@ -24,20 +24,10 @@ function SettingsPage() {
     setHighContrast,
     announcementsEnabled,
     setAnnouncementsEnabled,
+    textReader,
+    setTextReader,
   } = useSettings();
-
-  const [textReader, setTextReader] = useState<boolean>(false);
-  useEffect(() => {
-    try {
-      const v = localStorage.getItem("textReader");
-      if (v === "true" || v === "false") setTextReader(v === "true");
-    } catch {}
-  }, []);
-  const toggleTextReader = () => {
-    const next = !textReader;
-    setTextReader(next);
-    try { localStorage.setItem("textReader", String(next)); } catch {}
-  };
+  const toggleTextReader = () => setTextReader(!textReader);
 
   return (
     <main
