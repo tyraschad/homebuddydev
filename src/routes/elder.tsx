@@ -418,20 +418,20 @@ function ElderHome() {
                             onClick={() => setOpenItemKey(i.key)}
                             style={{
                               background: "#FFFFFF",
-                              border: "1px solid #000000",
-                              borderRadius: 4,
+                              border: nextBorderV,
+                              borderRadius: v2 ? 8 : 4,
                               padding: "12px 16px",
                               textAlign: "left",
                               cursor: "pointer",
                               fontFamily: "Inter, sans-serif",
-                              color: "#000000",
+                              color: cardTextBlack,
                               display: "flex",
                               flexDirection: "column",
                               gap: 4,
                             }}
                           >
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <ReminderIcon type={i.reminder.type} size={20} color="#000000" />
+                              <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
                               <span style={{ fontSize: 16, fontWeight: 700 }}>{i.reminder.name}</span>
                             </div>
                             <div style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>
