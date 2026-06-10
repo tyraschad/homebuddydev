@@ -458,7 +458,6 @@ function ElderHome() {
           time={openItem.time}
           relative={formatRelative(openItem.minutes)}
           frequency={frequencyLabel(openItem.reminder)}
-          theme={theme}
         />
       )}
 
