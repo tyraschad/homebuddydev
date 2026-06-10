@@ -87,6 +87,114 @@ function InlineMicButton({ status, error, onStart, onStop, onReset, disabled }: 
   );
 }
 
+function isScheduleQuery(q: string): boolean {
+  const lower = q.toLowerCase().trim();
+  const schedulePatterns = [
+    /what\s+do\s+i\s+have/,
+    /what'?s\s+coming\s+up/,
+    /what'?s\s+on\s+my\s+(?:schedule|calendar)/,
+    /what\s+is\s+planned/,
+    /upcoming\s+(?:events?|reminders?)/,
+    /my\s+(?:schedule|reminders?|plans?)/,
+    /anything\s+(?:planned|scheduled)/,
+  ];
+  return schedulePatterns.some((p) => p.test(lower));
+}
+
+function getDateContext(q: string): "today" | "tomorrow" | "week" | null {
+  const lower = q.toLowerCase();
+  if (/\btoday\b/.test(lower)) return "today";
+  if (/\btomorrow\b/.test(lower)) return "tomorrow";
+  if (/\bthis\s+week\b/.test(lower)) return "week";
+  return null;
+}
+
+function reminderOccursOn(r: Reminder, date: Date): boolean {
+  if (r.repeats === false) {
+    return r.oneTimeDate === date.toISOString().slice(0, 10);
+  }
+  const dow = date.getDay();
+  switch (r.repeatSchedule) {
+    case "Daily": return true;
+    case "Weekly": return r.weekday === dow;
+    case "Monthly": return (r.monthlyDates ?? []).includes(date.getDate());
+    case "Weekdays": return dow >= 1 && dow <= 5;
+    case "Custom": return (r.customDays ?? []).includes(dow);
+    default: return false;
+  }
+}
+
+function fmtTime(t: string): string {
+  const [h, m] = t.split(":").map(Number);
+  const d = new Date();
+  d.setHours(h || 0, m || 0, 0, 0);
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+}
+
+function buildScheduleResponse(query: string, reminders: Reminder[]): string {
+  const ctx = getDateContext(query);
+  const now = new Date();
+  const targets: Date[] = [];
+
+  if (ctx === "today") {
+    targets.push(now);
+  } else if (ctx === "tomorrow") {
+    const t = new Date(now);
+    t.setDate(t.getDate() + 1);
+    targets.push(t);
+  } else if (ctx === "week") {
+    for (let i = 0; i < 7; i++) {
+      const t = new Date(now);
+      t.setDate(t.getDate() + i);
+      targets.push(t);
+    }
+  } else {
+    targets.push(now);
+  }
+
+  type Item = { name: string; time: string; minutes: number; date: Date };
+  const items: Item[] = [];
+
+  for (const r of reminders) {
+    for (const date of targets) {
+      if (reminderOccursOn(r, date)) {
+        for (const t of r.times) {
+          const [h, mm] = t.split(":").map(Number);
+          items.push({ name: r.name, time: fmtTime(t), minutes: (h || 0) * 60 + (mm || 0), date });
+        }
+      }
+    }
+  }
+
+  if (items.length === 0) {
+    return "You don't have anything scheduled. Check your physical calendar if you have other plans.";
+  }
+
+  items.sort((a, b) => {
+    const dayDiff = a.date.getTime() - b.date.getTime();
+    if (dayDiff !== 0) return dayDiff;
+    return a.minutes - b.minutes;
+  });
+
+  const parts = items.map((i) => {
+    const isToday = i.date.toDateString() === now.toDateString();
+    const dayName = isToday ? "" : i.date.toLocaleDateString("en-US", { weekday: "long" });
+    const timeStr = dayName ? `${dayName} ${i.time}` : i.time;
+    return `${i.name} at ${timeStr}`;
+  });
+
+  let response: string;
+  if (parts.length === 1) {
+    response = `You have ${parts[0]}.`;
+  } else {
+    const last = parts[parts.length - 1];
+    const rest = parts.slice(0, -1);
+    response = `You have ${rest.join(", ")} and ${last}.`;
+  }
+  response += " Would you like help with any of these?";
+  return response;
+}
+
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const { theme, cardBorder, inputBorder, sizes } = useSettings();
   const { reminders, elder, bumpDeviceAccess } = useCarer();
@@ -278,6 +386,14 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     const query = raw.trim();
     if (!query || sending) return;
     pushUser(query);
+
+    // Schedule / upcoming events query — answer directly from reminders
+    if (isScheduleQuery(query)) {
+      const response = buildScheduleResponse(query, reminders);
+      streamAssistant(response);
+      void playTTS(response);
+      return;
+    }
 
     // Continue an active reminder conversation
     if (reminderCtx) {
