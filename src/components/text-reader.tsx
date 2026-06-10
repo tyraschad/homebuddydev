@@ -38,14 +38,17 @@ export function TextReader() {
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      // Ignore clicks inside the chat modal (excluded screen)
+      // Excluded surface: chat modal
       if (target.closest('[role="dialog"]')) return stop();
-      // Ignore clicks on real interactive controls
-      if (target.closest("button, a, input, textarea, select, [role='button'], [role='switch'], label")) return stop();
       const readable = target.closest('[data-readable="true"]') as HTMLElement | null;
       if (!readable) return stop();
       const text = (readable.innerText || readable.textContent || "").trim();
       if (!text) return stop();
+
+      // Preempt surrounding click handlers (e.g. button wrappers)
+      e.preventDefault();
+      e.stopPropagation();
+      (e as unknown as { stopImmediatePropagation: () => void }).stopImmediatePropagation?.();
 
       stop();
       try {
