@@ -203,7 +203,7 @@ function CarerPortal() {
           </div>
         </div>
         <div style={{ justifySelf: "end", display: "flex", gap: 8 }}>
-          <Link to="/carer/settings" aria-label="Carer settings" title="Carer settings" style={{
+          <Link to="/settings" aria-label="Settings" title="Settings" style={{
             ...btnSecondary, padding: "10px 12px",
             display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
           }}>

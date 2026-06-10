@@ -206,7 +206,7 @@ function ElderHome() {
           </h1>
         </div>
         <Link
-          to="/carer/settings"
+          to="/settings"
           style={{
             display: "inline-flex",
             alignItems: "center",
