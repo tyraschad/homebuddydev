@@ -655,66 +655,81 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Sticky bottom: mic box + transcript/input box, then quick actions */}
-        <div style={{ flexShrink: 0, padding: 16, borderTop: "1px solid #444444", background: "#565656", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{
+          flexShrink: 0, padding: 16,
+          borderTop: v2 ? "1px solid #E5E5E5" : "1px solid #444444",
+          background: v2 ? "#FFFFFF" : "#565656",
+          display: "flex", flexDirection: "column", gap: 12,
+        }}>
           <div style={{ display: "flex", gap: 12, height: 180 }}>
             <button type="button"
               onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
               disabled={sending || recorder.status === "transcribing"}
               style={{
-                width: "35%", height: "100%", background: "#000000", borderRadius: 8, padding: 16,
-                border: "none", cursor: sending ? "not-allowed" : "pointer",
+                width: "35%", height: "100%",
+                background: "#FFFFFF",
+                borderRadius: v2 ? 12 : 8, padding: 16,
+                border: v2 ? "1px solid #E5E5E5" : "1px solid transparent",
+                cursor: sending ? "not-allowed" : "pointer",
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8,
               }}>
               <div style={{
                 width: 120, height: 120, aspectRatio: "1 / 1", flexShrink: 0,
                 borderRadius: "50%", background: "#FFFFFF",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                border: recorder.status === "recording" ? "2px solid #FFFFFF" : "2px solid transparent",
-                animation: recorder.status === "recording" ? "ttt-big-pulse 0.8s infinite" : undefined,
+                border: v2
+                  ? `4px solid ${ACCENT}`
+                  : (recorder.status === "recording" ? "2px solid #FFFFFF" : "2px solid transparent"),
+                animation: recorder.status === "recording" ? (v2 ? "ttt-pulse 0.8s infinite" : "ttt-big-pulse 0.8s infinite") : undefined,
               }}>
                 {recorder.status === "transcribing"
-                  ? <Loader2 size={64} color="#000000" style={{ animation: "spin 1s linear infinite" }} />
-                  : <Mic size={80} color="#000000" strokeWidth={2} />}
+                  ? <Loader2 size={64} color={v2 ? TEAL : "#000000"} style={{ animation: "spin 1s linear infinite" }} />
+                  : <Mic size={v2 ? 60 : 80} color={v2 ? TEAL : "#000000"} strokeWidth={2} />}
               </div>
               <div style={{
-                fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
-                color: recorder.status === "recording" ? "#FF3B30" : "#FFFFFF",
+                fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
+                color: recorder.status === "recording" ? "#FF3B30" : (v2 ? TEAL : "#FFFFFF"),
                 textAlign: "center",
               }}>
                 {recorder.status === "recording" ? "Tap to finish talking"
                   : recorder.status === "transcribing" ? "Transcribing…"
-                  : "Tap to Talk"}
+                  : "Tap to Ask a Question"}
               </div>
             </button>
 
 
             <div style={{
               width: "65%", height: "100%", position: "relative",
-              background: "#FFFFFF", border: "2px solid #000000", borderRadius: 8,
+              background: "#FFFFFF",
+              border: v2 ? "1px solid #E5E5E5" : "2px solid #000000",
+              borderRadius: v2 ? 12 : 8,
             }}>
               <textarea
                 value={recorder.status === "recording" ? "" : text}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
-                placeholder={recorder.status === "recording" ? "Listening…" : "As you speak, text will show here"}
+                placeholder={recorder.status === "recording" ? "Listening…" : "As the user speaks, text should appear here."}
                 disabled={sending || recorder.status === "transcribing" || recorder.status === "recording"}
                 style={{
                   width: "100%", height: "100%", boxSizing: "border-box",
                   padding: "12px 66px 12px 12px", border: "none", outline: "none", resize: "none",
                   background: "transparent",
-                  fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#000000",
+                  fontFamily: "Inter, system-ui, sans-serif", fontSize: 14,
+                  color: v2 ? TEAL : "#000000",
                   fontStyle: text ? "normal" : "italic",
                 }} />
               <button type="button" onClick={submit} disabled={sendDisabled} aria-label="Send"
                 style={{
-                  position: "absolute", right: 6, bottom: 6,
-                  width: 48, height: 48, borderRadius: "50%",
-                  background: sendDisabled ? "#B5D4A3" : ACCENT,
-                  border: "none", cursor: sendDisabled ? "not-allowed" : "pointer",
+                  position: "absolute", right: 8, bottom: 8,
+                  width: v2 ? 40 : 48, height: v2 ? 40 : 48,
+                  borderRadius: v2 ? 8 : "50%",
+                  background: v2 ? "#F0F0F0" : (sendDisabled ? "#B5D4A3" : ACCENT),
+                  border: v2 ? "1px solid #E5E5E5" : "none",
+                  cursor: sendDisabled ? "not-allowed" : "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   opacity: sendDisabled ? 0.6 : 1, transition: "background 0.2s",
                 }}>
-                <Send size={24} color="#FFFFFF" />
+                <Send size={v2 ? 20 : 24} color={v2 ? "#888888" : "#FFFFFF"} style={v2 ? { transform: "rotate(-90deg)" } : undefined} />
               </button>
 
             </div>
@@ -726,15 +741,20 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                 <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
                   style={{
                     flex: 1, height: 52, display: "inline-flex", alignItems: "center", gap: 10,
-                    background: "#F0F0F0", color: "#000000", border: "1px solid #D0D0D0",
-                    borderRadius: 8, padding: "0 12px",
-                    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
+                    background: v2 ? BEIGE : "#F0F0F0",
+                    color: v2 ? TEAL : "#000000",
+                    border: v2 ? "1px solid #E5E5E5" : "1px solid #D0D0D0",
+                    borderRadius: v2 ? 12 : 8, padding: "0 16px",
+                    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
                     cursor: sending ? "not-allowed" : "pointer",
                     opacity: sending ? 0.5 : 1, textAlign: "left", overflow: "hidden",
                   }}>
                   {s.photo
                     ? <img src={s.photo} alt="" style={{ width: 20, height: 20, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-                    : <span style={{ display: "inline-flex", flexShrink: 0 }}>{s.icon}</span>}
+                    : <span style={{ display: "inline-flex", flexShrink: 0 }}>
+                        {/* Re-color icon for v2 */}
+                        {v2 ? <span style={{ color: TEAL, display: "inline-flex" }}>{s.icon}</span> : s.icon}
+                      </span>}
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
                 </button>
 
