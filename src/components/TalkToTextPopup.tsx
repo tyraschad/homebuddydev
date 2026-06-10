@@ -626,23 +626,27 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {!guide && !wellDone && messages.map((m, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-              <div style={{
-                maxWidth: "85%",
-                background: m.role === "user" ? ACCENT : "#F0F0F0",
-                color: m.role === "user" ? "#FFFFFF" : "#000000",
-                borderRadius: 12, padding: "10px 14px",
-                fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
-                whiteSpace: "pre-wrap", wordBreak: "break-word",
-              }}>
-                {m.content}
-                {m.streaming && (
-                  <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? "#FFFFFF" : "#000000", marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
-                )}
+          {!guide && !wellDone && messages.map((m, i) => {
+            const userBg = v2 ? BEIGE : ACCENT;
+            const userColor = v2 ? TEAL : "#FFFFFF";
+            return (
+              <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+                <div style={{
+                  maxWidth: "85%",
+                  background: m.role === "user" ? userBg : aiBubbleBg,
+                  color: m.role === "user" ? userColor : aiBubbleText,
+                  borderRadius: 12, padding: "10px 14px",
+                  fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
+                  whiteSpace: "pre-wrap", wordBreak: "break-word",
+                }}>
+                  {m.content}
+                  {m.streaming && (
+                    <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? userColor : aiBubbleText, marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {sending && !guide && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#666", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14 }}>
               <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
