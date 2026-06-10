@@ -149,7 +149,7 @@ function CarerPortal() {
     }
   }, [cursor]);
 
-  const panelBg = "#8F8F8F"; // page-matching panels (header / grey wraps)
+  const panelBg = "#EBEBEB"; // page-matching panels (header / grey wraps)
   const gridLine = "#D0D0D0";
 
   const headerStyle: CSSProperties = {
