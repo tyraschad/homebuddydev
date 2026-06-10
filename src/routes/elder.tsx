@@ -216,7 +216,7 @@ function ElderHome() {
         position: "relative",
       }}
     >
-      {v2 && <TimeBackground zIndex={-3} />}
+      {v2 && <TimeBackground />}
       <header
 
         style={{
@@ -226,7 +226,10 @@ function ElderHome() {
           padding: "12px 16px",
           marginBottom: 16,
           flexShrink: 0,
+          position: "relative",
+          zIndex: 1,
         }}
+
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src={whiteLogo} alt="" width={24} height={24} style={{ display: "block" }} />
@@ -259,7 +262,10 @@ function ElderHome() {
           gridTemplateColumns: "1fr 1fr",
           gap: 16,
           alignItems: "stretch",
+          position: "relative",
+          zIndex: 1,
         }}
+
         className="elder-grid"
       >
         {/* LEFT COLUMN */}
