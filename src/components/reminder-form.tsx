@@ -29,21 +29,23 @@ export function iconForType(type: ReminderType, size = 18, color = "currentColor
   }
 }
 
-export function ModalShell({ children, onClose, width = 720 }: { children: React.ReactNode; onClose: () => void; width?: number }) {
-  const { theme, cardBorder } = useSettings();
+export function ModalShell({ children, onClose, width = 500 }: { children: React.ReactNode; onClose: () => void; width?: number }) {
   return (
     <div onClick={onClose} style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: theme.card, color: theme.text, border: cardBorder, borderRadius: 8,
-        width: "90%", maxWidth: width, maxHeight: "90vh", overflowY: "auto", padding: 24, position: "relative",
-        fontFamily: "Verdana, sans-serif", lineHeight: 1.5,
+        background: "#FFFFFF", color: "#333333",
+        border: "1px solid #D0D0D0", borderRadius: 12,
+        width: "90%", maxWidth: width, maxHeight: "90vh", overflowY: "auto",
+        padding: 20, position: "relative",
+        boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+        fontFamily: "Inter, system-ui, sans-serif", lineHeight: 1.6,
       }}>
         <button onClick={onClose} aria-label="Close" style={{
           position: "absolute", top: 12, right: 12, background: "transparent", border: "none",
-          color: theme.text, cursor: "pointer", padding: 6,
+          color: "#333333", cursor: "pointer", padding: 6,
         }}><X size={22} /></button>
         {children}
       </div>
