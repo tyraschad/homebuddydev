@@ -227,6 +227,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const pushUser = (content: string) => setMessages((m) => [...m, { role: "user", content }]);
 
   const startGuide = async (query: string, device: Device | null, reminder: Reminder | null) => {
+    setWellDone(null);
     setSending(true);
     try {
       const { steps } = await callSteps({
