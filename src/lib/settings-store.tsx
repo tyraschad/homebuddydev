@@ -107,6 +107,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       if (h === "true" || h === "false") setHighContrastState(h === "true");
       const an = localStorage.getItem("announcementsEnabled");
       if (an === "true" || an === "false") setAnnouncementsEnabledState(an === "true");
+      const tr = localStorage.getItem("textReader");
+      if (tr === "true" || tr === "false") setTextReaderState(tr === "true");
     } catch {}
   }, []);
 
