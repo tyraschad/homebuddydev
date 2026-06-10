@@ -387,6 +387,14 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     if (!query || sending) return;
     pushUser(query);
 
+    // Schedule / upcoming events query — answer directly from reminders
+    if (isScheduleQuery(query)) {
+      const response = buildScheduleResponse(query, reminders);
+      streamAssistant(response);
+      void playTTS(response);
+      return;
+    }
+
     // Continue an active reminder conversation
     if (reminderCtx) {
       setSending(true);
