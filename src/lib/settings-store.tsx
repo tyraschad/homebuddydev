@@ -60,9 +60,11 @@ type Ctx = {
   textSize: TextSize;
   highContrast: boolean;
   announcementsEnabled: boolean;
+  textReader: boolean;
   setTextSize: (s: TextSize) => void;
   setHighContrast: (v: boolean) => void;
   setAnnouncementsEnabled: (v: boolean) => void;
+  setTextReader: (v: boolean) => void;
 
   theme: Theme;
   sizes: Sizes;
