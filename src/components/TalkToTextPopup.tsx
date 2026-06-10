@@ -534,13 +534,13 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             onMouseDown={(e) => e.preventDefault()}
             style={{
               width: 48, height: 48, borderRadius: "50%",
-              background: sendDisabled ? "#B5B5B5" : ACCENT,
+              background: sendDisabled ? "#B5B5B5" : "#888888",
               border: "none", cursor: sendDisabled ? "not-allowed" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
               transition: "background 0.2s",
             }}
-            onMouseEnter={(e) => { if (!sendDisabled) (e.currentTarget as HTMLButtonElement).style.background = ACCENT_DARK; }}
-            onMouseLeave={(e) => { if (!sendDisabled) (e.currentTarget as HTMLButtonElement).style.background = ACCENT; }}>
+            onMouseEnter={(e) => { if (!sendDisabled) (e.currentTarget as HTMLButtonElement).style.background = "#6B6B6B"; }}
+            onMouseLeave={(e) => { if (!sendDisabled) (e.currentTarget as HTMLButtonElement).style.background = "#888888"; }}>
             <Send size={24} color="#FFFFFF" />
           </button>
         </div>
