@@ -73,7 +73,28 @@ function buildAnnouncement(name: string, reminderName: string, offsetMin: number
 
 
 function ElderHome() {
-  const { theme, appearance, textSize, announcementsEnabled } = useSettings();
+  const { theme, appearance, textSize, announcementsEnabled, highContrast } = useSettings();
+  const v2 = !highContrast;
+
+  // V2 design tokens
+  const pageBg = v2
+    ? "linear-gradient(to bottom, #4A7C59 0%, #A8D5BA 100%)"
+    : PAGE_BG;
+  const cardBg = v2 ? "rgba(255,255,255,0.85)" : "#FFFFFF";
+  const cardBorderStyle = v2 ? "1px solid #D0E8D0" : CARD_BORDER;
+  const cardRadius = v2 ? 16 : 4;
+  const cardShadow = v2 ? "0 4px 8px rgba(0,0,0,0.1)" : "none";
+  const cardText = v2 ? "#1B5E5E" : "#1A1A2E";
+  const cardTextBlack = v2 ? "#1B5E5E" : "#000000";
+  const headerTextShadow = v2 ? "0 2px 4px rgba(0,0,0,0.3)" : "none";
+  const micBorderColor = v2 ? "#6BA24A" : "#000000";
+  const micIconColor = v2 ? "#1B5E5E" : "#000000";
+  const micSize = v2 ? 150 : 120;
+  const micIconPx = v2 ? 80 : 80;
+  const nextBorderV = v2 ? "1px solid #1B5E5E" : "1px solid #000000";
+  const remIconColor = v2 ? "#1B5E5E" : "#000000";
+  const fabBg = v2 ? "#FFFFFF" : "#6BA24A";
+  const fabIconColor = v2 ? "#6BA24A" : "#FFFFFF";
   const { reminders, elder } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
@@ -179,7 +200,7 @@ function ElderHome() {
       style={{
         width: "100%",
         minHeight: "100vh",
-        background: PAGE_BG,
+        background: pageBg,
         padding: 16,
         display: "flex",
         flexDirection: "column",
@@ -201,7 +222,7 @@ function ElderHome() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src={whiteLogo} alt="" width={24} height={24} style={{ display: "block" }} />
-          <h1 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 20, color: "#FFFFFF", margin: 0 }}>
+          <h1 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: v2 ? 24 : 20, color: "#FFFFFF", margin: 0, textShadow: headerTextShadow }}>
             {greet}, {elder.name || "Albert"}
           </h1>
         </div>
@@ -238,17 +259,18 @@ function ElderHome() {
           {/* Clock card */}
           <div
             style={{
-              background: "#FFFFFF",
-              border: CARD_BORDER,
-              borderRadius: 4,
+              background: cardBg,
+              border: cardBorderStyle,
+              borderRadius: cardRadius,
               padding: 24,
               textAlign: "center",
+              boxShadow: cardShadow,
             }}
           >
-            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: "#1A1A2E", lineHeight: 1.3, marginBottom: 8 }}>
+            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: cardText, lineHeight: 1.3, marginBottom: 8 }}>
               {dateDayStr}
             </div>
-            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: "#1A1A2E", lineHeight: 1.2 }}>
+            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: cardText, lineHeight: 1.2 }}>
               {timeStr}
             </div>
           </div>
@@ -258,9 +280,9 @@ function ElderHome() {
             type="button"
             onClick={() => setOverlay("chat")}
             style={{
-              background: "#FFFFFF",
-              border: CARD_BORDER,
-              borderRadius: 4,
+              background: cardBg,
+              border: cardBorderStyle,
+              borderRadius: cardRadius,
               padding: 16,
               flex: 1,
               display: "flex",
@@ -270,26 +292,27 @@ function ElderHome() {
               gap: 16,
               cursor: "pointer",
               minHeight: 280,
+              boxShadow: cardShadow,
             }}
             aria-label="Tap to ask a question"
           >
             <div
               style={{
-                width: 120,
-                height: 120,
+                width: micSize,
+                height: micSize,
                 aspectRatio: "1 / 1",
                 flexShrink: 0,
                 borderRadius: "50%",
                 background: "#FFFFFF",
-                border: "2px solid #000000",
+                border: `2px solid ${micBorderColor}`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Mic size={80} strokeWidth={2} color="#000000" />
+              <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
             </div>
-            <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 16, color: "#000000", textAlign: "center", paddingTop: 16 }}>
+            <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 16, color: micIconColor, textAlign: "center", paddingTop: 16 }}>
               Tap to Ask a Question
             </div>
           </button>
@@ -299,19 +322,21 @@ function ElderHome() {
         <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
           <div
             style={{
-              background: "#FFFFFF",
-              border: CARD_BORDER,
-              borderRadius: 4,
+              background: cardBg,
+              border: cardBorderStyle,
+              borderRadius: cardRadius,
               padding: 16,
               flex: 1,
               display: "flex",
               flexDirection: "column",
               minHeight: 0,
+              boxShadow: cardShadow,
             }}
           >
-            <h2 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: "#000000", margin: 0, paddingBottom: 12 }}>
+            <h2 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: cardTextBlack, margin: 0, paddingBottom: 12 }}>
               Today's Reminders
             </h2>
+
 
             <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
               {items.length === 0 ? (
@@ -393,20 +418,20 @@ function ElderHome() {
                             onClick={() => setOpenItemKey(i.key)}
                             style={{
                               background: "#FFFFFF",
-                              border: "1px solid #000000",
-                              borderRadius: 4,
+                              border: nextBorderV,
+                              borderRadius: v2 ? 8 : 4,
                               padding: "12px 16px",
                               textAlign: "left",
                               cursor: "pointer",
                               fontFamily: "Inter, sans-serif",
-                              color: "#000000",
+                              color: cardTextBlack,
                               display: "flex",
                               flexDirection: "column",
                               gap: 4,
                             }}
                           >
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <ReminderIcon type={i.reminder.type} size={20} color="#000000" />
+                              <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
                               <span style={{ fontSize: 16, fontWeight: 700 }}>{i.reminder.name}</span>
                             </div>
                             <div style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>
@@ -427,14 +452,14 @@ function ElderHome() {
                             cursor: "pointer",
                             padding: "4px 0",
                             fontFamily: "Inter, sans-serif",
-                            color: "#000000",
+                            color: cardTextBlack,
                             display: "flex",
                             flexDirection: "column",
                             gap: 2,
                           }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <ReminderIcon type={i.reminder.type} size={20} color="#000000" />
+                            <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
                             <span style={{ fontSize: 16 }}>{i.reminder.name}</span>
                           </div>
                           <div style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>{timeText}</div>
@@ -474,26 +499,24 @@ function ElderHome() {
           width: 64,
           height: 64,
           borderRadius: "50%",
-          background: "#6BA24A",
+          background: fabBg,
           border: "none",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",
           zIndex: 1000,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          boxShadow: v2 ? "0 4px 8px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.2)",
           transition: "background 0.2s, box-shadow 0.2s, transform 0.2s",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#5A8F3D";
           e.currentTarget.style.transform = "scale(1.05)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = "#6BA24A";
           e.currentTarget.style.transform = "scale(1)";
         }}
       >
-        <Phone size={36} strokeWidth={2} color="#FFFFFF" />
+        <Phone size={36} strokeWidth={2} color={fabIconColor} />
       </button>
       <style>{`
         @media (max-width: 720px) {
