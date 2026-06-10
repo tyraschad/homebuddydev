@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, Mic, Send, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2, Clock, HelpCircle } from "lucide-react";
+import { X, Mic, Send, Volume2, VolumeX, ChevronLeft, ChevronRight, Loader2, Clock, HelpCircle, Check } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
@@ -103,6 +103,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const [text, setText] = useState("");
   
   const [guide, setGuide] = useState<Guide | null>(null);
+  const [wellDone, setWellDone] = useState<string | null>(null);
   const [reminderCtx, setReminderCtx] = useState<{ reminder: Reminder; stage: "intro" | "followup" } | null>(null);
   const [sending, setSending] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
@@ -226,6 +227,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const pushUser = (content: string) => setMessages((m) => [...m, { role: "user", content }]);
 
   const startGuide = async (query: string, device: Device | null, reminder: Reminder | null) => {
+    setWellDone(null);
     setSending(true);
     try {
       const { steps } = await callSteps({
@@ -355,8 +357,9 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
   const finishGuide = () => {
     stopTTS();
+    const label = guide?.label ?? "";
     setGuide(null);
-    streamAssistant("Well done! Let me know if you need anything else.");
+    setWellDone(label);
   };
 
   // (suggestions are always shown above input when available)
@@ -400,9 +403,9 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* Body — scrollable: greeting + chat history */}
+        {/* Body — scrollable: greeting + chat history / instructions / well done */}
         <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
-          {!messages.some((m) => m.role === "user") && (
+          {!messages.some((m) => m.role === "user") && !guide && !wellDone && (
             <div style={{ position: "relative", background: "#FFFFFF", border: "2px solid #000000", borderRadius: 12, padding: 20, marginLeft: 14, alignSelf: "flex-start", maxWidth: "90%" }}>
               <span style={{ position: "absolute", left: -14, top: 22, width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "14px solid #000000" }} />
               <span style={{ position: "absolute", left: -11, top: 24, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "12px solid #FFFFFF" }} />
@@ -412,7 +415,78 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {messages.map((m, i) => (
+          {guide && (
+            <div style={{ background: "#FFFFFF", border: "2px solid #000000", borderRadius: 8, padding: 20, color: "#000000" }}>
+              <div style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
+                <div style={{ width: "40%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {guide.device?.photo ? (
+                    <img src={guide.device.photo} alt={guide.device.name}
+                      style={{ width: "100%", height: 180, objectFit: "cover", border: "1px solid #D0D0D0", borderRadius: 4 }} />
+                  ) : (
+                    <div style={{ width: "100%", height: 180, border: "1px solid #D0D0D0", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", color: "#999", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14 }}>
+                      No image
+                    </div>
+                  )}
+                </div>
+                <div style={{ width: "60%", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16 }}>
+                  <div>
+                    <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, color: "#6B6860", fontWeight: 700, marginBottom: 6 }}>
+                      Step {guide.index + 1} of {guide.steps.length}
+                    </div>
+                    <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 18, color: "#000000", lineHeight: 1.4 }}>
+                      {guide.steps[guide.index]}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+                    <button type="button" onClick={() => advanceGuide(-1)} disabled={guide.index === 0}
+                      style={{ height: 44, padding: "0 20px", borderRadius: 8, border: "none",
+                        background: "#E5E5E5", color: "#000000", cursor: guide.index === 0 ? "not-allowed" : "pointer",
+                        opacity: guide.index === 0 ? 0.5 : 1,
+                        fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
+                        display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <ChevronLeft size={18} /> Back
+                    </button>
+                    {guide.index < guide.steps.length - 1 ? (
+                      <button type="button" onClick={() => advanceGuide(1)}
+                        style={{ height: 44, padding: "0 20px", borderRadius: 8, border: "none",
+                          background: ACCENT, color: "#FFFFFF", cursor: "pointer",
+                          fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
+                          display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        Next <ChevronRight size={18} />
+                      </button>
+                    ) : (
+                      <button type="button" onClick={finishGuide}
+                        style={{ height: 44, padding: "0 24px", borderRadius: 8, border: "none",
+                          background: ACCENT, color: "#FFFFFF", cursor: "pointer",
+                          fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16 }}>
+                        Done
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {wellDone && !guide && (
+            <div style={{ background: "#FFFFFF", border: "2px solid #000000", borderRadius: 8, padding: 32, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 64, height: 64, borderRadius: "50%", background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Check size={40} color="#FFFFFF" strokeWidth={3} />
+              </div>
+              <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 28, color: "#000000" }}>Well Done!</div>
+              <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 18, color: "#6B6860" }}>
+                You completed {wellDone}
+              </div>
+              <button type="button" onClick={() => setWellDone(null)}
+                style={{ marginTop: 8, height: 44, padding: "0 20px", borderRadius: 8, border: "2px solid #000000",
+                  background: "#FFFFFF", color: "#000000", cursor: "pointer",
+                  fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16 }}>
+                Back to Chat
+              </button>
+            </div>
+          )}
+
+          {!guide && !wellDone && messages.map((m, i) => (
             <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
               <div style={{
                 maxWidth: "85%",
@@ -429,7 +503,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           ))}
-          {sending && (
+          {sending && !guide && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#666", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14 }}>
               <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
             </div>
@@ -498,7 +572,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          {!guide && suggestions.length > 0 && (
+          {suggestions.length > 0 && (
             <div style={{ display: "flex", gap: 12 }}>
               {suggestions.slice(0, 3).map((s) => (
                 <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
