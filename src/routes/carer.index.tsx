@@ -115,6 +115,8 @@ function CarerPortal() {
   const [editTarget, setEditTarget] = useState<"conditions" | "notes" | "contacts" | "devices" | null>(null);
   const [savedToast, setSavedToast] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
+  const [confirmRestart, setConfirmRestart] = useState(false);
+  const navigate = useNavigate();
 
   const headerRef = useRef<HTMLElement | null>(null);
   const profileRef = useRef<HTMLElement | null>(null);
