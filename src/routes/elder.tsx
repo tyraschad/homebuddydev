@@ -814,7 +814,7 @@ function ContactRow({ name, phone, theme, separator }: { name: string; phone: st
 
 function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; isDark: boolean }) {
   const textColor = "#1A1A2E";
-  const phoneColor = isDark ? "#2A2A3E" : "#4A4A4A";
+  const phoneColor = isDark ? "#25483A" : "#4A4A4A";
   const separator = isDark ? "#B71C1C" : "#FFB3B3";
   return (
     <a
