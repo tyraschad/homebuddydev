@@ -102,7 +102,7 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
   initial: Reminder; existing: boolean;
   onClose: () => void; onSave: (r: Reminder) => void; onDelete?: (r: Reminder) => void;
 }) {
-  const { theme, buttonBorder } = useSettings();
+  const { theme, buttonBorder, appearance } = useSettings();
   const [r, setR] = useState<Reminder>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDoseWarn, setShowDoseWarn] = useState(false);
@@ -113,7 +113,7 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
     : r.type === "appointment" ? "e.g., Doctor appointment, Dentist"
     : r.type === "activity" ? "e.g., Morning walk, Call Sarah"
     : "e.g., Aspirin, Eye drops, Doctor appointment";
-  const isDark = theme.bg === "#2A2A3E" || theme.bg.toLowerCase().includes("2a2a");
+  const isDark = appearance === "dark";
   const inputBorderDefault = isDark ? "#5A5A6E" : "#D0D0D0";
   const inputBg = isDark ? theme.card : "#FFFFFF";
   const nameHasError = !!errors.name;
