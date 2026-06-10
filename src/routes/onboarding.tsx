@@ -15,7 +15,9 @@ export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "HomeBuddy Onboarding" }] }),
 });
 
-const GREEN = "#2F8F4E";
+const GREEN = "#8FA655";
+const GREEN_DARK = "#7A9640";
+const TEAL = "#1B5E5E";
 const STORAGE_KEY = "homebuddy.onboarding.v2";
 const TOTAL = 10;
 
@@ -114,37 +116,52 @@ function Onboarding() {
 
   const elderName = data.elderName.trim() || "your loved one";
 
-  // ---- Styles ----
+  // ---- Styles (V2 onboarding theme — always applied) ----
   const page: CSSProperties = {
-    minHeight: "100vh", background: theme.bg, color: theme.text,
-    fontFamily: "Verdana, sans-serif", lineHeight: 1.5,
+    minHeight: "100vh",
+    background: "linear-gradient(to bottom, #E8F5E9 0%, #C8E6C9 100%)",
+    color: "#333333",
+    fontFamily: "Inter, system-ui, sans-serif", lineHeight: 1.6,
     display: "flex", flexDirection: "column",
   };
   const container: CSSProperties = {
-    maxWidth: 720, width: "100%", margin: "0 auto", padding: 24, boxSizing: "border-box",
-    flex: 1, display: "flex", flexDirection: "column",
+    maxWidth: 720, width: "100%", margin: "0 auto", padding: 16, boxSizing: "border-box",
+    flex: 1, display: "flex", flexDirection: "column", gap: 12,
   };
-  const h1: CSSProperties = { fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 28, color: theme.text, margin: "0 0 8px" };
-  const muted: CSSProperties = { fontSize: 14, color: theme.muted, lineHeight: 1.5 };
-  const small: CSSProperties = { fontSize: 12, color: theme.muted };
+  const h1: CSSProperties = {
+    fontFamily: "Newsreader, Georgia, serif", fontWeight: 700, fontSize: 30,
+    color: TEAL, margin: "0 0 12px", lineHeight: 1.4,
+  };
+  const muted: CSSProperties = {
+    fontFamily: "Inter, system-ui, sans-serif", fontSize: 16,
+    color: "#333333", lineHeight: 1.6, margin: "0 0 12px",
+  };
+  const small: CSSProperties = {
+    fontFamily: "Inter, system-ui, sans-serif", fontSize: 14,
+    color: "#999999", lineHeight: 1.5,
+  };
   const btnPrimary = (disabled = false): CSSProperties => ({
-    background: disabled ? "#9CC2A9" : GREEN, color: "#fff", border: "none",
-    height: 48, padding: "0 24px", borderRadius: 8,
-    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16,
+    background: disabled ? "#B5C796" : GREEN, color: "#FFFFFF",
+    border: `1px solid ${disabled ? "#B5C796" : GREEN_DARK}`,
+    height: 48, padding: "12px 24px", borderRadius: 8,
+    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
     cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.7 : 1,
   });
   const btnSecondary: CSSProperties = {
-    background: "transparent", color: theme.text, border: buttonBorder,
+    background: "transparent", color: TEAL, border: `1px solid ${GREEN_DARK}`,
     height: 44, padding: "0 20px", borderRadius: 8,
-    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
+    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
   };
   const inputStyle: CSSProperties = {
-    width: "100%", boxSizing: "border-box", padding: "10px 12px",
-    border: inputBorder, borderRadius: 6, background: theme.card, color: theme.text,
-    fontFamily: "Verdana, sans-serif", fontSize: 14,
+    width: "100%", boxSizing: "border-box", padding: 12,
+    border: "1px solid #D0D0D0", borderRadius: 6,
+    background: "#FFFFFF", color: "#333333",
+    fontFamily: "Inter, system-ui, sans-serif", fontSize: 16,
   };
   const card: CSSProperties = {
-    background: theme.card, border: cardBorder, borderRadius: 8, padding: 16,
+    background: "rgba(255,255,255,0.85)",
+    border: "1px solid #D0E8D0", borderRadius: 12, padding: 20,
+    boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
   };
 
   // ---- Header (back + progress) ----
