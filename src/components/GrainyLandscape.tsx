@@ -111,8 +111,9 @@ export function GrainyLandscape() {
       ctx.translate(driftX, 0);
 
       const grad = ctx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, rgb(pal.top));
-      grad.addColorStop(0.5, rgb(pal.mid));
+      grad.addColorStop(0, rgb(pal.sky));
+      grad.addColorStop(0.25, rgb(pal.top));
+      grad.addColorStop(0.6, rgb(pal.mid));
       grad.addColorStop(1, rgb(pal.bot));
       ctx.fillStyle = grad;
       ctx.fillRect(-w * 0.2, 0, w * 1.4, h);
