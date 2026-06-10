@@ -458,7 +458,6 @@ function ElderHome() {
           time={openItem.time}
           relative={formatRelative(openItem.minutes)}
           frequency={frequencyLabel(openItem.reminder)}
-          theme={theme}
         />
       )}
 
@@ -807,16 +806,16 @@ function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; is
 }
 
 function ReminderDetailsPopup({
-  onClose, reminder, time, relative, frequency, theme,
+  onClose, reminder, time, relative, frequency,
 }: {
   onClose: () => void;
   reminder: { name: string; details?: string; notes?: string; photo?: string; dose?: number; type: string };
   time: string;
   relative: string;
   frequency: string;
-  theme: { card: string; text: string; muted: string };
 }) {
   const { cardBorder } = useSettings();
+  const [prepResponse, setPrepResponse] = useState("");
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -843,65 +842,79 @@ function ReminderDetailsPopup({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#909090", border: "2px solid #000000", borderRadius: 8, padding: 24,
+          background: "#FFFFFF", border: "1px solid #D0D0D0", borderRadius: 8, padding: 20,
           width: "90%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto",
-          display: "flex", flexDirection: "column", boxSizing: "border-box", color: theme.text,
+          display: "flex", flexDirection: "column", boxSizing: "border-box", color: "#000000",
         }}
       >
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
-          <div>
-            <h2 style={{ margin: 0, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text }}>
-              {reminder.name}
-            </h2>
-            <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 4 }}>
-              {timeStr} · {frequency} · {relative}
-            </div>
-          </div>
+          <h2 style={{ margin: 0, fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 24, color: "#000000", paddingBottom: 12 }}>
+            {reminder.name}
+          </h2>
           <button
             type="button" onClick={onClose} aria-label="Close"
-            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: theme.text }}
+            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: "#000000" }}
           >
-            <X size={20} strokeWidth={1.5} color={theme.text} />
+            <X size={20} strokeWidth={1.5} color="#000000" />
           </button>
         </div>
 
-        <Section label="Schedule" theme={theme}>
-          <div style={{ fontSize: 16 }}>{timeStr}</div>
-          <div style={{ fontSize: 16 }}>{frequency}</div>
-        </Section>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: "#000000", paddingBottom: 8 }}>
+          {timeStr}
+        </div>
+
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: "#000000", paddingBottom: 12 }}>
+          {frequency}
+        </div>
 
         {detailsText && (
-          <Section label="Details" theme={theme}>
-            <div style={{ fontSize: 14 }}>{detailsText}</div>
-          </Section>
+          <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: "#000000", paddingBottom: 12 }}>
+            {detailsText}
+          </div>
         )}
 
-        {reminder.notes && (
-          <Section label="Notes" theme={theme}>
-            <div style={{ fontSize: 14 }}>{reminder.notes}</div>
-          </Section>
+        {reminder.notes ? (
+          <div style={{
+            fontFamily: "Inter, sans-serif", fontSize: 16, color: "#000000",
+            background: "#F9F9F9", borderRadius: 4, padding: 12,
+          }}>
+            {reminder.notes}
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: "#000000" }}>
+              Do you need to bring anything? Documents? Medication?
+            </div>
+            <input
+              type="text"
+              value={prepResponse}
+              onChange={(e) => setPrepResponse(e.target.value)}
+              placeholder="Type your response..."
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: 16,
+                color: "#000000",
+                padding: "10px 12px",
+                border: "1.5px solid #D0D0D0",
+                borderRadius: 4,
+                outline: "none",
+                width: "100%",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
         )}
 
         {reminder.photo && (
-          <Section label="Reminder Photos" theme={theme}>
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, fontWeight: 700, color: "#6B6860", marginBottom: 8 }}>
+              Reminder Photos
+            </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 12 }}>
               <img src={reminder.photo} alt={reminder.name} style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 4, border: cardBorder }} />
             </div>
-          </Section>
+          </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function Section({ label, children, theme }: { label: string; children: React.ReactNode; theme: { muted: string; text: string } }) {
-  return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontSize: 14, fontWeight: 700, color: theme.muted, marginBottom: 8 }}>
-        {label}
-      </div>
-      <div style={{ fontFamily: "Verdana, sans-serif", color: theme.text, display: "flex", flexDirection: "column", gap: 4 }}>
-        {children}
       </div>
     </div>
   );
