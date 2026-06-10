@@ -388,17 +388,17 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         }}>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: cardBorder, background: isDark ? theme.card : "#F9F9F9", flexShrink: 0 }}>
-          <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16, color: theme.text }}>Chat</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid #444444", background: "#565656", flexShrink: 0 }}>
+          <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16, color: "#FFFFFF" }}>Chat</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button type="button" onClick={() => { if (speaking) stopTTS(); setVoiceOn((v) => !v); }}
               title={voiceOn ? "Voice on" : "Voice off"}
-              style={{ background: "transparent", border: "none", cursor: "pointer", color: theme.text, padding: 6, display: "flex", alignItems: "center" }}>
-              {voiceOn ? <Volume2 size={20} /> : <VolumeX size={20} />}
+              style={{ background: "transparent", border: "none", cursor: "pointer", color: "#FFFFFF", padding: 6, display: "flex", alignItems: "center" }}>
+              {voiceOn ? <Volume2 size={20} color="#FFFFFF" /> : <VolumeX size={20} color="#FFFFFF" />}
             </button>
             <button type="button" onClick={onClose} aria-label="Close"
-              style={{ background: "transparent", border: "none", cursor: "pointer", color: theme.text, padding: 4, display: "flex", alignItems: "center" }}>
-              <X size={28} strokeWidth={2} color={theme.text} />
+              style={{ background: "transparent", border: "none", cursor: "pointer", color: "#FFFFFF", padding: 4, display: "flex", alignItems: "center" }}>
+              <X size={28} strokeWidth={2} color="#FFFFFF" />
             </button>
           </div>
         </div>
@@ -511,7 +511,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Sticky bottom: mic box + transcript/input box, then quick actions */}
-        <div style={{ flexShrink: 0, padding: 16, borderTop: cardBorder, background: theme.card, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ flexShrink: 0, padding: 16, borderTop: "1px solid #444444", background: "#565656", display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", gap: 12, height: 180 }}>
             <button type="button"
               onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
