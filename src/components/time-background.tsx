@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import morningAsset from "@/assets/Morning.png.asset.json";
 import goldenAsset from "@/assets/GoldenHour.png.asset.json";
 import nightAsset from "@/assets/Night.png.asset.json";
@@ -10,29 +10,40 @@ export function getTimeBackgroundUrl(date: Date = new Date()): string {
   return nightAsset.url;
 }
 
+type Layer = { id: number; url: string; opacity: number };
+
 /**
- * Full-bleed time-based background. Crossfades between images over 10s
- * (5s fade-out + 5s fade-in via stacked layers with opacity transitions).
- * Re-checks every 60s and only updates when the URL changes.
+ * Full-bleed time-based background. New images fade in over 10s on top of
+ * the old one, which is removed once the fade completes. Re-checks every
+ * 60s and on tab refocus, only updating when the URL window changes.
  */
 export function TimeBackground() {
-  const [current, setCurrent] = useState<string>(() => getTimeBackgroundUrl());
-  const [previous, setPrevious] = useState<string | null>(null);
-  const [fading, setFading] = useState(false);
+  const [layers, setLayers] = useState<Layer[]>(() => [
+    { id: 0, url: getTimeBackgroundUrl(), opacity: 1 },
+  ]);
+  const nextIdRef = useRef(1);
 
   useEffect(() => {
     const check = () => {
       const next = getTimeBackgroundUrl();
-      setCurrent((cur) => {
-        if (next === cur) return cur;
-        setPrevious(cur);
-        setFading(true);
-        // After full 10s transition, drop the previous layer.
+      setLayers((prev) => {
+        const top = prev[prev.length - 1];
+        if (top.url === next) return prev;
+        const id = nextIdRef.current++;
+        const newLayer: Layer = { id, url: next, opacity: 0 };
+        // mount at 0 opacity then animate to 1 on next frame
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setLayers((curr) =>
+              curr.map((l) => (l.id === id ? { ...l, opacity: 1 } : l)),
+            );
+          });
+        });
+        // After fade, drop everything below the new layer
         window.setTimeout(() => {
-          setPrevious(null);
-          setFading(false);
-        }, 10000);
-        return next;
+          setLayers((curr) => curr.filter((l) => l.id >= id));
+        }, 10_500);
+        return [...prev, newLayer];
       });
     };
     const id = window.setInterval(check, 60_000);
@@ -44,37 +55,26 @@ export function TimeBackground() {
     };
   }, []);
 
-  const layer: React.CSSProperties = {
-    position: "fixed",
-    inset: 0,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    zIndex: -1,
-    pointerEvents: "none",
-    transition: "opacity 10s ease-in-out",
-  };
-
   return (
     <>
-      {previous && (
+      {layers.map((l) => (
         <div
+          key={l.id}
           aria-hidden
           style={{
-            ...layer,
-            backgroundImage: `url(${previous})`,
-            opacity: fading ? 0 : 1,
+            position: "fixed",
+            inset: 0,
+            backgroundImage: `url(${l.url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            zIndex: -1,
+            pointerEvents: "none",
+            opacity: l.opacity,
+            transition: "opacity 10s ease-in-out",
           }}
         />
-      )}
-      <div
-        aria-hidden
-        style={{
-          ...layer,
-          backgroundImage: `url(${current})`,
-          opacity: 1,
-        }}
-      />
+      ))}
     </>
   );
 }
