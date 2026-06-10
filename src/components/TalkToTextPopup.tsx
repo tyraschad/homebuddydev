@@ -644,8 +644,9 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
                 <div style={{
                   maxWidth: "85%",
-                  background: m.role === "user" ? userBg : aiBubbleBg,
-                  color: m.role === "user" ? userColor : aiBubbleText,
+                  background: "#FFFFFF",
+                  color: "#000000",
+                  border: "1px solid #000000",
                   borderRadius: 12, padding: "10px 14px",
                   fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
                   whiteSpace: "pre-wrap", wordBreak: "break-word",
