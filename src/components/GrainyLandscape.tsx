@@ -1,14 +1,15 @@
 import { useEffect, useRef } from "react";
 
 type Palette = {
+  sky: [number, number, number];
   top: [number, number, number];
   mid: [number, number, number];
   bot: [number, number, number];
 };
 
-const MORNING: Palette = { top: [212, 200, 92], mid: [168, 184, 85], bot: [122, 150, 64] };
-const GOLDEN: Palette = { top: [196, 184, 69], mid: [154, 154, 53], bot: [107, 116, 32] };
-const NIGHT: Palette = { top: [42, 56, 71], mid: [31, 58, 64], bot: [15, 42, 53] };
+const MORNING: Palette = { sky: [173, 207, 230], top: [212, 200, 92], mid: [168, 184, 85], bot: [122, 150, 64] };
+const GOLDEN: Palette = { sky: [240, 180, 120], top: [196, 184, 69], mid: [154, 154, 53], bot: [107, 116, 32] };
+const NIGHT: Palette = { sky: [30, 40, 70], top: [42, 56, 71], mid: [31, 58, 64], bot: [15, 42, 53] };
 
 function paletteForHour(h: number): Palette {
   if (h >= 6 && h < 15) return MORNING; // morning + noon gap (12–2:59 PM)
