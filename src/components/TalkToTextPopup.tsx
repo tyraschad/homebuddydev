@@ -653,7 +653,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                 }}>
                   {m.content}
                   {m.streaming && (
-                    <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? userColor : aiBubbleText, marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
+                    <span style={{ display: "inline-block", width: 2, height: "1em", background: "#000000", marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
                   )}
                 </div>
               </div>
