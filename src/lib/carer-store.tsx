@@ -262,10 +262,10 @@ export function useCarer() {
 }
 
 export const TYPE_COLOR: Record<ReminderType, string> = {
-  medication: "#3B82F6",
-  appointment: "#F59E0B",
-  activity: "#22C55E",
-  other: "#6B7280",
+  medication: "#8FD159",
+  appointment: "#FFB74D",
+  activity: "#64B5F6",
+  other: "#BBBBBB",
 };
 
 export const TYPE_BG_LIGHT: Record<ReminderType, string> = {
