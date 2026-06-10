@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Accessibility, Moon, Volume2, Type } from "lucide-react";
+import { ArrowLeft, Accessibility, Volume2, Type } from "lucide-react";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
 import { useSettings } from "@/lib/settings-store";
@@ -14,13 +14,12 @@ const WHITE = "#FFFFFF";
 const BLACK = "#000000";
 const GREEN = "#6BA24A";
 const OFF_GRAY = "#CCCCCC";
-const PORTAL_BTN_BG = "#A8A8A8";
+const PORTAL_BTN_BG = "#F0F0F0";
+const CARD_BORDER = "#E5E5E5";
 
 function SettingsPage() {
   const navigate = useNavigate();
   const {
-    appearance,
-    setAppearance,
     highContrast,
     setHighContrast,
     announcementsEnabled,
@@ -47,9 +46,8 @@ function SettingsPage() {
         minHeight: "100vh",
         background: PAGE_BG,
         boxSizing: "border-box",
-        color: WHITE,
+        color: BLACK,
         fontFamily: "Inter, system-ui, sans-serif",
-        padding: "32px 48px",
       }}
     >
       <header
@@ -58,7 +56,9 @@ function SettingsPage() {
           gridTemplateColumns: "1fr auto 1fr",
           alignItems: "center",
           gap: 16,
-          marginBottom: 64,
+          padding: "16px",
+          minHeight: 60,
+          boxSizing: "border-box",
         }}
       >
         <button
@@ -68,42 +68,29 @@ function SettingsPage() {
             justifySelf: "start",
             display: "inline-flex",
             alignItems: "center",
-            gap: 12,
+            gap: 8,
             background: "transparent",
             border: "none",
             padding: 0,
             cursor: "pointer",
-            color: WHITE,
+            color: BLACK,
             fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
-            fontSize: 20,
+            fontSize: 16,
           }}
         >
-          <span
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              border: `2px solid ${WHITE}`,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <ArrowLeft size={20} strokeWidth={2.5} color={WHITE} />
-          </span>
-          <span>Back</span>
+          <ArrowLeft size={24} strokeWidth={2.5} color={BLACK} />
+          <span>Back to elder screen</span>
         </button>
 
         <h1
           style={{
             margin: 0,
-            fontFamily: '"Instrument Serif", Georgia, serif',
-            fontWeight: 400,
-            fontSize: 44,
-            color: WHITE,
+            fontFamily: "Inter, system-ui, sans-serif",
+            fontWeight: 700,
+            fontSize: 28,
+            color: BLACK,
             textAlign: "center",
-            letterSpacing: 0.5,
           }}
         >
           Settings
@@ -115,53 +102,41 @@ function SettingsPage() {
           style={{
             justifySelf: "end",
             background: PORTAL_BTN_BG,
-            color: WHITE,
-            border: "none",
-            borderRadius: 10,
-            padding: "14px 24px",
+            color: BLACK,
+            border: `1px solid ${CARD_BORDER}`,
+            borderRadius: 8,
+            padding: "12px 16px",
             cursor: "pointer",
             fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
-            fontSize: 18,
+            fontSize: 16,
           }}
         >
           Open Carer Portal
         </button>
       </header>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 32,
-          maxWidth: 1280,
-          margin: "0 auto",
-        }}
-      >
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
         <SettingCard
-          icon={<Accessibility size={32} strokeWidth={2} color={BLACK} />}
+          icon={<Accessibility size={24} strokeWidth={2} color={BLACK} />}
           label="Accessible Visuals"
           on={highContrast}
           onToggle={() => setHighContrast(!highContrast)}
         />
-        <SettingCard
-          icon={<Moon size={32} strokeWidth={2} color={BLACK} fill={BLACK} />}
-          label="Dark Mode"
-          on={appearance === "dark"}
-          onToggle={() => setAppearance(appearance === "dark" ? "light" : "dark")}
-        />
-        <SettingCard
-          icon={<Volume2 size={32} strokeWidth={2} color={BLACK} />}
-          label="Reminder Announcments"
-          on={announcementsEnabled}
-          onToggle={() => setAnnouncementsEnabled(!announcementsEnabled)}
-        />
-        <SettingCard
-          icon={<Type size={32} strokeWidth={2} color={BLACK} />}
-          label="Text Reader"
-          on={textReader}
-          onToggle={toggleTextReader}
-        />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <SettingCard
+            icon={<Volume2 size={24} strokeWidth={2} color={BLACK} />}
+            label="Reminder Announcements"
+            on={announcementsEnabled}
+            onToggle={() => setAnnouncementsEnabled(!announcementsEnabled)}
+          />
+          <SettingCard
+            icon={<Type size={24} strokeWidth={2} color={BLACK} />}
+            label="Text Reader"
+            on={textReader}
+            onToggle={toggleTextReader}
+          />
+        </div>
       </div>
     </main>
   );
@@ -180,14 +155,14 @@ function SettingCard({
 }) {
   const card: CSSProperties = {
     background: WHITE,
-    border: "none",
-    borderRadius: 16,
-    padding: "28px 32px",
-    minHeight: 96,
+    border: `1px solid ${CARD_BORDER}`,
+    borderRadius: 8,
+    padding: 16,
+    minHeight: 100,
     display: "flex",
     alignItems: "center",
-    gap: 24,
-    boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+    gap: 12,
+    boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
     cursor: "pointer",
     width: "100%",
     boxSizing: "border-box",
@@ -197,17 +172,8 @@ function SettingCard({
   };
   return (
     <button type="button" onClick={onToggle} aria-pressed={on} style={card}>
-      <span style={{ flexShrink: 0, display: "inline-flex", width: 40, justifyContent: "center" }}>{icon}</span>
-      <span
-        style={{
-          flex: 1,
-          fontWeight: 700,
-          fontSize: 22,
-          color: BLACK,
-        }}
-      >
-        {label}
-      </span>
+      <span style={{ flexShrink: 0, display: "inline-flex" }}>{icon}</span>
+      <span style={{ flex: 1, fontWeight: 700, fontSize: 18, color: BLACK }}>{label}</span>
       <Toggle on={on} />
     </button>
   );
@@ -219,9 +185,9 @@ function Toggle({ on }: { on: boolean }) {
       aria-hidden
       style={{
         position: "relative",
-        width: 64,
-        height: 32,
-        borderRadius: 16,
+        width: 50,
+        height: 28,
+        borderRadius: 14,
         background: on ? GREEN : OFF_GRAY,
         transition: "background 0.3s ease",
         flexShrink: 0,
@@ -231,10 +197,10 @@ function Toggle({ on }: { on: boolean }) {
       <span
         style={{
           position: "absolute",
-          top: 3,
-          left: on ? 34 : 3,
-          width: 26,
-          height: 26,
+          top: 2,
+          left: on ? 24 : 2,
+          width: 24,
+          height: 24,
           borderRadius: "50%",
           background: WHITE,
           transition: "left 0.3s ease",
