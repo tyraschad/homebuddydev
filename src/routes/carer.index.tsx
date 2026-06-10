@@ -518,27 +518,27 @@ function CarerPortal() {
           aria-labelledby="restart-setup-title"
           onClick={() => setConfirmRestart(false)}
           style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
             display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 16,
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "#FFFFFF", border: "2px solid #990000", borderRadius: 12,
-              padding: 20, maxWidth: 440, width: "100%",
-              boxShadow: "0 8px 16px rgba(0,0,0,0.25)",
-              fontFamily: "Inter, sans-serif",
+              background: "#FFFFFF", border: "1px solid #D0D0D0", borderRadius: 12,
+              padding: 20, maxWidth: 500, width: "90%",
+              boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+              fontFamily: "Inter, system-ui, sans-serif", lineHeight: 1.6,
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 12 }}>
-              <span style={{ fontSize: 32, color: "#CC0000", lineHeight: 1 }} aria-hidden>⚠️</span>
-              <h2 id="restart-setup-title" style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#000000" }}>
-                Restart Setup?
-              </h2>
-            </div>
-            <p style={{ margin: 0, padding: "16px 0", fontSize: 16, color: "#000000", lineHeight: 1.6 }}>
-              This will restart setup. Data will be lost.
+            <h2 id="restart-setup-title" style={{
+              margin: "0 0 12px", fontSize: 20, fontWeight: 700, color: "#000000",
+              fontFamily: "Inter, system-ui, sans-serif",
+            }}>
+              Restart Setup?
+            </h2>
+            <p style={{ margin: "0 0 12px", fontSize: 16, color: "#333333", lineHeight: 1.6 }}>
+              This cannot be undone. All setup data will be lost.
             </p>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, paddingTop: 8 }}>
               <button
@@ -546,9 +546,9 @@ function CarerPortal() {
                 onClick={() => setConfirmRestart(false)}
                 style={{
                   background: "#F0F0F0", color: "#000000",
-                  border: "1px solid #F0F0F0", borderRadius: 8,
-                  padding: "12px 24px", fontSize: 16, fontWeight: 700,
-                  fontFamily: "Inter, sans-serif", cursor: "pointer",
+                  border: "1px solid #D0D0D0", borderRadius: 8,
+                  padding: "12px 24px", fontSize: 14, fontWeight: 700,
+                  fontFamily: "Inter, system-ui, sans-serif", cursor: "pointer",
                 }}
               >
                 Cancel
@@ -559,11 +559,11 @@ function CarerPortal() {
                 style={{
                   background: "#CC0000", color: "#FFFFFF",
                   border: "1px solid #990000", borderRadius: 8,
-                  padding: "12px 24px", fontSize: 16, fontWeight: 700,
-                  fontFamily: "Inter, sans-serif", cursor: "pointer",
+                  padding: "12px 24px", fontSize: 14, fontWeight: 700,
+                  fontFamily: "Inter, system-ui, sans-serif", cursor: "pointer",
                 }}
               >
-                Restart
+                Delete
               </button>
             </div>
           </div>
