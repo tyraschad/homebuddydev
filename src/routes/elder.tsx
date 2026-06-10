@@ -170,18 +170,21 @@ function ElderHome() {
     return r.repeats ? "Repeats" : "Does not repeat";
   }
 
+  const completedItems = items.filter((i) => i.completed);
+  const upcomingItems = items.filter((i) => !i.completed);
+  const [showCompleted, setShowCompleted] = useState(false);
+
   return (
     <main
       style={{
         width: "100%",
-        height: "100vh",
-        background: theme.bg,
+        minHeight: "100vh",
+        background: PAGE_BG,
         padding: 16,
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden",
         boxSizing: "border-box",
-        color: theme.text,
+        color: "#1A1A2E",
         lineHeight: 1.5,
         position: "relative",
       }}
@@ -191,128 +194,257 @@ function ElderHome() {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          padding: "12px 16px",
           marginBottom: 16,
           flexShrink: 0,
         }}
       >
-        <h1 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text, margin: 0 }}>
-          {greet}, Albert
-        </h1>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <img src={whiteLogo} alt="" width={24} height={24} style={{ display: "block" }} />
+          <h1 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 20, color: "#FFFFFF", margin: 0 }}>
+            {greet}, {elder.name || "Albert"}
+          </h1>
+        </div>
         <Link
-          to="/settings"
+          to="/carer/settings"
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 8,
-            color: theme.text,
-            fontFamily: "'Trebuchet MS', sans-serif",
+            gap: 12,
+            color: "#FFFFFF",
+            fontFamily: "Inter, sans-serif",
             fontWeight: 700,
             fontSize: 16,
             textDecoration: "none",
           }}
         >
-          <Settings size={24} strokeWidth={1.5} color={theme.text} />
           <span>Settings</span>
+          <Settings size={28} strokeWidth={2} color="#FFFFFF" />
         </Link>
       </header>
 
-      <div style={{ flex: 1, display: "flex", gap: 16, overflow: "hidden" }}>
-        <Column width="50%">
-          <CardBox height="auto" padding={24} center theme={theme}>
-            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: theme.text, lineHeight: 1.3, marginBottom: 8 }}>
+      <div
+        style={{
+          flex: 1,
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 16,
+          alignItems: "stretch",
+        }}
+        className="elder-grid"
+      >
+        {/* LEFT COLUMN */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
+          {/* Clock card */}
+          <div
+            style={{
+              background: "#FFFFFF",
+              border: CARD_BORDER,
+              borderRadius: 4,
+              padding: 24,
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: "#1A1A2E", lineHeight: 1.3, marginBottom: 8 }}>
               {dateDayStr}
             </div>
-            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: theme.text, lineHeight: 1.2 }}>
+            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: "#1A1A2E", lineHeight: 1.2 }}>
               {timeStr}
             </div>
-          </CardBox>
+          </div>
 
-          <CardBox onClick={() => setOverlay("chat")} flex={1} padding={30} theme={theme}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 24, height: "100%", width: "100%" }}>
-              <Mic size={90} strokeWidth={2} color={theme.text} />
-              <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 24, color: theme.text, textAlign: "center" }}>
-                Tap to Ask a Question
-              </div>
+          {/* Ask a Question card */}
+          <button
+            type="button"
+            onClick={() => setOverlay("chat")}
+            style={{
+              background: "#FFFFFF",
+              border: CARD_BORDER,
+              borderRadius: 4,
+              padding: 16,
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 16,
+              cursor: "pointer",
+              minHeight: 280,
+            }}
+            aria-label="Tap to ask a question"
+          >
+            <div
+              style={{
+                width: 150,
+                height: 150,
+                borderRadius: "50%",
+                background: "#FFFFFF",
+                border: "2px solid #000000",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Mic size={80} strokeWidth={2} color="#000000" />
             </div>
-          </CardBox>
-        </Column>
+            <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 16, color: "#000000", textAlign: "center", paddingTop: 16 }}>
+              Tap to Ask a Question
+            </div>
+          </button>
+        </div>
 
-        <Column width="50%">
-          <CardBox flex={1} padding={16} theme={theme}>
-            <div style={{ position: "relative", display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
-              <h2 style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 18, color: theme.text, margin: 0, marginBottom: 12 }}>
-                Today's Reminders
-              </h2>
-              <div style={{ flex: 1, overflowY: "auto", minHeight: 0, position: "relative" }}>
-                {items.length === 0 ? (
-                  <p style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: completedColor, textAlign: "center", margin: "auto" }}>
-                    No reminders scheduled today
-                  </p>
-                ) : (
-                  <div style={{ position: "relative", paddingLeft: 24 }}>
-                    {/* Timeline line */}
-                    <div style={{ position: "absolute", left: 8, top: 4, bottom: 4, width: 2, background: timelineColor, borderRadius: 1 }} />
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      {items.map((i) => {
-                        const isNext = i.key === nextKey;
-                        const timeStr = formatTimeStr(i.time);
-                        const rel = formatRelative(i.minutes);
-                        if (i.completed) {
-                          return (
+        {/* RIGHT COLUMN */}
+        <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+          <div
+            style={{
+              background: "#FFFFFF",
+              border: CARD_BORDER,
+              borderRadius: 4,
+              padding: 16,
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: 0,
+            }}
+          >
+            <h2 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: "#000000", margin: 0, paddingBottom: 12 }}>
+              Today's Reminders
+            </h2>
+
+            <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+              {items.length === 0 ? (
+                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: COMPLETED_COLOR, textAlign: "center", marginTop: 24 }}>
+                  No reminders scheduled today
+                </p>
+              ) : (
+                <div style={{ position: "relative", paddingLeft: 16 }}>
+                  {/* Timeline vertical line */}
+                  <div style={{ position: "absolute", left: 4, top: 4, bottom: 4, width: 2, background: "#D0D0D0" }} />
+
+                  {/* Completed (collapsible) */}
+                  {completedItems.length > 0 && (
+                    <div style={{ marginBottom: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowCompleted((v) => !v)}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          padding: "4px 0",
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          fontFamily: "Inter, sans-serif",
+                          fontSize: 14,
+                          fontWeight: 700,
+                          color: COMPLETED_COLOR,
+                        }}
+                        aria-expanded={showCompleted}
+                      >
+                        {showCompleted ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        Completed Today ({completedItems.length})
+                      </button>
+                      {showCompleted && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
+                          {completedItems.map((i) => (
                             <button
                               key={i.key}
                               type="button"
                               onClick={() => setOpenItemKey(i.key)}
                               style={{
-                                background: "transparent", border: "none", textAlign: "left", cursor: "pointer",
-                                padding: "12px 16px", fontFamily: "Verdana, sans-serif", color: completedColor,
-                                opacity: 0.6, textDecoration: "line-through",
+                                background: "transparent",
+                                border: "none",
+                                textAlign: "left",
+                                cursor: "pointer",
+                                padding: "4px 0",
+                                fontFamily: "Inter, sans-serif",
+                                fontSize: 14,
+                                color: COMPLETED_COLOR,
+                                opacity: 0.6,
+                                textDecoration: "line-through",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
                               }}
                             >
-                              <div style={{ fontSize: 14 }}>{i.reminder.name}</div>
-                              <div style={{ fontSize: 14, marginTop: 2 }}>{timeStr} · {rel}</div>
+                              <ReminderIcon type={i.reminder.type} size={20} color={COMPLETED_COLOR} />
+                              <span>{formatTimeStr(i.time)} — {i.reminder.name}</span>
                             </button>
-                          );
-                        }
-                        if (isNext) {
-                          return (
-                            <button
-                              key={i.key}
-                              type="button"
-                              onClick={() => setOpenItemKey(i.key)}
-                              style={{
-                                background: nextBg, border: `1.5px solid ${nextBorder}`, borderRadius: 8,
-                                padding: 16, margin: "8px 0", textAlign: "left", cursor: "pointer", color: theme.text,
-                                fontFamily: "Verdana, sans-serif",
-                              }}
-                            >
-                              <div style={{ fontSize: 22, fontWeight: 700 }}>{i.reminder.name}</div>
-                              <div style={{ fontSize: 18, color: completedColor, marginTop: 4 }}>{timeStr} · {rel}</div>
-                            </button>
-                          );
-                        }
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Upcoming */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {upcomingItems.map((i) => {
+                      const isNext = i.key === nextKey;
+                      const timeText = formatTimeStr(i.time);
+                      const rel = formatRelative(i.minutes);
+                      if (isNext) {
                         return (
                           <button
                             key={i.key}
                             type="button"
                             onClick={() => setOpenItemKey(i.key)}
                             style={{
-                              background: "transparent", border: "none", textAlign: "left", cursor: "pointer",
-                              padding: "12px 16px", fontFamily: "Verdana, sans-serif", color: theme.text,
+                              background: "#FFFFFF",
+                              border: "1px solid #000000",
+                              borderRadius: 4,
+                              padding: "12px 16px",
+                              textAlign: "left",
+                              cursor: "pointer",
+                              fontFamily: "Inter, sans-serif",
+                              color: "#000000",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 4,
                             }}
                           >
-                            <div style={{ fontSize: 18 }}>{i.reminder.name}</div>
-                            <div style={{ fontSize: 14, color: completedColor, marginTop: 2 }}>{timeStr} · {rel}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <ReminderIcon type={i.reminder.type} size={20} color="#000000" />
+                              <span style={{ fontSize: 16, fontWeight: 700 }}>{i.reminder.name}</span>
+                            </div>
+                            <div style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>
+                              {timeText} — {rel}
+                            </div>
                           </button>
                         );
-                      })}
-                    </div>
+                      }
+                      return (
+                        <button
+                          key={i.key}
+                          type="button"
+                          onClick={() => setOpenItemKey(i.key)}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            textAlign: "left",
+                            cursor: "pointer",
+                            padding: "4px 0",
+                            fontFamily: "Inter, sans-serif",
+                            color: "#000000",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <ReminderIcon type={i.reminder.type} size={20} color="#000000" />
+                            <span style={{ fontSize: 16 }}>{i.reminder.name}</span>
+                          </div>
+                          <div style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>{timeText}</div>
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
-          </CardBox>
-        </Column>
+          </div>
+        </div>
       </div>
 
       {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
@@ -353,23 +485,18 @@ function ElderHome() {
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = "#5A8F3D";
-          e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.25)";
           e.currentTarget.style.transform = "scale(1.05)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.background = "#6BA24A";
-          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
           e.currentTarget.style.transform = "scale(1)";
         }}
       >
         <Phone size={36} strokeWidth={2} color="#FFFFFF" />
       </button>
       <style>{`
-        @media (max-width: 1199px) {
-          .fab-phone { bottom: 24px !important; right: 24px !important; }
-        }
-        @media (max-width: 767px) {
-          .fab-phone { width: 64px !important; height: 64px !important; bottom: 24px !important; right: 24px !important; }
+        @media (max-width: 720px) {
+          .elder-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </main>
