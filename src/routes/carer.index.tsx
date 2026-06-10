@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   ArrowLeft, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, X,
-  Edit, Trash2, Settings as SettingsIcon,
+  Edit, Trash2, Settings as SettingsIcon, RotateCw, AlertTriangle,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import {
@@ -115,6 +115,8 @@ function CarerPortal() {
   const [editTarget, setEditTarget] = useState<"conditions" | "notes" | "contacts" | "devices" | null>(null);
   const [savedToast, setSavedToast] = useState(false);
   const [tourOpen, setTourOpen] = useState(false);
+  const [confirmRestart, setConfirmRestart] = useState(false);
+  const navigate = useNavigate();
 
   const headerRef = useRef<HTMLElement | null>(null);
   const profileRef = useRef<HTMLElement | null>(null);
