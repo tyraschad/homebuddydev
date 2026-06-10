@@ -402,22 +402,21 @@ function CarerPortal() {
       </section>
 
       {/* RESTART SETUP BUTTON */}
-      <div style={{ paddingTop: 24, paddingBottom: 16, paddingLeft: 16, paddingRight: 16 }}>
+      <div style={{ paddingTop: 24, paddingBottom: 16, textAlign: "center" }}>
         <button
           type="button"
           onClick={() => setConfirmRestart(true)}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#990000")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "#CC0000")}
           style={{
-            width: "100%", height: 56, padding: 16,
-            background: "#CC0000", color: "#FFFFFF",
-            border: "1px solid #990000", borderRadius: 8,
-            fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 16,
-            cursor: "pointer", boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+            background: "none",
+            border: "none",
+            color: "#CC0000",
+            fontFamily: "Inter, sans-serif",
+            fontSize: 14,
+            textDecoration: "underline",
+            cursor: "pointer",
+            padding: 0,
           }}
         >
-          <span style={{ fontSize: 20, lineHeight: 1 }} aria-hidden>🔄</span>
           Restart Setup
         </button>
       </div>
