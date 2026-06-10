@@ -512,6 +512,65 @@ function CarerPortal() {
         />
       )}
 
+      {confirmRestart && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="restart-setup-title"
+          onClick={() => setConfirmRestart(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#FFFFFF", border: "2px solid #990000", borderRadius: 12,
+              padding: 20, maxWidth: 440, width: "100%",
+              boxShadow: "0 8px 16px rgba(0,0,0,0.25)",
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 12 }}>
+              <span style={{ fontSize: 32, color: "#CC0000", lineHeight: 1 }} aria-hidden>⚠️</span>
+              <h2 id="restart-setup-title" style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#000000" }}>
+                Restart Setup?
+              </h2>
+            </div>
+            <p style={{ margin: 0, padding: "16px 0", fontSize: 16, color: "#000000", lineHeight: 1.6 }}>
+              This will restart setup. Data will be lost.
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, paddingTop: 8 }}>
+              <button
+                type="button"
+                onClick={() => setConfirmRestart(false)}
+                style={{
+                  background: "#F0F0F0", color: "#000000",
+                  border: "1px solid #F0F0F0", borderRadius: 8,
+                  padding: "12px 24px", fontSize: 16, fontWeight: 700,
+                  fontFamily: "Inter, sans-serif", cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => { setConfirmRestart(false); navigate({ to: "/setup" }); }}
+                style={{
+                  background: "#CC0000", color: "#FFFFFF",
+                  border: "1px solid #990000", borderRadius: 8,
+                  padding: "12px 24px", fontSize: 16, fontWeight: 700,
+                  fontFamily: "Inter, sans-serif", cursor: "pointer",
+                }}
+              >
+                Restart
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {savedToast && (
         <div style={{
           position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
