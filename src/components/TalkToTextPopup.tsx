@@ -502,24 +502,34 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
       <div onClick={(e) => e.stopPropagation()}
         style={{
-          position: "relative", background: "#909090", border: "2px solid #000000", borderRadius: 8,
+          position: "relative",
+          background: v2 ? "#FFFFFF" : "#909090",
+          border: v2 ? `2px solid ${GREEN_DARK}` : "2px solid #000000",
+          borderRadius: v2 ? 16 : 8,
           width: "95%", maxWidth: 820, height: "92vh", maxHeight: 800,
           color: theme.text, boxSizing: "border-box",
           display: "flex", flexDirection: "column", overflow: "hidden",
+          boxShadow: v2 ? "0 8px 16px rgba(0,0,0,0.2)" : "none",
         }}>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid #444444", background: "#565656", flexShrink: 0 }}>
-          <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16, color: "#FFFFFF" }}>Chat</div>
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "14px 20px",
+          borderBottom: v2 ? "1px solid #E5E5E5" : "1px solid #444444",
+          background: v2 ? "#FFFFFF" : "#565656",
+          flexShrink: 0,
+        }}>
+          <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, color: v2 ? TEAL : "#FFFFFF" }}>Chat</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button type="button" onClick={() => { if (speaking) stopTTS(); setVoiceOn((v) => !v); }}
               title={voiceOn ? "Voice on" : "Voice off"}
-              style={{ background: "transparent", border: "none", cursor: "pointer", color: "#FFFFFF", padding: 6, display: "flex", alignItems: "center" }}>
-              {voiceOn ? <Volume2 size={20} color="#FFFFFF" /> : <VolumeX size={20} color="#FFFFFF" />}
+              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}>
+              {voiceOn ? <Volume2 size={20} color={v2 ? TEAL : "#FFFFFF"} /> : <VolumeX size={20} color={v2 ? TEAL : "#FFFFFF"} />}
             </button>
             <button type="button" onClick={onClose} aria-label="Close"
-              style={{ background: "transparent", border: "none", cursor: "pointer", color: "#FFFFFF", padding: 4, display: "flex", alignItems: "center" }}>
-              <X size={28} strokeWidth={2} color="#FFFFFF" />
+              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, display: "flex", alignItems: "center" }}>
+              <X size={28} strokeWidth={2} color={v2 ? "#000000" : "#FFFFFF"} />
             </button>
           </div>
         </div>
@@ -527,13 +537,22 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         {/* Body — scrollable: greeting + chat history / instructions / well done */}
         <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
           {!messages.some((m) => m.role === "user") && !guide && !wellDone && (
-            <div style={{ position: "relative", background: "#FFFFFF", border: "2px solid #000000", borderRadius: 12, padding: 20, marginLeft: 14, alignSelf: "flex-start", maxWidth: "90%" }}>
-              <span style={{ position: "absolute", left: -14, top: 22, width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "14px solid #000000" }} />
-              <span style={{ position: "absolute", left: -11, top: 24, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "12px solid #FFFFFF" }} />
-              <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 28, color: "#000000", lineHeight: 1.2 }}>
-                Hi {elder.name || "there"}, how can I help you today?
+            v2 ? (
+              <div style={{ position: "relative", background: ACCENT, borderRadius: 16, padding: "12px 16px", marginLeft: 14, alignSelf: "flex-start", maxWidth: "60%" }}>
+                <span style={{ position: "absolute", left: -10, top: 16, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: `12px solid ${ACCENT}` }} />
+                <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, color: "#FFFFFF", lineHeight: 1.3 }}>
+                  Hi {elder.name || "there"}, how can I help you today?
+                </div>
               </div>
-            </div>
+            ) : (
+              <div style={{ position: "relative", background: "#FFFFFF", border: "2px solid #000000", borderRadius: 12, padding: 20, marginLeft: 14, alignSelf: "flex-start", maxWidth: "90%" }}>
+                <span style={{ position: "absolute", left: -14, top: 22, width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "14px solid #000000" }} />
+                <span style={{ position: "absolute", left: -11, top: 24, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "12px solid #FFFFFF" }} />
+                <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 28, color: "#000000", lineHeight: 1.2 }}>
+                  Hi {elder.name || "there"}, how can I help you today?
+                </div>
+              </div>
+            )
           )}
 
           {guide && (
