@@ -60,9 +60,11 @@ type Ctx = {
   textSize: TextSize;
   highContrast: boolean;
   announcementsEnabled: boolean;
+  textReader: boolean;
   setTextSize: (s: TextSize) => void;
   setHighContrast: (v: boolean) => void;
   setAnnouncementsEnabled: (v: boolean) => void;
+  setTextReader: (v: boolean) => void;
 
   theme: Theme;
   sizes: Sizes;
@@ -86,6 +88,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [textSize, setTextSizeState] = useState<TextSize>("medium");
   const [highContrast, setHighContrastState] = useState<boolean>(true);
   const [announcementsEnabled, setAnnouncementsEnabledState] = useState<boolean>(true);
+  const [textReader, setTextReaderState] = useState<boolean>(false);
 
   // Track route to determine which appearance is active
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -104,6 +107,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       if (h === "true" || h === "false") setHighContrastState(h === "true");
       const an = localStorage.getItem("announcementsEnabled");
       if (an === "true" || an === "false") setAnnouncementsEnabledState(an === "true");
+      const tr = localStorage.getItem("textReader");
+      if (tr === "true" || tr === "false") setTextReaderState(tr === "true");
     } catch {}
   }, []);
 
@@ -135,6 +140,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setAnnouncementsEnabledState(v);
     try { localStorage.setItem("announcementsEnabled", String(v)); } catch {}
   };
+  const setTextReader = (v: boolean) => {
+    setTextReaderState(v);
+    try { localStorage.setItem("textReader", String(v)); } catch {}
+  };
 
   const appearance: AppearanceMode = scope === "carer" ? carerAppearance : elderAppearance;
   const theme = appearance === "dark" ? darkTheme : lightTheme;
@@ -156,16 +165,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     textSize,
     highContrast,
     announcementsEnabled,
+    textReader,
     setTextSize,
     setHighContrast,
     setAnnouncementsEnabled,
+    setTextReader,
     theme,
     sizes,
     cardBorder,
     buttonBorder,
     inputBorder,
     hcStrongColor,
-  }), [appearance, scope, carerAppearance, elderAppearance, textSize, highContrast, announcementsEnabled, theme, sizes, cardBorder, buttonBorder, inputBorder, hcStrongColor]);
+  }), [appearance, scope, carerAppearance, elderAppearance, textSize, highContrast, announcementsEnabled, textReader, theme, sizes, cardBorder, buttonBorder, inputBorder, hcStrongColor]);
 
   return (
     <SettingsContext.Provider value={value}>

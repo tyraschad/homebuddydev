@@ -267,10 +267,10 @@ function ElderHome() {
               boxShadow: cardShadow,
             }}
           >
-            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: cardText, lineHeight: 1.3, marginBottom: 8 }}>
+            <div data-readable="true" style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: cardText, lineHeight: 1.3, marginBottom: 8 }}>
               {dateDayStr}
             </div>
-            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: cardText, lineHeight: 1.2 }}>
+            <div data-readable="true" style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: cardText, lineHeight: 1.2 }}>
               {timeStr}
             </div>
           </div>
@@ -333,14 +333,14 @@ function ElderHome() {
               boxShadow: cardShadow,
             }}
           >
-            <h2 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: cardTextBlack, margin: 0, paddingBottom: 12 }}>
+            <h2 data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: cardTextBlack, margin: 0, paddingBottom: 12 }}>
               Today's Reminders
             </h2>
 
 
             <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
               {items.length === 0 ? (
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: COMPLETED_COLOR, textAlign: "center", marginTop: 24 }}>
+                <p data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: COMPLETED_COLOR, textAlign: "center", marginTop: 24 }}>
                   No reminders scheduled today
                 </p>
               ) : (
@@ -396,7 +396,7 @@ function ElderHome() {
                               }}
                             >
                               <ReminderIcon type={i.reminder.type} size={20} color={COMPLETED_COLOR} />
-                              <span>{formatTimeStr(i.time)} — {i.reminder.name}</span>
+                              <span data-readable="true">{formatTimeStr(i.time)} — {i.reminder.name}</span>
                             </button>
                           ))}
                         </div>
@@ -432,9 +432,9 @@ function ElderHome() {
                           >
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
-                              <span style={{ fontSize: 16, fontWeight: 700 }}>{i.reminder.name}</span>
+                              <span data-readable="true" style={{ fontSize: 16, fontWeight: 700 }}>{i.reminder.name}</span>
                             </div>
-                            <div style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>
+                            <div data-readable="true" style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>
                               {timeText} — {rel}
                             </div>
                           </button>
@@ -460,9 +460,9 @@ function ElderHome() {
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
-                            <span style={{ fontSize: 16 }}>{i.reminder.name}</span>
+                            <span data-readable="true" style={{ fontSize: 16 }}>{i.reminder.name}</span>
                           </div>
-                          <div style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>{timeText}</div>
+                          <div data-readable="true" style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>{timeText}</div>
                         </button>
                       );
                     })}
