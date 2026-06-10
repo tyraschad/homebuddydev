@@ -452,14 +452,14 @@ function ElderHome() {
                             cursor: "pointer",
                             padding: "4px 0",
                             fontFamily: "Inter, sans-serif",
-                            color: "#000000",
+                            color: cardTextBlack,
                             display: "flex",
                             flexDirection: "column",
                             gap: 2,
                           }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <ReminderIcon type={i.reminder.type} size={20} color="#000000" />
+                            <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
                             <span style={{ fontSize: 16 }}>{i.reminder.name}</span>
                           </div>
                           <div style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>{timeText}</div>
