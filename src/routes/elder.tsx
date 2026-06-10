@@ -211,6 +211,7 @@ function ElderHome() {
         color: "#1A1A2E",
         lineHeight: 1.5,
         position: "relative",
+        isolation: "isolate",
       }}
     >
       {v2 && <GrainyLandscape />}
