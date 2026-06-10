@@ -18,6 +18,8 @@ export const Route = createFileRoute("/onboarding")({
 const GREEN = "#8FA655";
 const GREEN_DARK = "#7A9640";
 const TEAL = "#25483A";
+const ONB_TEXT = "#25483A";
+const ONB_MUTED = "#5A6B5E";
 const STORAGE_KEY = "homebuddy.onboarding.v2";
 const TOTAL = 10;
 
