@@ -368,7 +368,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
   return (
     <div onClick={onClose} role="dialog" aria-modal="true"
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 2000, boxSizing: "border-box" }}>
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 2000, boxSizing: "border-box" }}>
       <style>{`
         @keyframes ttt-pulse { 0% { box-shadow: 0 0 0 0 rgba(107,162,74,0.5); } 70% { box-shadow: 0 0 0 14px rgba(107,162,74,0); } 100% { box-shadow: 0 0 0 0 rgba(107,162,74,0); } }
         @keyframes ttt-big-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); } 70% { box-shadow: 0 0 0 18px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
@@ -381,7 +381,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
       <div onClick={(e) => e.stopPropagation()}
         style={{
-          position: "relative", background: theme.card, border: cardBorder, borderRadius: 12,
+          position: "relative", background: "#909090", border: "2px solid #000000", borderRadius: 8,
           width: "95%", maxWidth: 820, height: "92vh", maxHeight: 800,
           color: theme.text, boxSizing: "border-box",
           display: "flex", flexDirection: "column", overflow: "hidden",
