@@ -1,40 +1,29 @@
-# Fix Tap-to-Talk button (Elder Chat)
+## Problem
 
-Scope: `src/components/TalkToTextPopup.tsx` mic button and `src/lib/use-voice-recorder.ts`. V2 visuals stay as-is. No backend changes.
+In `src/routes/onboarding.tsx`, body/card text uses `theme.text` and `theme.muted` from the settings store. When the user's saved appearance is dark, `theme.text` is white — but the onboarding cards are always white (V2). Result: white text on white cards. Also, the page-level `TEAL` accent (`#1B5E5E`) is close to the disallowed `#2A2A3E` navy and should be replaced with the brand dark green `#25483A`.
 
-## 1. V1 button styling
+## Changes (single file: `src/routes/onboarding.tsx`)
 
-Today (lines ~687–708): circle background `#FFFFFF` with a transparent border, mic icon `#000000`, label color `#FFFFFF`. On the white card background the circle disappears and the label is invisible — that's the "white on white" the user is seeing.
+1. **Replace TEAL token**
+   - `const TEAL = "#1B5E5E"` → `const TEAL = "#25483A"` (used by `h1` and `btnSecondary` text — both sit on the green/white onboarding background).
 
-Change V1 (when `!v2`) only:
-- Circle: `background: #000000`, no border (or `2px solid #000000`).
-- Mic icon: `color: #FFFFFF`.
-- Recording-state ring: keep the pulsing animation; use a white inner ring on the black circle.
-- Label text: `color: #000000`, `fontFamily: Inter`, `fontWeight: 700`, keep size 14. Recording state stays red (`#FF3B30`).
-- Outer button card: keep white background so the black circle reads as a strong target.
+2. **Stop reading `theme.text` / `theme.muted` inside onboarding.** Introduce two local constants and substitute everywhere in the file:
+   - `const ONB_TEXT = "#25483A"` — replaces every `color: theme.text`
+   - `const ONB_MUTED = "#5A6B5E"` — replaces every `color: theme.muted` (and `<Camera color={theme.muted} />` icons)
+   - Affected lines include the page header `h1`, SectionCard text prop, condition labels, reminder/contact rows, summary blocks (~lines 281, 302–306, 397, 428, 547, 550, 577, 659–660, 785–787, 817–818, 835–838, 845, 852, 861–864, 870, 885–888, 894, 908, 933).
+   - Where a row currently sets `background: theme.bg` on a chip/button inside a white card (line 845), change to `background: "#FFFFFF"` so its text remains legible.
 
-V2 styling (white circle + teal border + teal mic + teal label) is unchanged.
+3. **Resume-onboarding popup and any in-onboarding modal**
+   - Audit the resume prompt and any modal opened from onboarding (ReminderForm via `ModalShell`, CategoryPicker). Force modal body text to `#2A2A3E` (or black) on a white background. ModalShell already renders white; only ensure the text color inside onboarding-supplied modal children uses `#2A2A3E`, not `theme.text`.
 
-## 2. Tap-to-talk not firing
+4. **Leave the global settings store alone.** `settings-store.tsx` still defines `bg: "#2A2A3E"` for the dark elder theme — that's the elder app surface color, not onboarding text, and is out of scope.
 
-The click handler calls `void recorder.start()` which awaits `getUserMedia` then constructs `MediaRecorder`. On some browsers the gesture context is lost across the await, and any failure is swallowed because the UI never surfaces `recorder.error` — the button just looks dead.
+## Out of scope
 
-Fixes:
-- Surface `recorder.error` in the label area so a permission denial or unsupported-browser error is visible instead of silently reverting to "Tap to Ask a Question".
-- In `useVoiceRecorder.start`, call `navigator.mediaDevices.getUserMedia(...)` as the first synchronous statement of the click-driven path (already is), and construct `MediaRecorder` immediately after the awaited stream resolves — no extra awaits in between. Set `status` to a transient `"starting"`/keep `"idle"` until the recorder actually starts so a second tap during permission prompt can't double-fire.
-- Guard against double-start: if `status === "recording"` or a stream is already live, ignore subsequent `start()` calls.
-- On `NotAllowedError` / `NotFoundError` / `SecurityError`, set a specific error message and keep button enabled so the user can retry.
-- Confirm the button is not being blocked by `disabled` at idle (it isn't today, but verify after the status change above).
+- Elder app, carer portal, and any non-onboarding screens.
+- No new components, no logic changes, no settings/store edits.
 
-## 3. Verification
+## Verification
 
-- V1: black circle, white mic, black bold Inter "Tap to Ask a Question" label, visible on white card.
-- V2: unchanged visuals.
-- Click mic → browser permission prompt appears → status flips to recording → tap again stops and transcribes.
-- Deny permission → red error label appears under the mic, button still tappable to retry.
-
-## Technical notes
-
-- Only the mic `<button>` block (`TalkToTextPopup.tsx` ~676–709) and `useVoiceRecorder.ts` change.
-- No new dependencies; uses existing `MediaRecorder` + `transcribe` server fn.
-- Keep the existing `ttt-pulse` / `ttt-big-pulse` keyframes; just swap the ring color for V1.
+- Visually walk steps 1–10 of onboarding in both light and dark saved appearance settings; confirm all card/body text renders in `#25483A` and headings/secondary buttons use the new `TEAL` (`#25483A`).
+- Open the resume prompt and a reminder modal from within onboarding; confirm white background with dark text.
