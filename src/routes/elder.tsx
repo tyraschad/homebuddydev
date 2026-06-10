@@ -6,6 +6,7 @@ import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { speak } from "@/lib/talk.functions";
 import whiteLogo from "@/assets/white-logo.svg";
+import { GrainyLandscape } from "@/components/GrainyLandscape";
 
 const PAGE_BG = "#8F8F8F";
 const CARD_BORDER = "1px solid #D0D0D0";
