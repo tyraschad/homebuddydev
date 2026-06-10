@@ -88,6 +88,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [textSize, setTextSizeState] = useState<TextSize>("medium");
   const [highContrast, setHighContrastState] = useState<boolean>(true);
   const [announcementsEnabled, setAnnouncementsEnabledState] = useState<boolean>(true);
+  const [textReader, setTextReaderState] = useState<boolean>(false);
 
   // Track route to determine which appearance is active
   const pathname = useRouterState({ select: (s) => s.location.pathname });
