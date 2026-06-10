@@ -2,7 +2,7 @@ import { useRef, useState, type CSSProperties } from "react";
 import { Camera, Trash2, X, Edit, RefreshCw, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useSettings } from "@/lib/settings-store";
-import type { Device } from "@/lib/carer-store";
+import { cleanQuickActionLabel, type Device } from "@/lib/carer-store";
 import { identifyDevice } from "@/lib/identify-device.functions";
 
 const GREEN = "#2F8F4E";
@@ -83,7 +83,7 @@ export function DeviceListEditor({
   const save = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    const cleanQs = questions.map((q) => q.trim()).filter(Boolean);
+    const cleanQs = questions.map(cleanQuickActionLabel).filter(Boolean);
     if (editingId) {
       onChange(devices.map((d) => d.id === editingId ? { ...d, name: trimmed, photo, questions: cleanQs } : d));
     } else {
@@ -105,7 +105,7 @@ export function DeviceListEditor({
   return (
     <div>
       <p style={{ fontSize: 13, color: theme.muted, marginTop: 0, lineHeight: 1.5 }}>
-        Add devices in {elderName}'s home. We'll create helpful shortcuts so they can ask things like "How do I change the channel?".
+        Add devices in {elderName}'s home. We'll create helpful shortcuts like "Change channel".
       </p>
 
       <div style={{ ...card, marginTop: 12 }}>
@@ -164,7 +164,7 @@ export function DeviceListEditor({
             {questions.map((q, i) => (
               <div key={i} style={{ display: "flex", gap: 8 }}>
                 <input style={inputStyle} value={q}
-                  onChange={(e) => setQuestions(questions.map((x, j) => j === i ? e.target.value : x))}
+                  onChange={(e) => setQuestions(questions.map((x, j) => j === i ? cleanQuickActionLabel(e.target.value) : x))}
                   placeholder="Question…" />
                 <button type="button" onClick={() => setQuestions(questions.filter((_, j) => j !== i))}
                   style={{ ...btnSecondary, width: 40, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
