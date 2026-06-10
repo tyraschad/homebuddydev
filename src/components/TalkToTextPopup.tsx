@@ -399,113 +399,116 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* Chat history */}
-        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "20px 16px 24px", display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
-          {messages.map((m, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-              <div style={{
-                maxWidth: "70%",
-                background: m.role === "user" ? ACCENT : aiBubbleBg,
-                color: m.role === "user" ? "#FFFFFF" : aiBubbleText,
-                borderRadius: 16, padding: "12px 16px",
-                fontFamily: "'Trebuchet MS', sans-serif", fontSize: bodyFontSize, lineHeight: 1.5,
-                whiteSpace: "pre-wrap", wordBreak: "break-word",
-              }}>
-                {m.content}
-                {m.streaming && (
-                  <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? "#FFFFFF" : aiBubbleText, marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
-                )}
+        {/* Body */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
+          {/* Greeting bubble — only before first user message */}
+          {!messages.some((m) => m.role === "user") && (
+            <div style={{ position: "relative", background: "#FFFFFF", border: "2px solid #000000", borderRadius: 12, padding: 20, marginLeft: 14 }}>
+              <span style={{ position: "absolute", left: -14, top: 22, width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "14px solid #000000" }} />
+              <span style={{ position: "absolute", left: -11, top: 24, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "12px solid #FFFFFF" }} />
+              <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 28, color: "#000000", lineHeight: 1.2 }}>
+                Hi {elder.name || "there"}, how can I help you today?
               </div>
-            </div>
-          ))}
-          {sending && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: theme.muted, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 13, paddingLeft: 4 }}>
-              <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
             </div>
           )}
 
-          {/* (Quick actions moved to a persistent strip above the input) */}
-        </div>
+          {/* Quick action row (3) */}
+          {!guide && suggestions.length > 0 && (
+            <div style={{ display: "flex", gap: 12 }}>
+              {suggestions.slice(0, 3).map((s) => (
+                <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
+                  style={{
+                    flex: 1, height: 60, display: "inline-flex", alignItems: "center", gap: 10,
+                    background: "#F0F0F0", color: "#000000", border: "1px solid #D0D0D0",
+                    borderRadius: 8, padding: "0 16px",
+                    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
+                    cursor: sending ? "not-allowed" : "pointer",
+                    opacity: sending ? 0.5 : 1, textAlign: "left", overflow: "hidden",
+                  }}>
+                  {s.photo
+                    ? <img src={s.photo} alt="" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                    : <span style={{ display: "inline-flex", flexShrink: 0 }}>{s.icon}</span>}
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
-        {/* Instructions area (conditional) */}
-        {guide && (
-          <div style={{ flexShrink: 0, padding: "0 16px 12px" }}>
-            <div style={{
-              background: isDark ? "#1E3A4F" : "#E3F2FD",
-              border: `1px solid ${isDark ? "#3A5A7A" : "#BBDEFB"}`,
-              borderRadius: 8, padding: 16,
+          {/* Split row: black mic box + white transcription/chat box */}
+          <div style={{ display: "flex", gap: 12, height: 240, flexShrink: 0 }}>
+            {/* Big mic box */}
+            <button type="button"
+              onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
+              disabled={sending || recorder.status === "transcribing"}
+              style={{
+                width: "35%", height: "100%", background: "#000000", borderRadius: 8, padding: 20,
+                border: "none", cursor: sending ? "not-allowed" : "pointer",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12,
+              }}>
+              <div style={{
+                width: 150, height: 150, borderRadius: "50%", background: "#FFFFFF",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                border: recorder.status === "recording" ? "3px solid #FFFFFF" : "3px solid transparent",
+                animation: recorder.status === "recording" ? "ttt-big-pulse 0.8s infinite" : undefined,
+              }}>
+                {recorder.status === "transcribing"
+                  ? <Loader2 size={64} color="#000000" style={{ animation: "spin 1s linear infinite" }} />
+                  : <Mic size={80} color="#000000" strokeWidth={2} />}
+              </div>
+              <div style={{
+                fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
+                color: recorder.status === "recording" ? "#FF3B30" : "#FFFFFF",
+                textAlign: "center",
+              }}>
+                {recorder.status === "recording" ? "Tap to finish talking"
+                  : recorder.status === "transcribing" ? "Transcribing…"
+                  : "Tap to Talk"}
+              </div>
+            </button>
+
+            {/* Transcription / chat box */}
+            <div ref={scrollRef} style={{
+              width: "65%", height: "100%", background: "#FFFFFF", border: "2px solid #000000",
+              borderRadius: 8, padding: 16, overflowY: "auto",
               display: "flex", flexDirection: "column", gap: 12,
             }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontFamily: "'Trebuchet MS', sans-serif", fontSize: 14, color: theme.muted, fontWeight: 700 }}>
-                  Step {guide.index + 1} of {guide.steps.length}
-                </span>
-                <button type="button"
-                  onClick={() => { if (speaking) stopTTS(); else if (voiceOn) void playTTS(guide.steps[guide.index]); setVoiceOn((v) => !v); }}
-                  style={{ background: "transparent", border: `1px solid ${theme.muted}`, borderRadius: 16, padding: "4px 10px", cursor: "pointer", color: theme.text, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontSize: 12 }}>
-                  {voiceOn ? <Volume2 size={14} /> : <VolumeX size={14} />} Voice {voiceOn ? "ON" : "OFF"}
-                </button>
-              </div>
-              <div style={{ display: "flex", gap: 16 }}>
-                {guide.device?.photo && (
-                  <div style={{ flex: "0 0 40%", maxHeight: 180, background: "#FFFFFF", borderRadius: 4, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src={guide.device.photo} alt={guide.device.name} style={{ maxWidth: "100%", maxHeight: 180, objectFit: "contain" }} />
-                  </div>
-                )}
-                <div style={{ flex: 1, fontFamily: "'Trebuchet MS', sans-serif", fontSize: bodyFontSize, color: aiBubbleText, lineHeight: 1.5 }}>
-                  {guide.steps[guide.index]}
+              {messages.length === 0 && recorder.status !== "recording" && (
+                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#888888", fontStyle: "italic", textAlign: "center" }}>
+                  As you speak, text will show here
                 </div>
-              </div>
-              <div style={{ display: "flex", gap: 10 }}>
-                {guide.index > 0 && (
-                  <button type="button" onClick={() => advanceGuide(-1)}
-                    style={{ flex: 1, height: 44, borderRadius: 8, border: `1.5px solid ${theme.text}`, background: "transparent", color: theme.text, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
-                    <ChevronLeft size={18} /> Back
-                  </button>
-                )}
-                {guide.index < guide.steps.length - 1 ? (
-                  <button type="button" onClick={() => advanceGuide(1)}
-                    style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: ACCENT, color: "#FFFFFF", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
-                    Next <ChevronRight size={18} />
-                  </button>
-                ) : (
-                  <button type="button" onClick={finishGuide}
-                    style={{ flex: 1, height: 44, borderRadius: 8, border: "none", background: ACCENT, color: "#FFFFFF", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700 }}>
-                    Done
-                  </button>
-                )}
-              </div>
+              )}
+              {recorder.status === "recording" && (
+                <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#000000" }}>
+                  Listening…
+                </div>
+              )}
+              {messages.map((m, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+                  <div style={{
+                    maxWidth: "85%",
+                    background: m.role === "user" ? ACCENT : "#F0F0F0",
+                    color: m.role === "user" ? "#FFFFFF" : "#000000",
+                    borderRadius: 12, padding: "10px 14px",
+                    fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
+                    whiteSpace: "pre-wrap", wordBreak: "break-word",
+                  }}>
+                    {m.content}
+                    {m.streaming && (
+                      <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? "#FFFFFF" : "#000000", marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
+                    )}
+                  </div>
+                </div>
+              ))}
+              {sending && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#666", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14 }}>
+                  <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
 
-        {recorder.error && (
-          <div style={{ flexShrink: 0, padding: "0 16px 6px", color: "#DC2626", fontSize: 13, textAlign: "center" }}>{recorder.error}</div>
-        )}
-
-        {/* Quick actions strip (persistent, above input) */}
-        {!guide && suggestions.length > 0 && (
-          <div style={{ flexShrink: 0, padding: "10px 16px 16px", display: "flex", gap: 12, overflowX: "auto", scrollbarWidth: "thin" }}>
-            {suggestions.map((s) => (
-              <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
-                className="suggestion-chip"
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 10,
-                  background: "#FFFFFF", color: "#1A1A2E", border: "1px solid #D0D0D0",
-                  borderRadius: 26, padding: s.photo ? "8px 16px 8px 8px" : "12px 16px",
-                  fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16,
-                  cursor: sending ? "not-allowed" : "pointer", lineHeight: 1.2,
-                  whiteSpace: "nowrap", flexShrink: 0, opacity: sending ? 0.5 : 1,
-                  height: 52, boxSizing: "border-box",
-                }}>
-                {s.photo
-                  ? <img src={s.photo} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-                  : s.icon}
-                <span>{s.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Input area */}
         <div style={{ flexShrink: 0, padding: "12px 16px 16px", display: "flex", alignItems: "center", gap: 8, borderTop: cardBorder, background: theme.card }}>
