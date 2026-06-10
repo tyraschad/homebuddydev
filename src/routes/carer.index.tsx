@@ -563,7 +563,7 @@ function CarerPortal() {
                   fontFamily: "Inter, system-ui, sans-serif", cursor: "pointer",
                 }}
               >
-                Delete
+                Restart
               </button>
             </div>
           </div>
