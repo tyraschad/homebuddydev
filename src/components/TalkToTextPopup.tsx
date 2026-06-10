@@ -356,8 +356,9 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
   const finishGuide = () => {
     stopTTS();
+    const label = guide?.label ?? "";
     setGuide(null);
-    streamAssistant("Well done! Let me know if you need anything else.");
+    setWellDone(label);
   };
 
   // (suggestions are always shown above input when available)
