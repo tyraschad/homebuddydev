@@ -11,9 +11,9 @@ const GOLDEN: Palette = { top: [196, 184, 69], mid: [154, 154, 53], bot: [107, 1
 const NIGHT: Palette = { top: [42, 56, 71], mid: [31, 58, 64], bot: [15, 42, 53] };
 
 function paletteForHour(h: number): Palette {
-  if (h >= 6 && h < 12) return MORNING;
+  if (h >= 6 && h < 15) return MORNING; // morning + noon gap (12–2:59 PM)
   if (h >= 15 && h < 19) return GOLDEN;
-  return NIGHT; // night + noon gap
+  return NIGHT;
 }
 
 function lerp(a: number, b: number, t: number) {
