@@ -835,7 +835,7 @@ function ReminderDetailsPopup({
       role="dialog"
       aria-modal="true"
       style={{
-        position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: 16, zIndex: 2000, boxSizing: "border-box",
       }}
@@ -843,7 +843,7 @@ function ReminderDetailsPopup({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: theme.card, border: cardBorder, borderRadius: 8, padding: 24,
+          background: "#909090", border: "2px solid #000000", borderRadius: 8, padding: 24,
           width: "90%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto",
           display: "flex", flexDirection: "column", boxSizing: "border-box", color: theme.text,
         }}
