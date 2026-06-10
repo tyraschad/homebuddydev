@@ -1,10 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings, Mic, Phone, X } from "lucide-react";
+import { Settings, Mic, Phone, X, Pill, CalendarDays, PersonStanding, Circle, ChevronDown, ChevronRight } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
-import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS } from "@/lib/carer-store";
+import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib/carer-store";
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { speak } from "@/lib/talk.functions";
+import whiteLogo from "@/assets/white-logo.svg";
+
+const PAGE_BG = "#8F8F8F";
+const CARD_BORDER = "1px solid #D0D0D0";
+const COMPLETED_COLOR = "#6B6860";
+
+function ReminderIcon({ type, size = 20, color = "#1A1A2E" }: { type: ReminderType; size?: number; color?: string }) {
+  const props = { size, strokeWidth: 2, color };
+  if (type === "medication") return <Pill {...props} />;
+  if (type === "appointment") return <CalendarDays {...props} />;
+  if (type === "activity") return <PersonStanding {...props} />;
+  return <Circle {...props} />;
+}
 
 
 export const Route = createFileRoute("/elder")({
