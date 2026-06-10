@@ -140,6 +140,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setAnnouncementsEnabledState(v);
     try { localStorage.setItem("announcementsEnabled", String(v)); } catch {}
   };
+  const setTextReader = (v: boolean) => {
+    setTextReaderState(v);
+    try { localStorage.setItem("textReader", String(v)); } catch {}
+  };
 
   const appearance: AppearanceMode = scope === "carer" ? carerAppearance : elderAppearance;
   const theme = appearance === "dark" ? darkTheme : lightTheme;
