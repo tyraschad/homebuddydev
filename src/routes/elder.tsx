@@ -216,7 +216,7 @@ function ElderHome() {
         position: "relative",
       }}
     >
-      {v2 && <TimeBackground />}
+      {v2 && <TimeBackground zIndex={-3} />}
       <header
 
         style={{
