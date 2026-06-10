@@ -394,7 +394,7 @@ function Onboarding() {
                     style={{
                       display: "flex", alignItems: "center", gap: 12,
                       padding: 12, borderRadius: 8,
-                      background: selected ? (appearance === "dark" ? "#166534" : "#E8F5E9") : theme.card,
+                      background: selected ? "#E8F5E9" : "#FFFFFF",
                       border: cardBorder,
                       color: ONB_TEXT, cursor: "pointer", textAlign: "left",
                       fontFamily: "Verdana, sans-serif", fontSize: 14, fontWeight: 600,
