@@ -38,7 +38,11 @@ function ordinalSuffix(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 function formatDateDay(d: Date) {
-  const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
+  const shortDay = d.toLocaleDateString("en-US", { weekday: "short" });
+  const dayMap: Record<string, string> = {
+    Mon: "Mon", Tue: "Tues", Wed: "Wed", Thu: "Thurs", Fri: "Fri", Sat: "Sat", Sun: "Sun",
+  };
+  const dayName = dayMap[shortDay] || shortDay;
   const monthName = d.toLocaleDateString("en-US", { month: "long" });
   return `${dayName}, ${monthName} ${ordinalSuffix(d.getDate())}`;
 }
