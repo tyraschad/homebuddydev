@@ -638,8 +638,8 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           )}
 
           {!guide && !wellDone && messages.map((m, i) => {
-            const userBg = v2 ? BEIGE : ACCENT;
-            const userColor = v2 ? TEAL : "#FFFFFF";
+            const userBg = "#FFFFFF";
+            const userColor = "#000000";
             return (
               <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
                 <div style={{
