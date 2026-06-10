@@ -42,16 +42,16 @@ export function TimeBackground({ zIndex = 0 }: { zIndex?: number }) {
   useEffect(() => {
     const tick = () => {
       const p = getTimePeriod(new Date().getHours());
-      setCurrent((curr) => {
-        if (curr === p) return curr;
-        setPrevious(curr);
+      if (p !== current) {
+        setPrevious(current);
+        setCurrent(p);
         setFadeKey((k) => k + 1);
-        return p;
-      });
+      }
     };
     const id = setInterval(tick, 60_000);
     return () => clearInterval(id);
-  }, []);
+  }, [current]);
+
 
   const layer: React.CSSProperties = {
     position: "fixed",
