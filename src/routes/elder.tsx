@@ -259,17 +259,18 @@ function ElderHome() {
           {/* Clock card */}
           <div
             style={{
-              background: "#FFFFFF",
-              border: CARD_BORDER,
-              borderRadius: 4,
+              background: cardBg,
+              border: cardBorderStyle,
+              borderRadius: cardRadius,
               padding: 24,
               textAlign: "center",
+              boxShadow: cardShadow,
             }}
           >
-            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: "#1A1A2E", lineHeight: 1.3, marginBottom: 8 }}>
+            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: cardText, lineHeight: 1.3, marginBottom: 8 }}>
               {dateDayStr}
             </div>
-            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: "#1A1A2E", lineHeight: 1.2 }}>
+            <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: cardText, lineHeight: 1.2 }}>
               {timeStr}
             </div>
           </div>
@@ -279,9 +280,9 @@ function ElderHome() {
             type="button"
             onClick={() => setOverlay("chat")}
             style={{
-              background: "#FFFFFF",
-              border: CARD_BORDER,
-              borderRadius: 4,
+              background: cardBg,
+              border: cardBorderStyle,
+              borderRadius: cardRadius,
               padding: 16,
               flex: 1,
               display: "flex",
@@ -291,26 +292,27 @@ function ElderHome() {
               gap: 16,
               cursor: "pointer",
               minHeight: 280,
+              boxShadow: cardShadow,
             }}
             aria-label="Tap to ask a question"
           >
             <div
               style={{
-                width: 120,
-                height: 120,
+                width: micSize,
+                height: micSize,
                 aspectRatio: "1 / 1",
                 flexShrink: 0,
                 borderRadius: "50%",
                 background: "#FFFFFF",
-                border: "2px solid #000000",
+                border: `2px solid ${micBorderColor}`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Mic size={80} strokeWidth={2} color="#000000" />
+              <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
             </div>
-            <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 16, color: "#000000", textAlign: "center", paddingTop: 16 }}>
+            <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 16, color: micIconColor, textAlign: "center", paddingTop: 16 }}>
               Tap to Ask a Question
             </div>
           </button>
@@ -320,19 +322,21 @@ function ElderHome() {
         <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
           <div
             style={{
-              background: "#FFFFFF",
-              border: CARD_BORDER,
-              borderRadius: 4,
+              background: cardBg,
+              border: cardBorderStyle,
+              borderRadius: cardRadius,
               padding: 16,
               flex: 1,
               display: "flex",
               flexDirection: "column",
               minHeight: 0,
+              boxShadow: cardShadow,
             }}
           >
-            <h2 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: "#000000", margin: 0, paddingBottom: 12 }}>
+            <h2 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: cardTextBlack, margin: 0, paddingBottom: 12 }}>
               Today's Reminders
             </h2>
+
 
             <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
               {items.length === 0 ? (
