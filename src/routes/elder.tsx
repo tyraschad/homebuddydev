@@ -499,26 +499,24 @@ function ElderHome() {
           width: 64,
           height: 64,
           borderRadius: "50%",
-          background: "#6BA24A",
+          background: fabBg,
           border: "none",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",
           zIndex: 1000,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          boxShadow: v2 ? "0 4px 8px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.2)",
           transition: "background 0.2s, box-shadow 0.2s, transform 0.2s",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#5A8F3D";
           e.currentTarget.style.transform = "scale(1.05)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = "#6BA24A";
           e.currentTarget.style.transform = "scale(1)";
         }}
       >
-        <Phone size={36} strokeWidth={2} color="#FFFFFF" />
+        <Phone size={36} strokeWidth={2} color={fabIconColor} />
       </button>
       <style>{`
         @media (max-width: 720px) {
