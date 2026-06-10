@@ -580,18 +580,19 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               {suggestions.slice(0, 3).map((s) => (
                 <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
                   style={{
-                    flex: 1, height: 60, display: "inline-flex", alignItems: "center", gap: 10,
+                    flex: 1, height: 52, display: "inline-flex", alignItems: "center", gap: 10,
                     background: "#F0F0F0", color: "#000000", border: "1px solid #D0D0D0",
-                    borderRadius: 8, padding: "0 16px",
+                    borderRadius: 8, padding: "0 12px",
                     fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
                     cursor: sending ? "not-allowed" : "pointer",
                     opacity: sending ? 0.5 : 1, textAlign: "left", overflow: "hidden",
                   }}>
                   {s.photo
-                    ? <img src={s.photo} alt="" style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                    ? <img src={s.photo} alt="" style={{ width: 20, height: 20, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
                     : <span style={{ display: "inline-flex", flexShrink: 0 }}>{s.icon}</span>}
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
                 </button>
+
               ))}
             </div>
           )}
