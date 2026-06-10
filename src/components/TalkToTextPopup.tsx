@@ -196,16 +196,21 @@ function buildScheduleResponse(query: string, reminders: Reminder[]): string {
 }
 
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
-  const { theme, cardBorder, inputBorder, sizes } = useSettings();
+  const { theme, cardBorder, inputBorder, sizes, highContrast } = useSettings();
   const { reminders, elder, bumpDeviceAccess } = useCarer();
   const callSteps = useServerFn(generateSteps);
   const callAnswer = useServerFn(answerQuestion);
   const callSpeak = useServerFn(speak);
   const callReminderChat = useServerFn(reminderChat);
 
+  const v2 = !highContrast;
+  const TEAL = "#1B5E5E";
+  const BEIGE = "#F0EDE5";
+  const GREEN_DARK = "#4A7C59";
   const isDark = theme.bg !== "#FFFFFF";
-  const aiBubbleBg = isDark ? "#4A4A5E" : "#F0F0F0";
-  const aiBubbleText = isDark ? "#E8E8E8" : "#1A1A2E";
+  const aiBubbleBg = v2 ? "#F0F0F0" : (isDark ? "#4A4A5E" : "#F0F0F0");
+  const aiBubbleText = v2 ? TEAL : (isDark ? "#E8E8E8" : "#1A1A2E");
+
 
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [text, setText] = useState("");
