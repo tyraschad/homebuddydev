@@ -275,8 +275,8 @@ function ElderHome() {
           >
             <div
               style={{
-                width: 150,
-                height: 150,
+                width: 120,
+                height: 120,
                 aspectRatio: "1 / 1",
                 flexShrink: 0,
                 borderRadius: "50%",
