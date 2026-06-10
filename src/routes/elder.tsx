@@ -460,9 +460,9 @@ function ElderHome() {
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
-                            <span style={{ fontSize: 16 }}>{i.reminder.name}</span>
+                            <span data-readable="true" style={{ fontSize: 16 }}>{i.reminder.name}</span>
                           </div>
-                          <div style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>{timeText}</div>
+                          <div data-readable="true" style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>{timeText}</div>
                         </button>
                       );
                     })}
