@@ -396,7 +396,7 @@ function ElderHome() {
                               }}
                             >
                               <ReminderIcon type={i.reminder.type} size={20} color={COMPLETED_COLOR} />
-                              <span>{formatTimeStr(i.time)} — {i.reminder.name}</span>
+                              <span data-readable="true">{formatTimeStr(i.time)} — {i.reminder.name}</span>
                             </button>
                           ))}
                         </div>
