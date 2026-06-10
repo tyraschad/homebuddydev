@@ -99,10 +99,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const aiBubbleBg = isDark ? "#4A4A5E" : "#F0F0F0";
   const aiBubbleText = isDark ? "#E8E8E8" : "#1A1A2E";
 
-  const welcome = `Hi ${elder.name || "there"}! What would you like to know? Ask about a device, your reminders, or to call someone.`;
-  const [messages, setMessages] = useState<ChatMsg[]>([
-    { role: "assistant", content: welcome },
-  ]);
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [text, setText] = useState("");
   
   const [guide, setGuide] = useState<Guide | null>(null);
