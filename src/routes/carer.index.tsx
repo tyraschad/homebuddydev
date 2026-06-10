@@ -85,7 +85,13 @@ function formatSchedule(r: Reminder) {
 
 
 function CarerPortal() {
-  const { theme, cardBorder, buttonBorder, inputBorder, appearance } = useSettings();
+  const settings = useSettings();
+  const { appearance } = settings;
+  // Carer Portal V1 styling: grey page (#8F8F8F), white cards w/ 1px #D0D0D0 border, black text.
+  const theme = { ...settings.theme, bg: "#8F8F8F", card: "#FFFFFF", text: "#000000", border: "#D0D0D0" };
+  const cardBorder = "1px solid #D0D0D0";
+  const buttonBorder = "1px solid #D0D0D0";
+  const inputBorder = "1px solid #D0D0D0";
   const { elder, setElder, reminders, addReminder, updateReminder, deleteReminder } = useCarer();
 
   const [view, setView] = useState<ViewMode>("day");
@@ -143,8 +149,8 @@ function CarerPortal() {
     }
   }, [cursor]);
 
-  const panelBg = appearance === "dark" ? "#2A2A3E" : "#F5F0E8";
-  const gridLine = appearance === "dark" ? "#555555" : "#CCCCCC";
+  const panelBg = "#8F8F8F"; // page-matching panels (header / grey wraps)
+  const gridLine = "#D0D0D0";
 
   const headerStyle: CSSProperties = {
     background: panelBg, padding: 16,
@@ -154,18 +160,18 @@ function CarerPortal() {
 
   const btnPrimary: CSSProperties = {
     background: GREEN, color: "#fff", border: "none", padding: "10px 18px",
-    borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700,
-    fontSize: 16, cursor: "pointer",
+    borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700,
+    fontSize: 14, cursor: "pointer",
   };
   const btnSecondary: CSSProperties = {
-    background: "transparent", color: theme.text, border: buttonBorder,
-    padding: "10px 18px", borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
-    fontWeight: 700, fontSize: 16, cursor: "pointer",
+    background: "#F0F0F0", color: "#000000", border: buttonBorder,
+    padding: "10px 18px", borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif",
+    fontWeight: 700, fontSize: 14, cursor: "pointer",
   };
 
   const whiteCard: CSSProperties = {
-    background: theme.card, border: cardBorder, borderRadius: 8,
-    padding: 16, margin: 16,
+    background: "#FFFFFF", border: cardBorder, borderRadius: 8,
+    padding: 16, margin: 16, boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
   };
   const greyPanel: CSSProperties = {
     background: panelBg, borderRadius: 8, padding: 16, margin: 16,
