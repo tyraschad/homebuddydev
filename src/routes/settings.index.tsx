@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Palette, Type, Volume2, Contrast, Check } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, Accessibility, Moon, Volume2, Type } from "lucide-react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
 import { useSettings } from "@/lib/settings-store";
 
@@ -8,36 +9,34 @@ export const Route = createFileRoute("/settings/")({
   head: () => ({ meta: [{ title: "Settings — Albert" }] }),
 });
 
-const GREEN = "#2F8F4E";
+const PAGE_BG = "#8F8F8F";
+const HEADER_BG = "#8F8F8F";
+const GREEN = "#6BA24A";
+const OFF_GRAY = "#CCCCCC";
+const TEXT = "#000000";
 
 function SettingsPage() {
-  const { theme, appearance, setAppearance, textSize, setTextSize, highContrast, setHighContrast, announcementsEnabled, setAnnouncementsEnabled, cardBorder } = useSettings();
+  const navigate = useNavigate();
+  const {
+    appearance,
+    setAppearance,
+    highContrast,
+    setHighContrast,
+    announcementsEnabled,
+    setAnnouncementsEnabled,
+  } = useSettings();
 
-
-
-
-  const tileStyle: React.CSSProperties = {
-    background: theme.card,
-    border: cardBorder,
-    borderRadius: 8,
-    padding: 20,
-    display: "flex",
-    alignItems: "center",
-    gap: 16,
-    width: "100%",
-    color: theme.text,
-    fontFamily: "inherit",
-    lineHeight: 1.5,
-    textDecoration: "none",
-    boxSizing: "border-box",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    flex: 1,
-    fontFamily: "'Trebuchet MS', sans-serif",
-    fontWeight: 700,
-    fontSize: 18,
-    color: theme.text,
+  const [textReader, setTextReader] = useState<boolean>(false);
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("textReader");
+      if (v === "true" || v === "false") setTextReader(v === "true");
+    } catch {}
+  }, []);
+  const toggleTextReader = () => {
+    const next = !textReader;
+    setTextReader(next);
+    try { localStorage.setItem("textReader", String(next)); } catch {}
   };
 
   return (
@@ -45,17 +44,19 @@ function SettingsPage() {
       style={{
         width: "100%",
         minHeight: "100vh",
-        background: theme.bg,
+        background: PAGE_BG,
         display: "flex",
         flexDirection: "column",
         boxSizing: "border-box",
-        color: theme.text,
-        lineHeight: 1.5,
+        color: TEXT,
+        fontFamily: "Inter, system-ui, sans-serif",
+        lineHeight: 1.4,
       }}
     >
       <header
         style={{
-          background: theme.bg,
+          background: HEADER_BG,
+          minHeight: 60,
           padding: 16,
           display: "grid",
           gridTemplateColumns: "1fr auto 1fr",
@@ -63,189 +64,145 @@ function SettingsPage() {
           gap: 16,
         }}
       >
-        <Link
-          to="/elder"
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/elder" })}
           style={{
+            justifySelf: "start",
             display: "inline-flex",
             alignItems: "center",
             gap: 8,
-            color: theme.text,
-            textDecoration: "none",
-            fontFamily: "Verdana, sans-serif",
+            background: "transparent",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+            color: TEXT,
+            fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
             fontSize: 16,
-            justifySelf: "start",
           }}
         >
-          <ArrowLeft size={24} strokeWidth={2} color={theme.text} />
-          <span>Back</span>
-        </Link>
+          <ArrowLeft size={24} strokeWidth={2.5} color={TEXT} />
+          <span>Back to elder screen</span>
+        </button>
+
         <h1
           style={{
             margin: 0,
-            fontFamily: "Georgia, serif",
+            fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
-            fontSize: 32,
-            color: theme.text,
+            fontSize: 28,
+            color: TEXT,
             textAlign: "center",
           }}
         >
           Settings
         </h1>
-        <Link
-          to="/carer"
+
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/carer" })}
           style={{
             justifySelf: "end",
-            background: "transparent",
-            color: theme.text,
-            border: "none",
-            fontFamily: "'Trebuchet MS', sans-serif",
+            background: "#F0F0F0",
+            color: TEXT,
+            border: "1px solid #D9D9D9",
+            borderRadius: 8,
+            padding: "12px 16px",
+            cursor: "pointer",
+            fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
             fontSize: 16,
-            cursor: "pointer",
-            padding: 0,
-            textDecoration: "underline",
           }}
         >
           Open Carer Portal
-        </Link>
+        </button>
       </header>
-
-      <div style={{ padding: "0 16px 16px" }}>
-        <div
-          style={{
-            background: theme.card,
-            border: cardBorder,
-            borderRadius: 8,
-            padding: 16,
-            fontFamily: "Verdana, sans-serif",
-            fontSize: 18,
-            color: theme.text,
-            textAlign: "center",
-          }}
-        >
-          These settings only affect the Elder screens and do not change the Carer Portal.
-        </div>
-      </div>
 
       <div
         style={{
-          padding: "0 16px 16px",
+          padding: 16,
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          gap: 16,
+          gap: 12,
         }}
       >
-        <div style={tileStyle}>
-          <Palette size={20} strokeWidth={2} color={theme.text} />
-          <span style={labelStyle}>Appearance</span>
-          <Segment
-            leftLabel="Light"
-            rightLabel="Dark"
-            isRight={appearance === "dark"}
-            onChange={(r) => setAppearance(r ? "dark" : "light")}
-            theme={theme}
-          />
-        </div>
-
-        <div style={tileStyle}>
-          <Type size={20} strokeWidth={2} color={theme.text} />
-          <span style={labelStyle}>Text size</span>
-          <Segment
-            leftLabel="M"
-            rightLabel="L"
-            isRight={textSize === "large"}
-            onChange={(r) => setTextSize(r ? "large" : "medium")}
-            theme={theme}
-          />
-        </div>
-
-        <button type="button" onClick={() => setAnnouncementsEnabled(!announcementsEnabled)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={announcementsEnabled}>
-          <Volume2 size={20} strokeWidth={2} color={theme.text} />
-          <span style={labelStyle}>Reminder Announcements</span>
-          <ToggleDot on={announcementsEnabled} />
-        </button>
-
-
-        <button type="button" onClick={() => setHighContrast(!highContrast)} style={{ ...tileStyle, cursor: "pointer" }} aria-pressed={highContrast}>
-          <Contrast size={20} strokeWidth={2} color={theme.text} />
-          <span style={labelStyle}>High contrast mode</span>
-          <ToggleDot on={highContrast} />
-        </button>
+        <SettingCard
+          icon={<Accessibility size={24} strokeWidth={2} color={TEXT} />}
+          label="Accessible Visuals"
+          on={highContrast}
+          onToggle={() => setHighContrast(!highContrast)}
+        />
+        <SettingCard
+          icon={<Moon size={24} strokeWidth={2} color={TEXT} />}
+          label="Dark Mode"
+          on={appearance === "dark"}
+          onToggle={() => setAppearance(appearance === "dark" ? "light" : "dark")}
+        />
+        <SettingCard
+          icon={<Volume2 size={24} strokeWidth={2} color={TEXT} />}
+          label="Reminder Announcements"
+          on={announcementsEnabled}
+          onToggle={() => setAnnouncementsEnabled(!announcementsEnabled)}
+        />
+        <SettingCard
+          icon={<Type size={24} strokeWidth={2} color={TEXT} />}
+          label="Text Reader"
+          on={textReader}
+          onToggle={toggleTextReader}
+        />
       </div>
     </main>
   );
 }
 
-function Segment({
-  leftLabel,
-  rightLabel,
-  isRight,
-  onChange,
-  theme,
+function SettingCard({
+  icon,
+  label,
+  on,
+  onToggle,
 }: {
-  leftLabel: string;
-  rightLabel: string;
-  isRight: boolean;
-  onChange: (right: boolean) => void;
-  theme: { bg: string; card: string; text: string; border: string };
+  icon: ReactNode;
+  label: string;
+  on: boolean;
+  onToggle: () => void;
 }) {
-  const { buttonBorder } = useSettings();
-  const width = 140;
-  const height = 40;
-  const halfW = width / 2;
+  const card: CSSProperties = {
+    background: "#FFFFFF",
+    border: "1px solid #E0E0E0",
+    borderRadius: 8,
+    padding: 16,
+    minHeight: 100,
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+    cursor: "pointer",
+    width: "100%",
+    boxSizing: "border-box",
+    fontFamily: "Inter, system-ui, sans-serif",
+    color: TEXT,
+    textAlign: "left",
+  };
   return (
-    <button
-      type="button"
-      onClick={(e) => { e.stopPropagation(); onChange(!isRight); }}
-      style={{
-        position: "relative",
-        width,
-        height,
-        borderRadius: 12,
-        background: theme.bg,
-        border: buttonBorder,
-        padding: 3,
-        cursor: "pointer",
-        flexShrink: 0,
-      }}
-      aria-pressed={isRight}
-    >
+    <button type="button" onClick={onToggle} aria-pressed={on} style={card}>
+      <span style={{ flexShrink: 0, display: "inline-flex" }}>{icon}</span>
       <span
         style={{
-          position: "absolute",
-          top: 3,
-          left: isRight ? halfW : 3,
-          width: halfW - 3,
-          height: height - 6,
-          borderRadius: 9,
-          background: theme.text,
-          transition: "left 200ms ease",
-        }}
-      />
-      <span
-        style={{
-          position: "relative",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          height: "100%",
-          fontFamily: "'Trebuchet MS', sans-serif",
+          flex: 1,
           fontWeight: 700,
-          fontSize: 14,
+          fontSize: 18,
+          color: TEXT,
         }}
       >
-        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: isRight ? theme.text : theme.card }}>
-          {leftLabel}
-        </span>
-        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: isRight ? theme.card : theme.text }}>
-          {rightLabel}
-        </span>
+        {label}
       </span>
+      <Toggle on={on} />
     </button>
   );
 }
 
-function ToggleDot({ on }: { on: boolean }) {
+function Toggle({ on }: { on: boolean }) {
   return (
     <span
       aria-hidden
@@ -254,8 +211,8 @@ function ToggleDot({ on }: { on: boolean }) {
         width: 50,
         height: 28,
         borderRadius: 14,
-        background: on ? GREEN : "#C9C7C0",
-        transition: "background 150ms ease",
+        background: on ? GREEN : OFF_GRAY,
+        transition: "background 0.3s ease",
         flexShrink: 0,
         display: "inline-block",
       }}
@@ -269,14 +226,10 @@ function ToggleDot({ on }: { on: boolean }) {
           height: 24,
           borderRadius: "50%",
           background: "#FFFFFF",
-          transition: "left 150ms ease",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          transition: "left 0.3s ease",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
         }}
-      >
-        {on && <Check size={14} strokeWidth={3} color={GREEN} />}
-      </span>
+      />
     </span>
   );
 }
