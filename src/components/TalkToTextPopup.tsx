@@ -512,14 +512,14 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
         {/* Sticky bottom: mic box + transcript/input box, then quick actions */}
         <div style={{ flexShrink: 0, padding: 16, borderTop: cardBorder, background: theme.card, display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ display: "flex", gap: 12, height: 220 }}>
+          <div style={{ display: "flex", gap: 12, height: 180 }}>
             <button type="button"
               onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
               disabled={sending || recorder.status === "transcribing"}
               style={{
-                width: "35%", height: "100%", background: "#000000", borderRadius: 8, padding: 20,
+                width: "35%", height: "100%", background: "#000000", borderRadius: 8, padding: 16,
                 border: "none", cursor: sending ? "not-allowed" : "pointer",
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8,
               }}>
               <div style={{
                 width: 150, height: 150, borderRadius: "50%", background: "#FFFFFF",
@@ -541,6 +541,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                   : "Tap to Talk"}
               </div>
             </button>
+
 
             <div style={{
               width: "65%", height: "100%", position: "relative",
