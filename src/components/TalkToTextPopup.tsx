@@ -644,16 +644,16 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
                 <div style={{
                   maxWidth: "85%",
-                  background: "#FFFFFF",
-                  color: "#000000",
-                  border: "1px solid #000000",
+                  background: m.role === "user" ? "#FFFFFF" : "#3A3A3A",
+                  color: m.role === "user" ? "#000000" : "#FFFFFF",
+                  border: m.role === "user" ? "1px solid #000000" : "1px solid #3A3A3A",
                   borderRadius: 12, padding: "10px 14px",
                   fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
                   whiteSpace: "pre-wrap", wordBreak: "break-word",
                 }}>
                   {m.content}
                   {m.streaming && (
-                    <span style={{ display: "inline-block", width: 2, height: "1em", background: "#000000", marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
+                    <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? "#000000" : "#FFFFFF", marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
                   )}
                 </div>
               </div>
