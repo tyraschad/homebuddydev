@@ -15,7 +15,9 @@ export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "HomeBuddy Onboarding" }] }),
 });
 
-const GREEN = "#2F8F4E";
+const GREEN = "#8FA655";
+const GREEN_DARK = "#7A9640";
+const TEAL = "#1B5E5E";
 const STORAGE_KEY = "homebuddy.onboarding.v2";
 const TOTAL = 10;
 
