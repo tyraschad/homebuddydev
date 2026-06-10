@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   ArrowLeft, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, X,
@@ -87,8 +87,8 @@ function formatSchedule(r: Reminder) {
 function CarerPortal() {
   const settings = useSettings();
   const { appearance } = settings;
-  // Carer Portal V1 styling: grey page (#EBEBEB), white cards w/ 1px #D0D0D0 border, black text.
-  const theme = { ...settings.theme, bg: "#EBEBEB", card: "#FFFFFF", text: "#000000", border: "#D0D0D0" };
+  // Carer Portal V1 styling: grey page (#8F8F8F), white cards w/ 1px #D0D0D0 border, black text.
+  const theme = { ...settings.theme, bg: "#8F8F8F", card: "#FFFFFF", text: "#000000", border: "#D0D0D0" };
   const cardBorder = "1px solid #D0D0D0";
   const buttonBorder = "1px solid #D0D0D0";
   const inputBorder = "1px solid #D0D0D0";
@@ -111,8 +111,6 @@ function CarerPortal() {
   const [editing, setEditing] = useState<Reminder | null>(null);
   const [viewing, setViewing] = useState<Reminder | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
-  const [confirmRestart, setConfirmRestart] = useState(false);
-  const navigate = useNavigate();
   const [dayPopup, setDayPopup] = useState<Date | null>(null);
   const [editTarget, setEditTarget] = useState<"conditions" | "notes" | "contacts" | "devices" | null>(null);
   const [savedToast, setSavedToast] = useState(false);
@@ -151,7 +149,7 @@ function CarerPortal() {
     }
   }, [cursor]);
 
-  const panelBg = "#EBEBEB"; // page-matching panels (header / grey wraps)
+  const panelBg = "#8F8F8F"; // page-matching panels (header / grey wraps)
   const gridLine = "#D0D0D0";
 
   const headerStyle: CSSProperties = {
@@ -401,26 +399,6 @@ function CarerPortal() {
         {cursor && view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
       </section>
 
-      {/* RESTART SETUP BUTTON */}
-      <div style={{ paddingTop: 24, paddingBottom: 16, textAlign: "center" }}>
-        <button
-          type="button"
-          onClick={() => setConfirmRestart(true)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "#CC0000",
-            fontFamily: "Inter, sans-serif",
-            fontSize: 14,
-            textDecoration: "underline",
-            cursor: "pointer",
-            padding: 0,
-          }}
-        >
-          Restart Setup
-        </button>
-      </div>
-
       {/* FLOATING GO-TO-TODAY BUTTON */}
       <button
         ref={todayBtnRef}
@@ -509,65 +487,6 @@ function CarerPortal() {
             setTimeout(() => setSavedToast(false), 2000);
           }}
         />
-      )}
-
-      {confirmRestart && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="restart-setup-title"
-          onClick={() => setConfirmRestart(false)}
-          style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 16,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "#FFFFFF", border: "1px solid #D0D0D0", borderRadius: 12,
-              padding: 20, maxWidth: 500, width: "90%",
-              boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
-              fontFamily: "Inter, system-ui, sans-serif", lineHeight: 1.6,
-            }}
-          >
-            <h2 id="restart-setup-title" style={{
-              margin: "0 0 12px", fontSize: 20, fontWeight: 700, color: "#000000",
-              fontFamily: "Inter, system-ui, sans-serif",
-            }}>
-              Restart Setup?
-            </h2>
-            <p style={{ margin: "0 0 12px", fontSize: 16, color: "#333333", lineHeight: 1.6 }}>
-              This cannot be undone. All setup data will be lost.
-            </p>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, paddingTop: 8 }}>
-              <button
-                type="button"
-                onClick={() => setConfirmRestart(false)}
-                style={{
-                  background: "#F0F0F0", color: "#000000",
-                  border: "1px solid #D0D0D0", borderRadius: 8,
-                  padding: "12px 24px", fontSize: 14, fontWeight: 700,
-                  fontFamily: "Inter, system-ui, sans-serif", cursor: "pointer",
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => { setConfirmRestart(false); navigate({ to: "/setup" }); }}
-                style={{
-                  background: "#CC0000", color: "#FFFFFF",
-                  border: "1px solid #990000", borderRadius: 8,
-                  padding: "12px 24px", fontSize: 14, fontWeight: 700,
-                  fontFamily: "Inter, system-ui, sans-serif", cursor: "pointer",
-                }}
-              >
-                Restart
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {savedToast && (

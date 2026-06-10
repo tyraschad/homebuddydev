@@ -15,11 +15,7 @@ export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "HomeBuddy Onboarding" }] }),
 });
 
-const GREEN = "#8FA655";
-const GREEN_DARK = "#7A9640";
-const TEAL = "#25483A";
-const ONB_TEXT = "#25483A";
-const ONB_MUTED = "#5A6B5E";
+const GREEN = "#2F8F4E";
 const STORAGE_KEY = "homebuddy.onboarding.v2";
 const TOTAL = 10;
 
@@ -118,52 +114,37 @@ function Onboarding() {
 
   const elderName = data.elderName.trim() || "your loved one";
 
-  // ---- Styles (V2 onboarding theme — always applied) ----
+  // ---- Styles ----
   const page: CSSProperties = {
-    minHeight: "100vh",
-    background: "linear-gradient(to bottom, #E8F5E9 0%, #C8E6C9 100%)",
-    color: "#333333",
-    fontFamily: "Inter, system-ui, sans-serif", lineHeight: 1.6,
+    minHeight: "100vh", background: theme.bg, color: theme.text,
+    fontFamily: "Verdana, sans-serif", lineHeight: 1.5,
     display: "flex", flexDirection: "column",
   };
   const container: CSSProperties = {
-    maxWidth: 720, width: "100%", margin: "0 auto", padding: 16, boxSizing: "border-box",
-    flex: 1, display: "flex", flexDirection: "column", gap: 12,
+    maxWidth: 720, width: "100%", margin: "0 auto", padding: 24, boxSizing: "border-box",
+    flex: 1, display: "flex", flexDirection: "column",
   };
-  const h1: CSSProperties = {
-    fontFamily: "Newsreader, Georgia, serif", fontWeight: 700, fontSize: 30,
-    color: TEAL, margin: "0 0 12px", lineHeight: 1.4,
-  };
-  const muted: CSSProperties = {
-    fontFamily: "Inter, system-ui, sans-serif", fontSize: 16,
-    color: "#333333", lineHeight: 1.6, margin: "0 0 12px",
-  };
-  const small: CSSProperties = {
-    fontFamily: "Inter, system-ui, sans-serif", fontSize: 14,
-    color: "#999999", lineHeight: 1.5,
-  };
+  const h1: CSSProperties = { fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 28, color: theme.text, margin: "0 0 8px" };
+  const muted: CSSProperties = { fontSize: 14, color: theme.muted, lineHeight: 1.5 };
+  const small: CSSProperties = { fontSize: 12, color: theme.muted };
   const btnPrimary = (disabled = false): CSSProperties => ({
-    background: disabled ? "#B5C796" : GREEN, color: "#FFFFFF",
-    border: `1px solid ${disabled ? "#B5C796" : GREEN_DARK}`,
-    height: 48, padding: "12px 24px", borderRadius: 8,
-    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
+    background: disabled ? "#9CC2A9" : GREEN, color: "#fff", border: "none",
+    height: 48, padding: "0 24px", borderRadius: 8,
+    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16,
     cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.7 : 1,
   });
   const btnSecondary: CSSProperties = {
-    background: "transparent", color: TEAL, border: `1px solid ${GREEN_DARK}`,
+    background: "transparent", color: theme.text, border: buttonBorder,
     height: 44, padding: "0 20px", borderRadius: 8,
-    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
+    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
   };
   const inputStyle: CSSProperties = {
-    width: "100%", boxSizing: "border-box", padding: 12,
-    border: "1px solid #D0D0D0", borderRadius: 6,
-    background: "#FFFFFF", color: "#333333",
-    fontFamily: "Inter, system-ui, sans-serif", fontSize: 16,
+    width: "100%", boxSizing: "border-box", padding: "10px 12px",
+    border: inputBorder, borderRadius: 6, background: theme.card, color: theme.text,
+    fontFamily: "Verdana, sans-serif", fontSize: 14,
   };
   const card: CSSProperties = {
-    background: "rgba(255,255,255,0.85)",
-    border: "1px solid #D0E8D0", borderRadius: 12, padding: 20,
-    boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+    background: theme.card, border: cardBorder, borderRadius: 8, padding: 16,
   };
 
   // ---- Header (back + progress) ----
@@ -280,7 +261,7 @@ function Onboarding() {
             }}>
               <HomeIcon size={48} color={GREEN} strokeWidth={1.5} />
             </div>
-            <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 36, margin: 0, color: ONB_TEXT }}>
+            <h1 style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 36, margin: 0, color: theme.text }}>
               HomeBuddy
             </h1>
             <p style={{ ...muted, fontSize: 16, margin: "12px 0 0" }}>Custom care for elders at home</p>
@@ -301,11 +282,11 @@ function Onboarding() {
               Setup takes a few minutes and is grouped into three short sections. You can edit anything later.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 24 }}>
-              <SectionCard title="Part 1 · About you" card={card} text={ONB_TEXT}
+              <SectionCard title="Part 1 · About you" card={card} text={theme.text}
                 bullets={["Your name", "Who you're caring for", "A photo and any notes"]} />
-              <SectionCard title="Part 2 · Your care plan" card={card} text={ONB_TEXT}
+              <SectionCard title="Part 2 · Your care plan" card={card} text={theme.text}
                 bullets={["Health and accessibility needs", "Daily reminders", "Devices around the home"]} />
-              <SectionCard title="Part 3 · Finishing up" card={card} text={ONB_TEXT}
+              <SectionCard title="Part 3 · Finishing up" card={card} text={theme.text}
                 bullets={["Phone contacts", "Review and launch"]} />
             </div>
             <p style={{ ...small, fontStyle: "italic", marginTop: 16 }}>
@@ -319,7 +300,7 @@ function Onboarding() {
         {data.step === 3 && (
           <div>
             <h1 style={h1}>Part 1 · About you</h1>
-            <p style={{ fontSize: 18, color: ONB_MUTED, marginTop: 4 }}>
+            <p style={{ fontSize: 18, color: theme.muted, marginTop: 4 }}>
               First, let us know who's setting this up.
             </p>
             <div style={{ marginTop: 24 }}>
@@ -394,9 +375,9 @@ function Onboarding() {
                     style={{
                       display: "flex", alignItems: "center", gap: 12,
                       padding: 12, borderRadius: 8,
-                      background: selected ? "#E8F5E9" : "#FFFFFF",
+                      background: selected ? (appearance === "dark" ? "#166534" : "#E8F5E9") : theme.card,
                       border: cardBorder,
-                      color: ONB_TEXT, cursor: "pointer", textAlign: "left",
+                      color: theme.text, cursor: "pointer", textAlign: "left",
                       fontFamily: "Verdana, sans-serif", fontSize: 14, fontWeight: 600,
                       position: "relative",
                     }}>
@@ -427,7 +408,7 @@ function Onboarding() {
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
               {suggestRecommendations(data.conditions).map((r, i) => (
                 <div key={i} style={card}>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: ONB_TEXT, marginBottom: 4 }}>
+                  <div style={{ fontWeight: 700, fontSize: 16, color: theme.text, marginBottom: 4 }}>
                     {r.title}
                   </div>
                   <div style={muted}>{r.desc}</div>
@@ -543,13 +524,13 @@ function PhotoField({ label, photo, onPhoto, theme, cardBorder, buttonBorder }: 
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <div style={{
           width: 64, height: 64, borderRadius: "50%", border: cardBorder,
-          background: "#FFFFFF", overflow: "hidden",
+          background: theme.bg, overflow: "hidden",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          {photo ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <Camera size={24} color={ONB_MUTED} />}
+          {photo ? <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <Camera size={24} color={theme.muted} />}
         </div>
         <button type="button" onClick={() => ref.current?.click()} style={{
-          border: buttonBorder, background: "transparent", color: ONB_TEXT,
+          border: buttonBorder, background: "transparent", color: theme.text,
           borderRadius: 8, height: 40, padding: "0 16px", cursor: "pointer",
           fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
           display: "inline-flex", alignItems: "center", gap: 8,
@@ -574,9 +555,9 @@ function ToggleRow({ label, value, onChange, theme, cardBorder }: {
   return (
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: 12, border: cardBorder, borderRadius: 8, background: "#FFFFFF",
+      padding: 12, border: cardBorder, borderRadius: 8, background: theme.card,
     }}>
-      <span style={{ fontSize: 14, color: ONB_TEXT }}>{label}</span>
+      <span style={{ fontSize: 14, color: theme.text }}>{label}</span>
       <Toggle value={value} onChange={onChange} />
     </div>
   );
@@ -658,8 +639,8 @@ function RemindersPage({ data, update, elderName, theme, card, btnPrimary, btnSe
         ) : (
           (data.reminders as Reminder[]).map((r) => (
             <div key={r.id} style={{ ...card, display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ flex: 1, color: ONB_TEXT, fontSize: 14 }}>
-                <strong>{r.times[0]}</strong> · {r.name} · <span style={{ color: ONB_MUTED }}>{r.repeats === false ? "Does not repeat" : r.repeatSchedule}</span>
+              <div style={{ flex: 1, color: theme.text, fontSize: 14 }}>
+                <strong>{r.times[0]}</strong> · {r.name} · <span style={{ color: theme.muted }}>{r.repeats === false ? "Does not repeat" : r.repeatSchedule}</span>
               </div>
               <button type="button" onClick={() => setEditing(r)} style={iconBtn(theme)} aria-label="Edit"><Edit size={16} /></button>
               <button type="button" onClick={() => onDelete(r)} style={iconBtn(theme)} aria-label="Delete"><Trash2 size={16} /></button>
@@ -784,9 +765,9 @@ function PhoneNumbersPage({ data, update, elderName, theme, card, btnPrimary, bt
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
           {contacts.map((c, i) => (
             <div key={c.id} style={{ ...card, display: "flex", alignItems: "center", gap: 12, padding: 12 }}>
-              <div style={{ flex: 1, fontSize: 14, color: ONB_TEXT }}>
+              <div style={{ flex: 1, fontSize: 14, color: theme.text }}>
                 <span style={{ fontWeight: 700 }}>{c.name}</span>
-                <span style={{ color: ONB_MUTED }}> — {c.phone}</span>
+                <span style={{ color: theme.muted }}> — {c.phone}</span>
               </div>
               <button type="button" onClick={() => setContacts(contacts.filter((_, j) => j !== i))}
                 style={iconBtn(theme)} aria-label="Delete"><X size={16} /></button>
@@ -816,8 +797,8 @@ function EmergencyRow({ label, phone, visible, onToggle, card, theme }: any) {
   return (
     <div style={{ ...card, display: "flex", alignItems: "center", gap: 12 }}>
       <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: ONB_TEXT }}>{label}</div>
-        <div style={{ fontSize: 14, color: ONB_MUTED }}>{phone}</div>
+        <div style={{ fontWeight: 700, fontSize: 14, color: theme.text }}>{label}</div>
+        <div style={{ fontSize: 14, color: theme.muted }}>{phone}</div>
       </div>
       <Toggle value={visible} onChange={onToggle} />
     </div>
@@ -830,28 +811,28 @@ function SummaryProfile({ data, card, theme, cardBorder }: any) {
       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
         <div style={{
           width: 60, height: 60, borderRadius: "50%", border: cardBorder, overflow: "hidden",
-          background: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center",
+          background: theme.bg, display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           {data.elderPhoto
             ? <img src={data.elderPhoto} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <Camera size={20} color={ONB_MUTED} />}
+            : <Camera size={20} color={theme.muted} />}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 20, color: ONB_TEXT, fontFamily: "Georgia, serif" }}>
+          <div style={{ fontWeight: 700, fontSize: 20, color: theme.text, fontFamily: "Georgia, serif" }}>
             {data.elderName || "—"}
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
             {data.conditions.map((c: string) => (
               <span key={c} style={{
                 fontSize: 12, padding: "2px 8px", borderRadius: 12,
-                background: "#FFFFFF", border: cardBorder, color: ONB_TEXT,
+                background: theme.bg, border: cardBorder, color: theme.text,
               }}>{c}</span>
             ))}
           </div>
         </div>
       </div>
       {data.elderNotes && (
-        <div style={{ fontSize: 14, color: ONB_MUTED, marginTop: 12 }}>{data.elderNotes}</div>
+        <div style={{ fontSize: 14, color: theme.muted, marginTop: 12 }}>{data.elderNotes}</div>
       )}
     </div>
   );
@@ -860,16 +841,16 @@ function SummaryProfile({ data, card, theme, cardBorder }: any) {
 function SummarySection({ title, count, lines, card, theme }: any) {
   return (
     <div style={card}>
-      <div style={{ fontWeight: 700, fontSize: 16, color: ONB_TEXT, fontFamily: "Georgia, serif" }}>
+      <div style={{ fontWeight: 700, fontSize: 16, color: theme.text, fontFamily: "Georgia, serif" }}>
         {title}
       </div>
-      <div style={{ fontSize: 14, color: ONB_MUTED, marginTop: 4 }}>
+      <div style={{ fontSize: 14, color: theme.muted, marginTop: 4 }}>
         {count} {title.toLowerCase().includes("reminder") ? "reminders added"
           : title.toLowerCase().includes("device") ? "devices added"
           : title.toLowerCase().includes("contact") ? "contacts added" : "items"}
       </div>
       {lines.length > 0 && (
-        <ul style={{ margin: "8px 0 0", paddingLeft: 20, color: ONB_TEXT, fontSize: 14 }}>
+        <ul style={{ margin: "8px 0 0", paddingLeft: 20, color: theme.text, fontSize: 14 }}>
           {lines.map((l: string, i: number) => <li key={i}>{l}</li>)}
         </ul>
       )}
@@ -884,16 +865,16 @@ function ContactsSummaryCard({ data, card, theme, cardBorder, appearance }: any)
     ...(data.emergencyVisible.poison ? ["Poison Control"] : []),
   ];
   const sectionTitle: CSSProperties = {
-    fontWeight: 700, fontSize: 16, color: ONB_TEXT, fontFamily: "Georgia, serif",
+    fontWeight: 700, fontSize: 16, color: theme.text, fontFamily: "Georgia, serif",
   };
-  const countLine: CSSProperties = { fontSize: 14, color: ONB_MUTED, marginTop: 4 };
-  const listStyle: CSSProperties = { margin: "8px 0 0", paddingLeft: 20, color: ONB_TEXT, fontSize: 14 };
+  const countLine: CSSProperties = { fontSize: 14, color: theme.muted, marginTop: 4 };
+  const listStyle: CSSProperties = { margin: "8px 0 0", paddingLeft: 20, color: theme.text, fontSize: 14 };
   const emergencyBg = appearance === "dark" ? "#3A3A4E" : "#F5F0E8";
   return (
     <div style={card}>
       <div style={sectionTitle}>Phone Contacts</div>
       <div style={{ marginTop: 12 }}>
-        <div style={{ fontWeight: 700, fontSize: 16, color: ONB_TEXT }}>Main Contacts</div>
+        <div style={{ fontWeight: 700, fontSize: 16, color: theme.text }}>Main Contacts</div>
         <div style={countLine}>
           {mainContacts.length} contact{mainContacts.length === 1 ? "" : "s"} added
         </div>
@@ -907,7 +888,7 @@ function ContactsSummaryCard({ data, card, theme, cardBorder, appearance }: any)
         marginTop: 16, padding: 12, borderRadius: 6,
         background: emergencyBg, border: cardBorder,
       }}>
-        <div style={{ fontWeight: 700, fontSize: 16, color: ONB_TEXT }}>Emergency Contacts</div>
+        <div style={{ fontWeight: 700, fontSize: 16, color: theme.text }}>Emergency Contacts</div>
         <div style={countLine}>
           {emergency.length} emergency number{emergency.length === 1 ? "" : "s"}
         </div>
@@ -932,7 +913,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 function iconBtn(theme: any): CSSProperties {
   return {
-    background: "transparent", border: "none", cursor: "pointer", color: ONB_TEXT,
+    background: "transparent", border: "none", cursor: "pointer", color: theme.text,
     padding: 6, display: "inline-flex", alignItems: "center", justifyContent: "center",
   };
 }

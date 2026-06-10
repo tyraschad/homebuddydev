@@ -638,22 +638,21 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           )}
 
           {!guide && !wellDone && messages.map((m, i) => {
-            const userBg = "#FFFFFF";
-            const userColor = "#000000";
+            const userBg = v2 ? BEIGE : ACCENT;
+            const userColor = v2 ? TEAL : "#FFFFFF";
             return (
               <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
                 <div style={{
                   maxWidth: "85%",
-                  background: m.role === "user" ? "#FFFFFF" : "#3A3A3A",
-                  color: m.role === "user" ? "#000000" : "#FFFFFF",
-                  border: m.role === "user" ? "1px solid #000000" : "1px solid #3A3A3A",
+                  background: m.role === "user" ? userBg : aiBubbleBg,
+                  color: m.role === "user" ? userColor : aiBubbleText,
                   borderRadius: 12, padding: "10px 14px",
                   fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
                   whiteSpace: "pre-wrap", wordBreak: "break-word",
                 }}>
                   {m.content}
                   {m.streaming && (
-                    <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? "#000000" : "#FFFFFF", marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
+                    <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? userColor : aiBubbleText, marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
                   )}
                 </div>
               </div>
@@ -687,27 +686,23 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               }}>
               <div style={{
                 width: 120, height: 120, aspectRatio: "1 / 1", flexShrink: 0,
-                borderRadius: "50%",
-                background: v2 ? "#FFFFFF" : "#000000",
+                borderRadius: "50%", background: "#FFFFFF",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 border: v2
                   ? `4px solid ${ACCENT}`
-                  : (recorder.status === "recording" ? "3px solid #FFFFFF" : "2px solid #000000"),
+                  : (recorder.status === "recording" ? "2px solid #FFFFFF" : "2px solid transparent"),
                 animation: recorder.status === "recording" ? (v2 ? "ttt-pulse 0.8s infinite" : "ttt-big-pulse 0.8s infinite") : undefined,
               }}>
                 {recorder.status === "transcribing"
-                  ? <Loader2 size={64} color={v2 ? TEAL : "#FFFFFF"} style={{ animation: "spin 1s linear infinite" }} />
-                  : <Mic size={v2 ? 60 : 80} color={v2 ? TEAL : "#FFFFFF"} strokeWidth={2} />}
+                  ? <Loader2 size={64} color={v2 ? TEAL : "#000000"} style={{ animation: "spin 1s linear infinite" }} />
+                  : <Mic size={v2 ? 60 : 80} color={v2 ? TEAL : "#000000"} strokeWidth={2} />}
               </div>
               <div style={{
                 fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
-                color: recorder.error ? "#FF3B30"
-                  : recorder.status === "recording" ? "#FF3B30"
-                  : (v2 ? TEAL : "#000000"),
+                color: recorder.status === "recording" ? "#FF3B30" : (v2 ? TEAL : "#FFFFFF"),
                 textAlign: "center",
               }}>
-                {recorder.error ? recorder.error
-                  : recorder.status === "recording" ? "Tap to finish talking"
+                {recorder.status === "recording" ? "Tap to finish talking"
                   : recorder.status === "transcribing" ? "Transcribing…"
                   : "Tap to Ask a Question"}
               </div>

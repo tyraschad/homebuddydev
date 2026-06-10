@@ -6,7 +6,6 @@ import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { speak } from "@/lib/talk.functions";
 import whiteLogo from "@/assets/white-logo.svg";
-import { GrainyLandscape } from "@/components/GrainyLandscape";
 
 const PAGE_BG = "#8F8F8F";
 const CARD_BORDER = "1px solid #D0D0D0";
@@ -39,11 +38,7 @@ function ordinalSuffix(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 function formatDateDay(d: Date) {
-  const shortDay = d.toLocaleDateString("en-US", { weekday: "short" });
-  const dayMap: Record<string, string> = {
-    Mon: "Mon", Tue: "Tues", Wed: "Wed", Thu: "Thurs", Fri: "Fri", Sat: "Sat", Sun: "Sun",
-  };
-  const dayName = dayMap[shortDay] || shortDay;
+  const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
   const monthName = d.toLocaleDateString("en-US", { month: "long" });
   return `${dayName}, ${monthName} ${ordinalSuffix(d.getDate())}`;
 }
@@ -82,7 +77,9 @@ function ElderHome() {
   const v2 = !highContrast;
 
   // V2 design tokens
-  const pageBg = v2 ? "transparent" : PAGE_BG;
+  const pageBg = v2
+    ? "linear-gradient(to bottom, #4A7C59 0%, #A8D5BA 100%)"
+    : PAGE_BG;
   const cardBg = v2 ? "rgba(255,255,255,0.85)" : "#FFFFFF";
   const cardBorderStyle = v2 ? "1px solid #D0E8D0" : CARD_BORDER;
   const cardRadius = v2 ? 16 : 4;
@@ -211,10 +208,8 @@ function ElderHome() {
         color: "#1A1A2E",
         lineHeight: 1.5,
         position: "relative",
-        isolation: "isolate",
       }}
     >
-      {v2 && <GrainyLandscape />}
       <header
         style={{
           display: "flex",
@@ -814,7 +809,7 @@ function ContactRow({ name, phone, theme, separator }: { name: string; phone: st
 
 function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; isDark: boolean }) {
   const textColor = "#1A1A2E";
-  const phoneColor = isDark ? "#25483A" : "#4A4A4A";
+  const phoneColor = isDark ? "#2A2A3E" : "#4A4A4A";
   const separator = isDark ? "#B71C1C" : "#FFB3B3";
   return (
     <a
