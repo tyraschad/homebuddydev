@@ -200,7 +200,7 @@ function ElderHome() {
       style={{
         width: "100%",
         minHeight: "100vh",
-        background: PAGE_BG,
+        background: pageBg,
         padding: 16,
         display: "flex",
         flexDirection: "column",
@@ -211,6 +211,18 @@ function ElderHome() {
       }}
     >
       <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 16px",
+          marginBottom: 16,
+          flexShrink: 0,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <img src={whiteLogo} alt="" width={24} height={24} style={{ display: "block" }} />
+          <h1 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: v2 ? 24 : 20, color: "#FFFFFF", margin: 0, textShadow: headerTextShadow }}>
         style={{
           display: "flex",
           alignItems: "center",
