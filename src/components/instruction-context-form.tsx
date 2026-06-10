@@ -11,10 +11,10 @@ function uid() { return Math.random().toString(36).slice(2, 10); }
 
 function defaultQuestions(name: string): string[] {
   const n = name.toLowerCase();
-  if (/remote|tv/.test(n)) return ["How do I change the channel?", "How do I turn up the volume?", "How do I switch to Netflix?"];
-  if (/phone/.test(n)) return ["How do I make a call?", "How do I answer a call?", "How do I save a contact?"];
-  if (/microwave/.test(n)) return ["How do I heat up food?", "How do I set the timer?", "How do I stop it?"];
-  return ["How do I turn it on?", "How do I use it?", "How do I get help?"];
+  if (/remote|tv/.test(n)) return ["Change channel", "Turn up volume", "Find Netflix"];
+  if (/phone/.test(n)) return ["Make a call", "Answer a call", "Save contact"];
+  if (/microwave/.test(n)) return ["Heat up food", "Set the timer", "Stop it"];
+  return ["Turn it on", "Use it", "Get help"];
 }
 
 export function DeviceListEditor({
