@@ -73,27 +73,37 @@ export function TimeBackground() {
             current === previous ? undefined : "time-bg-fade-in 10s ease forwards",
         }}
       />
-      {/* Heavy grain texture overlay */}
+      {/* Heavy chunky grain — darkens via multiply */}
       <div
         style={{
           ...layer,
           backgroundImage: GRAIN_URL,
           backgroundRepeat: "repeat",
-          opacity: 0.55,
+          opacity: 0.85,
           mixBlendMode: "multiply",
         }}
       />
-      {/* A second, finer grain pass for extra texture */}
+      {/* Bright grain — adds highlights via overlay */}
       <div
         style={{
           ...layer,
           backgroundImage: GRAIN_URL,
           backgroundRepeat: "repeat",
-          backgroundSize: "120px 120px",
-          opacity: 0.4,
+          opacity: 0.7,
           mixBlendMode: "overlay",
         }}
       />
+      {/* Fine speckle pass */}
+      <div
+        style={{
+          ...layer,
+          backgroundImage: GRAIN_FINE,
+          backgroundRepeat: "repeat",
+          opacity: 0.55,
+          mixBlendMode: "soft-light",
+        }}
+      />
+
     </>
   );
 }
