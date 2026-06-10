@@ -1,29 +1,42 @@
-## Problem
+## Audit findings — onboarding text/background contrast
 
-In `src/routes/onboarding.tsx`, body/card text uses `theme.text` and `theme.muted` from the settings store. When the user's saved appearance is dark, `theme.text` is white — but the onboarding cards are always white (V2). Result: white text on white cards. Also, the page-level `TEAL` accent (`#1B5E5E`) is close to the disallowed `#2A2A3E` navy and should be replaced with the brand dark green `#25483A`.
+Onboarding always renders on a light green V2 background with white/translucent-white cards, but several spots still pull colors from the global `theme` (which goes dark when the user's saved appearance is `dark`). That produces white-on-white or near-illegible combos. The forbidden `#2A2A3E` also still lives in the dark theme token and leaks into onboarding modals.
 
-## Changes (single file: `src/routes/onboarding.tsx`)
+### Issues to fix
 
-1. **Replace TEAL token**
-   - `const TEAL = "#1B5E5E"` → `const TEAL = "#25483A"` (used by `h1` and `btnSecondary` text — both sit on the green/white onboarding background).
+1. **`SectionCard` toggle row (line 577)** — `background: theme.card`. In dark mode this is `#3A3A4E`, with `ONB_TEXT` (`#25483A`) label on top → unreadable. Force `background: "#FFFFFF"`.
 
-2. **Stop reading `theme.text` / `theme.muted` inside onboarding.** Introduce two local constants and substitute everywhere in the file:
-   - `const ONB_TEXT = "#25483A"` — replaces every `color: theme.text`
-   - `const ONB_MUTED = "#5A6B5E"` — replaces every `color: theme.muted` (and `<Camera color={theme.muted} />` icons)
-   - Affected lines include the page header `h1`, SectionCard text prop, condition labels, reminder/contact rows, summary blocks (~lines 281, 302–306, 397, 428, 547, 550, 577, 659–660, 785–787, 817–818, 835–838, 845, 852, 861–864, 870, 885–888, 894, 908, 933).
-   - Where a row currently sets `background: theme.bg` on a chip/button inside a white card (line 845), change to `background: "#FFFFFF"` so its text remains legible.
+2. **Condition chips (line 397)** — unselected branch uses `background: theme.card`. Dark mode gives a dark navy chip with dark-green text. Replace with `background: "#FFFFFF"`.
 
-3. **Resume-onboarding popup and any in-onboarding modal**
-   - Audit the resume prompt and any modal opened from onboarding (ReminderForm via `ModalShell`, CategoryPicker). Force modal body text to `#2A2A3E` (or black) on a white background. ModalShell already renders white; only ensure the text color inside onboarding-supplied modal children uses `#2A2A3E`, not `theme.text`.
+3. **Resume prompt (lines 249–266)** — already uses the onboarding `card` + `h1` + `muted` styles, which now resolve to `#25483A` text on white. Verified OK after the audit (no change needed).
 
-4. **Leave the global settings store alone.** `settings-store.tsx` still defines `bg: "#2A2A3E"` for the dark elder theme — that's the elder app surface color, not onboarding text, and is out of scope.
+4. **`ReminderForm` + `CategoryPicker` modals (lines 675–690)** — these components call `useSettings()` and style themselves with `theme.bg` / `theme.card` / `theme.text`. In dark appearance the modal renders with `#2A2A3E` background and white text; in light appearance it's white-on-white in places. Onboarding must always show these popups as white cards with dark text. Fix by passing a forced light theme in onboarding only:
+   - Update `CategoryPicker` and `ReminderForm` (and the small `Field*` helpers they own) to accept an optional `themeOverride` prop. When provided, use it instead of `useSettings().theme`. Default behavior elsewhere (elder app, carer portal) is unchanged.
+   - In `onboarding.tsx`, pass `themeOverride={{ bg: "#FFFFFF", card: "#FFFFFF", text: "#25483A", muted: "#5A6B5E", overlay: "rgba(0,0,0,0.5)" }}` to both.
+   - Also replace the `isDark` heuristic in `reminder-form.tsx` (line 116) so it derives from the resolved theme, not the literal `#2A2A3E` string.
 
-## Out of scope
+5. **Global elimination of `#2A2A3E`** (per "Never use 2A2A3E EVER"):
+   - `src/lib/settings-store.tsx` line 18: change dark `bg` from `#2A2A3E` → `#25483A`; line 19 `card: "#3A3A4E"` → `#2D5A45` (lighter green surface) so dark-mode elder UI keeps contrast and no longer uses the forbidden navy.
+   - `src/components/reminder-form.tsx` line 116: drop the `#2A2A3E` string compare; use `appearance === "dark"` from `useSettings()` instead.
+   - `src/routes/elder.tsx` line 817: replace `#2A2A3E` with `#25483A`.
 
-- Elder app, carer portal, and any non-onboarding screens.
-- No new components, no logic changes, no settings/store edits.
+6. **Sanity sweep of onboarding text colors** — confirm every visible body/label/help string in `src/routes/onboarding.tsx` resolves to one of: `ONB_TEXT` (`#25483A`), `ONB_MUTED` (`#5A6B5E`), `#333333` (page default body), `#999999` (small helper), `TEAL` (`#25483A`), or `#C0392B` (error). Existing review of lines 124–166 and 278–935 confirms no other `theme.text`/`theme.muted`/`theme.bg`/`theme.card` references remain after fixes 1, 2, and 4. Header progress track (line 278) and page 1 step dot (line 182) use `#3A3A4E` purely as a non-text background — left as-is.
 
-## Verification
+### Files touched
 
-- Visually walk steps 1–10 of onboarding in both light and dark saved appearance settings; confirm all card/body text renders in `#25483A` and headings/secondary buttons use the new `TEAL` (`#25483A`).
-- Open the resume prompt and a reminder modal from within onboarding; confirm white background with dark text.
+- `src/routes/onboarding.tsx` — lines 397, 577; add `themeOverride` props to the two modal usages (~675–690).
+- `src/components/reminder-form.tsx` — thread optional `themeOverride` through `CategoryPicker`, `ReminderForm`, and their internal `Field*` helpers; remove `#2A2A3E` literal at line 116.
+- `src/lib/settings-store.tsx` — swap dark theme `bg` and `card` hex values.
+- `src/routes/elder.tsx` — replace `#2A2A3E` literal at line 817.
+
+### Out of scope
+
+- Carer portal styling (already V1 grey per memory).
+- Elder app dark-mode color tuning beyond removing `#2A2A3E`.
+- Any logic, copy, or layout changes.
+
+### Verification
+
+- Walk all 10 onboarding steps in both `light` and `dark` saved appearance; every body string should render `#25483A`/`#5A6B5E` on white/translucent-white.
+- Open the resume prompt, the category picker, and the reminder form from inside onboarding — modals must be white with dark green text in both appearance settings.
+- `rg "#2A2A3E|#2a2a3e" src` returns no matches.

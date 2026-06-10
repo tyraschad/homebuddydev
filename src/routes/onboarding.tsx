@@ -394,7 +394,7 @@ function Onboarding() {
                     style={{
                       display: "flex", alignItems: "center", gap: 12,
                       padding: 12, borderRadius: 8,
-                      background: selected ? (appearance === "dark" ? "#166534" : "#E8F5E9") : theme.card,
+                      background: selected ? "#E8F5E9" : "#FFFFFF",
                       border: cardBorder,
                       color: ONB_TEXT, cursor: "pointer", textAlign: "left",
                       fontFamily: "Verdana, sans-serif", fontSize: 14, fontWeight: 600,
@@ -574,7 +574,7 @@ function ToggleRow({ label, value, onChange, theme, cardBorder }: {
   return (
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: 12, border: cardBorder, borderRadius: 8, background: theme.card,
+      padding: 12, border: cardBorder, borderRadius: 8, background: "#FFFFFF",
     }}>
       <span style={{ fontSize: 14, color: ONB_TEXT }}>{label}</span>
       <Toggle value={value} onChange={onChange} />
