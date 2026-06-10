@@ -829,16 +829,16 @@ function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; is
 }
 
 function ReminderDetailsPopup({
-  onClose, reminder, time, relative, frequency,
+  onClose, reminder, time, frequency,
 }: {
   onClose: () => void;
-  reminder: { name: string; details?: string; notes?: string; photo?: string; dose?: number; type: string };
+  reminder: { name: string; details?: string; notes?: string; photo?: string; dose?: number; type: ReminderType };
   time: string;
   relative: string;
   frequency: string;
 }) {
-  const { cardBorder } = useSettings();
-  const [prepResponse, setPrepResponse] = useState("");
+  const { highContrast } = useSettings();
+  const v2 = !highContrast;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -850,6 +850,12 @@ function ReminderDetailsPopup({
     reminder.dose ? `${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}` : null,
     reminder.details,
   ].filter(Boolean).join(" — ");
+
+  const textColor = v2 ? "#1B5E5E" : "#000000";
+  const iconColor = v2 ? "#1B5E5E" : "#000000";
+  const containerBorder = v2 ? "2px solid #4A7C59" : "2px solid #000000";
+  const containerShadow = v2 ? "0 8px 16px rgba(0,0,0,0.25)" : "0 4px 8px rgba(0,0,0,0.2)";
+  const notesBg = v2 ? "#E8F5E9" : "#F9F9F9";
 
   return (
     <div
@@ -865,80 +871,60 @@ function ReminderDetailsPopup({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#FFFFFF", border: "1px solid #D0D0D0", borderRadius: 8, padding: 20,
+          background: "#FFFFFF", border: containerBorder, borderRadius: 8, padding: 20,
           width: "90%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto",
-          display: "flex", flexDirection: "column", boxSizing: "border-box", color: "#000000",
+          display: "flex", flexDirection: "column", boxSizing: "border-box",
+          color: textColor, boxShadow: containerShadow,
         }}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
-          <h2 style={{ margin: 0, fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 24, color: "#000000", paddingBottom: 12 }}>
-            {reminder.name}
-          </h2>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 12 }}>
+            <ReminderIcon type={reminder.type} size={24} color={iconColor} />
+            <h2 style={{ margin: 0, fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 24, color: textColor }}>
+              {reminder.name}
+            </h2>
+          </div>
           <button
             type="button" onClick={onClose} aria-label="Close"
-            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: "#000000" }}
+            style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: iconColor }}
           >
-            <X size={20} strokeWidth={1.5} color="#000000" />
+            <X size={24} strokeWidth={2} color={iconColor} />
           </button>
         </div>
 
-        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: "#000000", paddingBottom: 8 }}>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: textColor, paddingBottom: 8 }}>
           {timeStr}
         </div>
 
-        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: "#000000", paddingBottom: 12 }}>
-          {frequency}
-        </div>
+        {frequency && (
+          <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
+            {frequency}
+          </div>
+        )}
 
         {detailsText && (
-          <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: "#000000", paddingBottom: 12 }}>
+          <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
             {detailsText}
           </div>
         )}
 
-        {reminder.notes ? (
+        {reminder.notes && (
           <div style={{
-            fontFamily: "Inter, sans-serif", fontSize: 16, color: "#000000",
-            background: "#F9F9F9", borderRadius: 4, padding: 12,
+            fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor,
+            background: notesBg, borderRadius: 4, padding: 12, marginTop: 12,
           }}>
             {reminder.notes}
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: "#000000" }}>
-              Do you need to bring anything? Documents? Medication?
-            </div>
-            <input
-              type="text"
-              value={prepResponse}
-              onChange={(e) => setPrepResponse(e.target.value)}
-              placeholder="Type your response..."
-              style={{
-                fontFamily: "Inter, sans-serif",
-                fontSize: 16,
-                color: "#000000",
-                padding: "10px 12px",
-                border: "1.5px solid #D0D0D0",
-                borderRadius: 4,
-                outline: "none",
-                width: "100%",
-                boxSizing: "border-box",
-              }}
-            />
           </div>
         )}
 
         {reminder.photo && (
           <div style={{ marginTop: 16 }}>
-            <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, fontWeight: 700, color: "#6B6860", marginBottom: 8 }}>
-              Reminder Photos
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 12 }}>
-              <img src={reminder.photo} alt={reminder.name} style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 4, border: cardBorder }} />
-            </div>
+            <img src={reminder.photo} alt={reminder.name}
+              style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 4, border: `1px solid ${v2 ? "#A8D5BA" : "#D0D0D0"}` }} />
           </div>
         )}
       </div>
     </div>
   );
 }
+
