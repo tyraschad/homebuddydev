@@ -125,6 +125,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <SettingsProvider>
         <CarerProvider>
+          <TextReader />
           <Outlet />
         </CarerProvider>
       </SettingsProvider>
