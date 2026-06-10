@@ -400,11 +400,10 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        {/* Body */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 16, minHeight: 0 }}>
-          {/* Greeting bubble — only before first user message */}
+        {/* Body — scrollable: greeting + chat history */}
+        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
           {!messages.some((m) => m.role === "user") && (
-            <div style={{ position: "relative", background: "#FFFFFF", border: "2px solid #000000", borderRadius: 12, padding: 20, marginLeft: 14 }}>
+            <div style={{ position: "relative", background: "#FFFFFF", border: "2px solid #000000", borderRadius: 12, padding: 20, marginLeft: 14, alignSelf: "flex-start", maxWidth: "90%" }}>
               <span style={{ position: "absolute", left: -14, top: 22, width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "14px solid #000000" }} />
               <span style={{ position: "absolute", left: -11, top: 24, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "12px solid #FFFFFF" }} />
               <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 28, color: "#000000", lineHeight: 1.2 }}>
@@ -413,7 +412,92 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* Quick action row (3) */}
+          {messages.map((m, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+              <div style={{
+                maxWidth: "85%",
+                background: m.role === "user" ? ACCENT : "#F0F0F0",
+                color: m.role === "user" ? "#FFFFFF" : "#000000",
+                borderRadius: 12, padding: "10px 14px",
+                fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
+                whiteSpace: "pre-wrap", wordBreak: "break-word",
+              }}>
+                {m.content}
+                {m.streaming && (
+                  <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? "#FFFFFF" : "#000000", marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
+                )}
+              </div>
+            </div>
+          ))}
+          {sending && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#666", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14 }}>
+              <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
+            </div>
+          )}
+        </div>
+
+        {/* Sticky bottom: mic box + transcript/input box, then quick actions */}
+        <div style={{ flexShrink: 0, padding: 16, borderTop: cardBorder, background: theme.card, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", gap: 12, height: 220 }}>
+            <button type="button"
+              onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
+              disabled={sending || recorder.status === "transcribing"}
+              style={{
+                width: "35%", height: "100%", background: "#000000", borderRadius: 8, padding: 20,
+                border: "none", cursor: sending ? "not-allowed" : "pointer",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12,
+              }}>
+              <div style={{
+                width: 150, height: 150, borderRadius: "50%", background: "#FFFFFF",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                border: recorder.status === "recording" ? "2px solid #FFFFFF" : "2px solid transparent",
+                animation: recorder.status === "recording" ? "ttt-big-pulse 0.8s infinite" : undefined,
+              }}>
+                {recorder.status === "transcribing"
+                  ? <Loader2 size={64} color="#000000" style={{ animation: "spin 1s linear infinite" }} />
+                  : <Mic size={80} color="#000000" strokeWidth={2} />}
+              </div>
+              <div style={{
+                fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
+                color: recorder.status === "recording" ? "#FF3B30" : "#FFFFFF",
+                textAlign: "center",
+              }}>
+                {recorder.status === "recording" ? "Tap to finish talking"
+                  : recorder.status === "transcribing" ? "Transcribing…"
+                  : "Tap to Talk"}
+              </div>
+            </button>
+
+            <div style={{
+              width: "65%", height: "100%", position: "relative",
+              background: "#FFFFFF", border: "2px solid #000000", borderRadius: 8,
+            }}>
+              <textarea
+                value={recorder.status === "recording" ? "" : text}
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
+                placeholder={recorder.status === "recording" ? "Listening…" : "As you speak, text will show here"}
+                disabled={sending || recorder.status === "transcribing" || recorder.status === "recording"}
+                style={{
+                  width: "100%", height: "100%", boxSizing: "border-box",
+                  padding: "16px 72px 16px 16px", border: "none", outline: "none", resize: "none",
+                  background: "transparent",
+                  fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#000000",
+                }} />
+              <button type="button" onClick={submit} disabled={sendDisabled} aria-label="Send"
+                style={{
+                  position: "absolute", right: 8, bottom: 8,
+                  width: 48, height: 48, borderRadius: "50%",
+                  background: sendDisabled ? "#B5D4A3" : ACCENT,
+                  border: "none", cursor: sendDisabled ? "not-allowed" : "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  opacity: sendDisabled ? 0.6 : 1, transition: "background 0.2s",
+                }}>
+                <Send size={24} color="#FFFFFF" />
+              </button>
+            </div>
+          </div>
+
           {!guide && suggestions.length > 0 && (
             <div style={{ display: "flex", gap: 12 }}>
               {suggestions.slice(0, 3).map((s) => (
@@ -434,115 +518,6 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               ))}
             </div>
           )}
-
-          {/* Split row: black mic box + white transcription/chat box */}
-          <div style={{ display: "flex", gap: 12, height: 240, flexShrink: 0 }}>
-            {/* Big mic box */}
-            <button type="button"
-              onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
-              disabled={sending || recorder.status === "transcribing"}
-              style={{
-                width: "35%", height: "100%", background: "#000000", borderRadius: 8, padding: 20,
-                border: "none", cursor: sending ? "not-allowed" : "pointer",
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12,
-              }}>
-              <div style={{
-                width: 150, height: 150, borderRadius: "50%", background: "#FFFFFF",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                border: recorder.status === "recording" ? "3px solid #FFFFFF" : "3px solid transparent",
-                animation: recorder.status === "recording" ? "ttt-big-pulse 0.8s infinite" : undefined,
-              }}>
-                {recorder.status === "transcribing"
-                  ? <Loader2 size={64} color="#000000" style={{ animation: "spin 1s linear infinite" }} />
-                  : <Mic size={80} color="#000000" strokeWidth={2} />}
-              </div>
-              <div style={{
-                fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
-                color: recorder.status === "recording" ? "#FF3B30" : "#FFFFFF",
-                textAlign: "center",
-              }}>
-                {recorder.status === "recording" ? "Tap to finish talking"
-                  : recorder.status === "transcribing" ? "Transcribing…"
-                  : "Tap to Talk"}
-              </div>
-            </button>
-
-            {/* Transcription / chat box */}
-            <div ref={scrollRef} style={{
-              width: "65%", height: "100%", background: "#FFFFFF", border: "2px solid #000000",
-              borderRadius: 8, padding: 16, overflowY: "auto",
-              display: "flex", flexDirection: "column", gap: 12,
-            }}>
-              {messages.length === 0 && recorder.status !== "recording" && (
-                <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#888888", fontStyle: "italic", textAlign: "center" }}>
-                  As you speak, text will show here
-                </div>
-              )}
-              {recorder.status === "recording" && (
-                <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#000000" }}>
-                  Listening…
-                </div>
-              )}
-              {messages.map((m, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-                  <div style={{
-                    maxWidth: "85%",
-                    background: m.role === "user" ? ACCENT : "#F0F0F0",
-                    color: m.role === "user" ? "#FFFFFF" : "#000000",
-                    borderRadius: 12, padding: "10px 14px",
-                    fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
-                    whiteSpace: "pre-wrap", wordBreak: "break-word",
-                  }}>
-                    {m.content}
-                    {m.streaming && (
-                      <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? "#FFFFFF" : "#000000", marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
-                    )}
-                  </div>
-                </div>
-              ))}
-              {sending && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#666", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14 }}>
-                  <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-
-        {/* Input area */}
-        <div style={{ flexShrink: 0, padding: "12px 16px 16px", display: "flex", alignItems: "center", gap: 8, borderTop: cardBorder, background: theme.card }}>
-          <div style={{
-            flex: 1, display: "flex", alignItems: "center", gap: 8,
-            background: "#FFFFFF",
-            border: `${recorder.status === "recording" ? "2px" : "1px"} solid ${recorder.status === "recording" ? ACCENT : "#D0D0D0"}`,
-            borderRadius: 24, padding: "0 8px 0 16px", height: 48,
-            boxShadow: recorder.status === "recording" ? "0 2px 4px rgba(0,0,0,0.08)" : "none",
-            transition: "border-color 0.2s, box-shadow 0.2s",
-          }}>
-            <input ref={inputRef} type="text" value={text}
-              onChange={(e) => { setText(e.target.value); }}
-              onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
-              placeholder={recorder.status === "recording" ? "Listening…" : "Type your request or click to talk..."}
-              disabled={sending || recorder.status === "transcribing"}
-              style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: "'Trebuchet MS', sans-serif", fontSize: 16, color: "#1A1A2E", padding: 0, minWidth: 0, height: "100%" }} />
-            <InlineMicButton status={recorder.status} error={recorder.error}
-              onStart={recorder.start} onStop={recorder.stop} onReset={recorder.reset} disabled={sending} />
-          </div>
-          <button type="button" onClick={submit} disabled={sendDisabled} aria-label="Send"
-            onMouseDown={(e) => e.preventDefault()}
-            style={{
-              width: 48, height: 48, borderRadius: "50%",
-              background: sendDisabled ? "#B5B5B5" : "#888888",
-              border: "none", cursor: sendDisabled ? "not-allowed" : "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) => { if (!sendDisabled) (e.currentTarget as HTMLButtonElement).style.background = "#6B6B6B"; }}
-            onMouseLeave={(e) => { if (!sendDisabled) (e.currentTarget as HTMLButtonElement).style.background = "#888888"; }}>
-            <Send size={24} color="#FFFFFF" />
-          </button>
         </div>
       </div>
     </div>
