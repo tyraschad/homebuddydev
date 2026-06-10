@@ -522,7 +522,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8,
               }}>
               <div style={{
-                width: 150, height: 150, aspectRatio: "1 / 1", flexShrink: 0,
+                width: 120, height: 120, aspectRatio: "1 / 1", flexShrink: 0,
                 borderRadius: "50%", background: "#FFFFFF",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 border: recorder.status === "recording" ? "2px solid #FFFFFF" : "2px solid transparent",
