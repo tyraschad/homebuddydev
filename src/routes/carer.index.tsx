@@ -87,8 +87,8 @@ function formatSchedule(r: Reminder) {
 function CarerPortal() {
   const settings = useSettings();
   const { appearance } = settings;
-  // Carer Portal V1 styling: grey page (#8F8F8F), white cards w/ 1px #D0D0D0 border, black text.
-  const theme = { ...settings.theme, bg: "#8F8F8F", card: "#FFFFFF", text: "#000000", border: "#D0D0D0" };
+  // Carer Portal V1 styling: grey page (#EBEBEB), white cards w/ 1px #D0D0D0 border, black text.
+  const theme = { ...settings.theme, bg: "#EBEBEB", card: "#FFFFFF", text: "#000000", border: "#D0D0D0" };
   const cardBorder = "1px solid #D0D0D0";
   const buttonBorder = "1px solid #D0D0D0";
   const inputBorder = "1px solid #D0D0D0";
