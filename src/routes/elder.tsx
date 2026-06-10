@@ -333,14 +333,14 @@ function ElderHome() {
               boxShadow: cardShadow,
             }}
           >
-            <h2 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: cardTextBlack, margin: 0, paddingBottom: 12 }}>
+            <h2 data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: cardTextBlack, margin: 0, paddingBottom: 12 }}>
               Today's Reminders
             </h2>
 
 
             <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
               {items.length === 0 ? (
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: COMPLETED_COLOR, textAlign: "center", marginTop: 24 }}>
+                <p data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: COMPLETED_COLOR, textAlign: "center", marginTop: 24 }}>
                   No reminders scheduled today
                 </p>
               ) : (
