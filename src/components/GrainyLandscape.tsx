@@ -23,7 +23,7 @@ function lerp(a: number, b: number, t: number) {
 function lerpPalette(a: Palette, b: Palette, t: number): Palette {
   const m = (x: [number, number, number], y: [number, number, number]) =>
     [lerp(x[0], y[0], t), lerp(x[1], y[1], t), lerp(x[2], y[2], t)] as [number, number, number];
-  return { top: m(a.top, b.top), mid: m(a.mid, b.mid), bot: m(a.bot, b.bot) };
+  return { sky: m(a.sky, b.sky), top: m(a.top, b.top), mid: m(a.mid, b.mid), bot: m(a.bot, b.bot) };
 }
 function rgb([r, g, b]: [number, number, number], a = 1) {
   return `rgba(${r | 0},${g | 0},${b | 0},${a})`;
