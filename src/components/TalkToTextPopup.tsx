@@ -196,16 +196,21 @@ function buildScheduleResponse(query: string, reminders: Reminder[]): string {
 }
 
 export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
-  const { theme, cardBorder, inputBorder, sizes } = useSettings();
+  const { theme, cardBorder, inputBorder, sizes, highContrast } = useSettings();
   const { reminders, elder, bumpDeviceAccess } = useCarer();
   const callSteps = useServerFn(generateSteps);
   const callAnswer = useServerFn(answerQuestion);
   const callSpeak = useServerFn(speak);
   const callReminderChat = useServerFn(reminderChat);
 
+  const v2 = !highContrast;
+  const TEAL = "#1B5E5E";
+  const BEIGE = "#F0EDE5";
+  const GREEN_DARK = "#4A7C59";
   const isDark = theme.bg !== "#FFFFFF";
-  const aiBubbleBg = isDark ? "#4A4A5E" : "#F0F0F0";
-  const aiBubbleText = isDark ? "#E8E8E8" : "#1A1A2E";
+  const aiBubbleBg = v2 ? "#F0F0F0" : (isDark ? "#4A4A5E" : "#F0F0F0");
+  const aiBubbleText = v2 ? TEAL : (isDark ? "#E8E8E8" : "#1A1A2E");
+
 
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [text, setText] = useState("");
@@ -497,24 +502,34 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
       <div onClick={(e) => e.stopPropagation()}
         style={{
-          position: "relative", background: "#909090", border: "2px solid #000000", borderRadius: 8,
+          position: "relative",
+          background: v2 ? "#FFFFFF" : "#909090",
+          border: v2 ? `2px solid ${GREEN_DARK}` : "2px solid #000000",
+          borderRadius: v2 ? 16 : 8,
           width: "95%", maxWidth: 820, height: "92vh", maxHeight: 800,
           color: theme.text, boxSizing: "border-box",
           display: "flex", flexDirection: "column", overflow: "hidden",
+          boxShadow: v2 ? "0 8px 16px rgba(0,0,0,0.2)" : "none",
         }}>
 
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid #444444", background: "#565656", flexShrink: 0 }}>
-          <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16, color: "#FFFFFF" }}>Chat</div>
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "14px 20px",
+          borderBottom: v2 ? "1px solid #E5E5E5" : "1px solid #444444",
+          background: v2 ? "#FFFFFF" : "#565656",
+          flexShrink: 0,
+        }}>
+          <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, color: v2 ? TEAL : "#FFFFFF" }}>Chat</div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button type="button" onClick={() => { if (speaking) stopTTS(); setVoiceOn((v) => !v); }}
               title={voiceOn ? "Voice on" : "Voice off"}
-              style={{ background: "transparent", border: "none", cursor: "pointer", color: "#FFFFFF", padding: 6, display: "flex", alignItems: "center" }}>
-              {voiceOn ? <Volume2 size={20} color="#FFFFFF" /> : <VolumeX size={20} color="#FFFFFF" />}
+              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}>
+              {voiceOn ? <Volume2 size={20} color={v2 ? TEAL : "#FFFFFF"} /> : <VolumeX size={20} color={v2 ? TEAL : "#FFFFFF"} />}
             </button>
             <button type="button" onClick={onClose} aria-label="Close"
-              style={{ background: "transparent", border: "none", cursor: "pointer", color: "#FFFFFF", padding: 4, display: "flex", alignItems: "center" }}>
-              <X size={28} strokeWidth={2} color="#FFFFFF" />
+              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, display: "flex", alignItems: "center" }}>
+              <X size={28} strokeWidth={2} color={v2 ? "#000000" : "#FFFFFF"} />
             </button>
           </div>
         </div>
@@ -522,13 +537,22 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         {/* Body — scrollable: greeting + chat history / instructions / well done */}
         <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
           {!messages.some((m) => m.role === "user") && !guide && !wellDone && (
-            <div style={{ position: "relative", background: "#FFFFFF", border: "2px solid #000000", borderRadius: 12, padding: 20, marginLeft: 14, alignSelf: "flex-start", maxWidth: "90%" }}>
-              <span style={{ position: "absolute", left: -14, top: 22, width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "14px solid #000000" }} />
-              <span style={{ position: "absolute", left: -11, top: 24, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "12px solid #FFFFFF" }} />
-              <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 28, color: "#000000", lineHeight: 1.2 }}>
-                Hi {elder.name || "there"}, how can I help you today?
+            v2 ? (
+              <div style={{ position: "relative", background: ACCENT, borderRadius: 16, padding: "12px 16px", marginLeft: 14, alignSelf: "flex-start", maxWidth: "60%" }}>
+                <span style={{ position: "absolute", left: -10, top: 16, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: `12px solid ${ACCENT}` }} />
+                <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, color: "#FFFFFF", lineHeight: 1.3 }}>
+                  Hi {elder.name || "there"}, how can I help you today?
+                </div>
               </div>
-            </div>
+            ) : (
+              <div style={{ position: "relative", background: "#FFFFFF", border: "2px solid #000000", borderRadius: 12, padding: 20, marginLeft: 14, alignSelf: "flex-start", maxWidth: "90%" }}>
+                <span style={{ position: "absolute", left: -14, top: 22, width: 0, height: 0, borderTop: "10px solid transparent", borderBottom: "10px solid transparent", borderRight: "14px solid #000000" }} />
+                <span style={{ position: "absolute", left: -11, top: 24, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: "12px solid #FFFFFF" }} />
+                <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 28, color: "#000000", lineHeight: 1.2 }}>
+                  Hi {elder.name || "there"}, how can I help you today?
+                </div>
+              </div>
+            )
           )}
 
           {guide && (
@@ -602,23 +626,27 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {!guide && !wellDone && messages.map((m, i) => (
-            <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
-              <div style={{
-                maxWidth: "85%",
-                background: m.role === "user" ? ACCENT : "#F0F0F0",
-                color: m.role === "user" ? "#FFFFFF" : "#000000",
-                borderRadius: 12, padding: "10px 14px",
-                fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
-                whiteSpace: "pre-wrap", wordBreak: "break-word",
-              }}>
-                {m.content}
-                {m.streaming && (
-                  <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? "#FFFFFF" : "#000000", marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
-                )}
+          {!guide && !wellDone && messages.map((m, i) => {
+            const userBg = v2 ? BEIGE : ACCENT;
+            const userColor = v2 ? TEAL : "#FFFFFF";
+            return (
+              <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+                <div style={{
+                  maxWidth: "85%",
+                  background: m.role === "user" ? userBg : aiBubbleBg,
+                  color: m.role === "user" ? userColor : aiBubbleText,
+                  borderRadius: 12, padding: "10px 14px",
+                  fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
+                  whiteSpace: "pre-wrap", wordBreak: "break-word",
+                }}>
+                  {m.content}
+                  {m.streaming && (
+                    <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? userColor : aiBubbleText, marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {sending && !guide && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#666", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14 }}>
               <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
@@ -627,66 +655,81 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* Sticky bottom: mic box + transcript/input box, then quick actions */}
-        <div style={{ flexShrink: 0, padding: 16, borderTop: "1px solid #444444", background: "#565656", display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{
+          flexShrink: 0, padding: 16,
+          borderTop: v2 ? "1px solid #E5E5E5" : "1px solid #444444",
+          background: v2 ? "#FFFFFF" : "#565656",
+          display: "flex", flexDirection: "column", gap: 12,
+        }}>
           <div style={{ display: "flex", gap: 12, height: 180 }}>
             <button type="button"
               onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
               disabled={sending || recorder.status === "transcribing"}
               style={{
-                width: "35%", height: "100%", background: "#000000", borderRadius: 8, padding: 16,
-                border: "none", cursor: sending ? "not-allowed" : "pointer",
+                width: "35%", height: "100%",
+                background: "#FFFFFF",
+                borderRadius: v2 ? 12 : 8, padding: 16,
+                border: v2 ? "1px solid #E5E5E5" : "1px solid transparent",
+                cursor: sending ? "not-allowed" : "pointer",
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8,
               }}>
               <div style={{
                 width: 120, height: 120, aspectRatio: "1 / 1", flexShrink: 0,
                 borderRadius: "50%", background: "#FFFFFF",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                border: recorder.status === "recording" ? "2px solid #FFFFFF" : "2px solid transparent",
-                animation: recorder.status === "recording" ? "ttt-big-pulse 0.8s infinite" : undefined,
+                border: v2
+                  ? `4px solid ${ACCENT}`
+                  : (recorder.status === "recording" ? "2px solid #FFFFFF" : "2px solid transparent"),
+                animation: recorder.status === "recording" ? (v2 ? "ttt-pulse 0.8s infinite" : "ttt-big-pulse 0.8s infinite") : undefined,
               }}>
                 {recorder.status === "transcribing"
-                  ? <Loader2 size={64} color="#000000" style={{ animation: "spin 1s linear infinite" }} />
-                  : <Mic size={80} color="#000000" strokeWidth={2} />}
+                  ? <Loader2 size={64} color={v2 ? TEAL : "#000000"} style={{ animation: "spin 1s linear infinite" }} />
+                  : <Mic size={v2 ? 60 : 80} color={v2 ? TEAL : "#000000"} strokeWidth={2} />}
               </div>
               <div style={{
-                fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
-                color: recorder.status === "recording" ? "#FF3B30" : "#FFFFFF",
+                fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
+                color: recorder.status === "recording" ? "#FF3B30" : (v2 ? TEAL : "#FFFFFF"),
                 textAlign: "center",
               }}>
                 {recorder.status === "recording" ? "Tap to finish talking"
                   : recorder.status === "transcribing" ? "Transcribing…"
-                  : "Tap to Talk"}
+                  : "Tap to Ask a Question"}
               </div>
             </button>
 
 
             <div style={{
               width: "65%", height: "100%", position: "relative",
-              background: "#FFFFFF", border: "2px solid #000000", borderRadius: 8,
+              background: "#FFFFFF",
+              border: v2 ? "1px solid #E5E5E5" : "2px solid #000000",
+              borderRadius: v2 ? 12 : 8,
             }}>
               <textarea
                 value={recorder.status === "recording" ? "" : text}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
-                placeholder={recorder.status === "recording" ? "Listening…" : "As you speak, text will show here"}
+                placeholder={recorder.status === "recording" ? "Listening…" : "As the user speaks, text should appear here."}
                 disabled={sending || recorder.status === "transcribing" || recorder.status === "recording"}
                 style={{
                   width: "100%", height: "100%", boxSizing: "border-box",
                   padding: "12px 66px 12px 12px", border: "none", outline: "none", resize: "none",
                   background: "transparent",
-                  fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#000000",
+                  fontFamily: "Inter, system-ui, sans-serif", fontSize: 14,
+                  color: v2 ? TEAL : "#000000",
                   fontStyle: text ? "normal" : "italic",
                 }} />
               <button type="button" onClick={submit} disabled={sendDisabled} aria-label="Send"
                 style={{
-                  position: "absolute", right: 6, bottom: 6,
-                  width: 48, height: 48, borderRadius: "50%",
-                  background: sendDisabled ? "#B5D4A3" : ACCENT,
-                  border: "none", cursor: sendDisabled ? "not-allowed" : "pointer",
+                  position: "absolute", right: 8, bottom: 8,
+                  width: v2 ? 40 : 48, height: v2 ? 40 : 48,
+                  borderRadius: v2 ? 8 : "50%",
+                  background: v2 ? "#F0F0F0" : (sendDisabled ? "#B5D4A3" : ACCENT),
+                  border: v2 ? "1px solid #E5E5E5" : "none",
+                  cursor: sendDisabled ? "not-allowed" : "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   opacity: sendDisabled ? 0.6 : 1, transition: "background 0.2s",
                 }}>
-                <Send size={24} color="#FFFFFF" />
+                <Send size={v2 ? 20 : 24} color={v2 ? "#888888" : "#FFFFFF"} style={v2 ? { transform: "rotate(-90deg)" } : undefined} />
               </button>
 
             </div>
@@ -698,15 +741,20 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
                 <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
                   style={{
                     flex: 1, height: 52, display: "inline-flex", alignItems: "center", gap: 10,
-                    background: "#F0F0F0", color: "#000000", border: "1px solid #D0D0D0",
-                    borderRadius: 8, padding: "0 12px",
-                    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
+                    background: v2 ? BEIGE : "#F0F0F0",
+                    color: v2 ? TEAL : "#000000",
+                    border: v2 ? "1px solid #E5E5E5" : "1px solid #D0D0D0",
+                    borderRadius: v2 ? 12 : 8, padding: "0 16px",
+                    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
                     cursor: sending ? "not-allowed" : "pointer",
                     opacity: sending ? 0.5 : 1, textAlign: "left", overflow: "hidden",
                   }}>
                   {s.photo
                     ? <img src={s.photo} alt="" style={{ width: 20, height: 20, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-                    : <span style={{ display: "inline-flex", flexShrink: 0 }}>{s.icon}</span>}
+                    : <span style={{ display: "inline-flex", flexShrink: 0 }}>
+                        {/* Re-color icon for v2 */}
+                        {v2 ? <span style={{ color: TEAL, display: "inline-flex" }}>{s.icon}</span> : s.icon}
+                      </span>}
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
                 </button>
 
