@@ -223,18 +223,6 @@ function ElderHome() {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src={whiteLogo} alt="" width={24} height={24} style={{ display: "block" }} />
           <h1 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: v2 ? 24 : 20, color: "#FFFFFF", margin: 0, textShadow: headerTextShadow }}>
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "12px 16px",
-          marginBottom: 16,
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src={whiteLogo} alt="" width={24} height={24} style={{ display: "block" }} />
-          <h1 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 20, color: "#FFFFFF", margin: 0 }}>
             {greet}, {elder.name || "Albert"}
           </h1>
         </div>
