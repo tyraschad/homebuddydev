@@ -216,7 +216,9 @@ function ElderHome() {
         position: "relative",
       }}
     >
+      {v2 && <TimeBackground />}
       <header
+
         style={{
           display: "flex",
           alignItems: "center",
