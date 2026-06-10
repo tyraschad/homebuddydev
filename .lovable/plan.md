@@ -1,70 +1,40 @@
-# Elder Screen — WCAG v3 Layout Redesign
+# Fix Tap-to-Talk button (Elder Chat)
 
-Rebuild the visual shell of `/elder` while keeping all existing behavior intact (clock, reminder announcements, TalkToText popup, phone call overlay).
+Scope: `src/components/TalkToTextPopup.tsx` mic button and `src/lib/use-voice-recorder.ts`. V2 visuals stay as-is. No backend changes.
 
-## 1. Page shell
+## 1. V1 button styling
 
-- Page background: `#8F8F8F` (replace current themed bg on this route only — settings theme stays for other screens).
-- Outer padding: 16px margins around the grid.
-- Layout: CSS grid, 2 equal columns (50/50) below the header. Stacks to 1 column under ~720px.
+Today (lines ~687–708): circle background `#FFFFFF` with a transparent border, mic icon `#000000`, label color `#FFFFFF`. On the white card background the circle disappears and the label is invisible — that's the "white on white" the user is seeing.
 
-## 2. Header (full width, on gray bg)
+Change V1 (when `!v2`) only:
+- Circle: `background: #000000`, no border (or `2px solid #000000`).
+- Mic icon: `color: #FFFFFF`.
+- Recording-state ring: keep the pulsing animation; use a white inner ring on the black circle.
+- Label text: `color: #000000`, `fontFamily: Inter`, `fontWeight: 700`, keep size 14. Recording state stays red (`#FF3B30`).
+- Outer button card: keep white background so the black circle reads as a strong target.
 
-- Left cluster: white SVG logo (use the uploaded `WhiteSVGLogo.svg`, 24px) + 12px gap + "Good {Morning|Afternoon|Evening}, {elder.name}" — white, bold Inter.
-- Right cluster: "Settings" white bold Inter + 12px gap + gear icon (28px white). Wraps in `<Link to="/carer/settings">`.
-- Padding: 16px left/right, 12px top/bottom.
-- Add the logo file at `src/assets/white-logo.svg` (copied from upload) and import.
+V2 styling (white circle + teal border + teal mic + teal label) is unchanged.
 
-## 3. Left column
+## 2. Tap-to-talk not firing
 
-**Clock card** (top): white bg, existing date + time content/styling preserved (Georgia/Newsreader bold), wrapped in a new white card frame matching the new card style (1px light gray border, 4px radius, 16px padding).
+The click handler calls `void recorder.start()` which awaits `getUserMedia` then constructs `MediaRecorder`. On some browsers the gesture context is lost across the await, and any failure is swallowed because the UI never surfaces `recorder.error` — the button just looks dead.
 
-**Ask a Question card** (below clock):
-- White bg, 1px `#D0D0D0` border, 4px radius, 16px padding, centered content.
-- 150px circular button, white bg, 2px black border, black mic icon ~80px, centered.
-- Label below: "Tap to Ask a Question", 16px black bold Inter, 16px top padding.
-- Click opens existing `TalkToTextPopup` (sets `overlay = "chat"`).
-- Remove the old large mic button block from current layout.
+Fixes:
+- Surface `recorder.error` in the label area so a permission denial or unsupported-browser error is visible instead of silently reverting to "Tap to Ask a Question".
+- In `useVoiceRecorder.start`, call `navigator.mediaDevices.getUserMedia(...)` as the first synchronous statement of the click-driven path (already is), and construct `MediaRecorder` immediately after the awaited stream resolves — no extra awaits in between. Set `status` to a transient `"starting"`/keep `"idle"` until the recorder actually starts so a second tap during permission prompt can't double-fire.
+- Guard against double-start: if `status === "recording"` or a stream is already live, ignore subsequent `start()` calls.
+- On `NotAllowedError` / `NotFoundError` / `SecurityError`, set a specific error message and keep button enabled so the user can retry.
+- Confirm the button is not being blocked by `disabled` at idle (it isn't today, but verify after the status change above).
 
-## 4. Right column — Today's Reminders
+## 3. Verification
 
-White card (same border/radius/padding as above).
+- V1: black circle, white mic, black bold Inter "Tap to Ask a Question" label, visible on white card.
+- V2: unchanged visuals.
+- Click mic → browser permission prompt appears → status flips to recording → tap again stops and transcribes.
+- Deny permission → red error label appears under the mic, button still tappable to retry.
 
-- Header: "Today's Reminders" 18px black bold Inter, 12px bottom padding.
-- Build today's list from `reminders` filtered by repeat schedule + `oneTimeDate`, expanded per `times[]`, sorted ascending.
-- Vertical 2px `#D0D0D0` timeline line on the left of the list; each row indents past it with an icon node.
+## Technical notes
 
-Row variants:
-- **Completed** (time already passed): strikethrough, `#6B6860`, 0.6 opacity, 14px Inter. Format `[icon] 8:00 AM — Aspirin`.
-- **Next upcoming** (first future row): black 1px border box, 4px radius, 12px/16px padding. Bold black 16px name; second line: gray 14px `H:MM AM — in X hour/min` countdown computed from `now`.
-- **Other upcoming**: black 16px Inter (not bold), gray 14px time. No border.
-
-Icon mapping (20px, 8px gap, left of name) — reuse the existing per-type icon mapping from carer portal:
-- medication → Pill, appointment → CalendarDays, activity → PersonStanding (walking), other → Circle.
-
-Overflow handling:
-- If completed rows exist and total list overflows card height, hide completed by default behind a collapsible `Completed Today (X) ▾` header (chevron toggles). Upcoming always visible.
-- Card body scrolls internally if upcoming list itself exceeds a max height.
-
-## 5. Phone button
-
-Unchanged: 64px green circle, white phone icon 36px, fixed bottom-right 24px margins. Opens existing call overlay.
-
-## 6. Typography & colors (this route only)
-
-- Headers/labels on gray bg: white bold Inter.
-- Card body text: black Inter; secondary/completed: `#6B6860`.
-- Spec says "Headers: Bold Newsreader" but also "bold inter" — I'll use **bold Inter** for header text (matches the repeated "bold inter" lines and current font availability). The clock keeps Georgia/Newsreader as today.
-
-## 7. Files
-
-- Edit: `src/routes/elder.tsx` (full layout rewrite; keep announcement scheduler, overlay state, TalkToTextPopup, call overlay logic).
-- Add: `src/assets/white-logo.svg` (from the uploaded `WhiteSVGLogo.svg`).
-- No changes to carer store, settings, or other routes.
-
-## Out of scope
-
-- No changes to TalkToTextPopup internals, reminder data model, or carer screens.
-- Dark/light theme toggle won't affect this route's gray background (route-scoped override). Say the word if you want it theme-aware instead.
-
-Approve to build.
+- Only the mic `<button>` block (`TalkToTextPopup.tsx` ~676–709) and `useVoiceRecorder.ts` change.
+- No new dependencies; uses existing `MediaRecorder` + `transcribe` server fn.
+- Keep the existing `ttt-pulse` / `ttt-big-pulse` keyframes; just swap the ring color for V1.

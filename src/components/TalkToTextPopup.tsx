@@ -686,23 +686,27 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
               }}>
               <div style={{
                 width: 120, height: 120, aspectRatio: "1 / 1", flexShrink: 0,
-                borderRadius: "50%", background: "#FFFFFF",
+                borderRadius: "50%",
+                background: v2 ? "#FFFFFF" : "#000000",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 border: v2
                   ? `4px solid ${ACCENT}`
-                  : (recorder.status === "recording" ? "2px solid #FFFFFF" : "2px solid transparent"),
+                  : (recorder.status === "recording" ? "3px solid #FFFFFF" : "2px solid #000000"),
                 animation: recorder.status === "recording" ? (v2 ? "ttt-pulse 0.8s infinite" : "ttt-big-pulse 0.8s infinite") : undefined,
               }}>
                 {recorder.status === "transcribing"
-                  ? <Loader2 size={64} color={v2 ? TEAL : "#000000"} style={{ animation: "spin 1s linear infinite" }} />
-                  : <Mic size={v2 ? 60 : 80} color={v2 ? TEAL : "#000000"} strokeWidth={2} />}
+                  ? <Loader2 size={64} color={v2 ? TEAL : "#FFFFFF"} style={{ animation: "spin 1s linear infinite" }} />
+                  : <Mic size={v2 ? 60 : 80} color={v2 ? TEAL : "#FFFFFF"} strokeWidth={2} />}
               </div>
               <div style={{
                 fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
-                color: recorder.status === "recording" ? "#FF3B30" : (v2 ? TEAL : "#FFFFFF"),
+                color: recorder.error ? "#FF3B30"
+                  : recorder.status === "recording" ? "#FF3B30"
+                  : (v2 ? TEAL : "#000000"),
                 textAlign: "center",
               }}>
-                {recorder.status === "recording" ? "Tap to finish talking"
+                {recorder.error ? recorder.error
+                  : recorder.status === "recording" ? "Tap to finish talking"
                   : recorder.status === "transcribing" ? "Transcribing…"
                   : "Tap to Ask a Question"}
               </div>
