@@ -571,7 +571,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          {!guide && suggestions.length > 0 && (
+          {suggestions.length > 0 && (
             <div style={{ display: "flex", gap: 12 }}>
               {suggestions.slice(0, 3).map((s) => (
                 <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
