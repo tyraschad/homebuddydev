@@ -88,7 +88,7 @@ function ElderHome() {
   const cardTextBlack = v2 ? "#1B5E5E" : "#000000";
   const headerTextShadow = v2 ? "0 2px 4px rgba(0,0,0,0.3)" : "none";
   const micBorderColor = v2 ? "#6BA24A" : "#000000";
-  const micIconColor = v2 ? "#1B5E5E" : "#000000";
+  const micIconColor = v2 ? "#1B5E5E" : "#FFFFFF";
   const micSize = v2 ? 150 : 120;
   const micIconPx = v2 ? 80 : 80;
   const nextBorderV = v2 ? "1px solid #1B5E5E" : "1px solid #000000";
@@ -303,7 +303,7 @@ function ElderHome() {
                 aspectRatio: "1 / 1",
                 flexShrink: 0,
                 borderRadius: "50%",
-                background: "#FFFFFF",
+                background: v2 ? "#FFFFFF" : "#000000",
                 border: `2px solid ${micBorderColor}`,
                 display: "flex",
                 alignItems: "center",
@@ -312,7 +312,7 @@ function ElderHome() {
             >
               <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
             </div>
-            <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 16, color: micIconColor, textAlign: "center", paddingTop: 16 }}>
+            <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 16, color: cardTextBlack, textAlign: "center", paddingTop: 16 }}>
               Tap to Ask a Question
             </div>
           </button>
