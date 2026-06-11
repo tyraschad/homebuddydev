@@ -45,7 +45,7 @@ function ordinalSuffix(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 function formatDateDay(d: Date) {
-  const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
+  const dayName = d.toLocaleDateString("en-US", { weekday: "short" });
   const monthName = d.toLocaleDateString("en-US", { month: "long" });
   return `${dayName}, ${monthName} ${ordinalSuffix(d.getDate())}`;
 }
