@@ -316,7 +316,7 @@ function ElderHome() {
             type="button"
             onClick={() => setOverlay("chat")}
             style={{
-              background: "#000000",
+              background: cardBg,
               border: cardBorderStyle,
               borderRadius: cardRadius,
               padding: 16,
@@ -339,7 +339,7 @@ function ElderHome() {
                 aspectRatio: "1 / 1",
                 flexShrink: 0,
                 borderRadius: "50%",
-                background: v2 ? "##FFFFFF" : "#000000",
+                background: v2 ? "#FFFFFF" : "#000000",
                 border: `2px solid ${micBorderColor}`,
                 display: "flex",
                 alignItems: "center",
