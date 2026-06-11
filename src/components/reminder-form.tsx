@@ -29,23 +29,21 @@ export function iconForType(type: ReminderType, size = 18, color = "currentColor
   }
 }
 
-export function ModalShell({ children, onClose, width = 500 }: { children: React.ReactNode; onClose: () => void; width?: number }) {
+export function ModalShell({ children, onClose, width = 720 }: { children: React.ReactNode; onClose: () => void; width?: number }) {
+  const { theme, cardBorder } = useSettings();
   return (
     <div onClick={onClose} style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 50,
       display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
     }}>
       <div onClick={(e) => e.stopPropagation()} style={{
-        background: "#FFFFFF", color: "#333333",
-        border: "1px solid #D0D0D0", borderRadius: 12,
-        width: "90%", maxWidth: width, maxHeight: "90vh", overflowY: "auto",
-        padding: 20, position: "relative",
-        boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
-        fontFamily: "Inter, system-ui, sans-serif", lineHeight: 1.6,
+        background: theme.card, color: theme.text, border: cardBorder, borderRadius: 8,
+        width: "90%", maxWidth: width, maxHeight: "90vh", overflowY: "auto", padding: 24, position: "relative",
+        fontFamily: "Verdana, sans-serif", lineHeight: 1.5,
       }}>
         <button onClick={onClose} aria-label="Close" style={{
           position: "absolute", top: 12, right: 12, background: "transparent", border: "none",
-          color: "#333333", cursor: "pointer", padding: 6,
+          color: theme.text, cursor: "pointer", padding: 6,
         }}><X size={22} /></button>
         {children}
       </div>
@@ -102,7 +100,7 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
   initial: Reminder; existing: boolean;
   onClose: () => void; onSave: (r: Reminder) => void; onDelete?: (r: Reminder) => void;
 }) {
-  const { theme, buttonBorder, appearance } = useSettings();
+  const { theme, buttonBorder } = useSettings();
   const [r, setR] = useState<Reminder>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDoseWarn, setShowDoseWarn] = useState(false);
@@ -113,7 +111,7 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
     : r.type === "appointment" ? "e.g., Doctor appointment, Dentist"
     : r.type === "activity" ? "e.g., Morning walk, Call Sarah"
     : "e.g., Aspirin, Eye drops, Doctor appointment";
-  const isDark = appearance === "dark";
+  const isDark = theme.bg === "#2A2A3E" || theme.bg.toLowerCase().includes("2a2a");
   const inputBorderDefault = isDark ? "#5A5A6E" : "#D0D0D0";
   const inputBg = isDark ? theme.card : "#FFFFFF";
   const nameHasError = !!errors.name;
