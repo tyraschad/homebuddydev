@@ -1,6 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings, Mic, Phone, X, Pill, CalendarDays, PersonStanding, Circle, ChevronDown, ChevronRight } from "lucide-react";
+import {
+  Settings,
+  Mic,
+  Phone,
+  X,
+  Pill,
+  CalendarDays,
+  PersonStanding,
+  Circle,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib/carer-store";
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
@@ -19,14 +30,10 @@ function ReminderIcon({ type, size = 20, color = "#1A1A2E" }: { type: ReminderTy
   return <Circle {...props} />;
 }
 
-
 export const Route = createFileRoute("/elder")({
   component: ElderHome,
   head: () => ({
-    meta: [
-      { title: "Albert's Home" },
-      { name: "description", content: "Albert's simple home screen." },
-    ],
+    meta: [{ title: "Albert's Home" }, { name: "description", content: "Albert's simple home screen." }],
   }),
 });
 
@@ -71,15 +78,12 @@ function buildAnnouncement(name: string, reminderName: string, offsetMin: number
   return `Hi ${name}, you have ${reminderName} in ${offsetMin} minutes, at ${timeStr}.`;
 }
 
-
 function ElderHome() {
   const { theme, appearance, textSize, announcementsEnabled, highContrast } = useSettings();
   const v2 = !highContrast;
 
   // V2 design tokens
-  const pageBg = v2
-    ? "linear-gradient(to bottom, #4A7C59 0%, #A8D5BA 100%)"
-    : PAGE_BG;
+  const pageBg = v2 ? "linear-gradient(to bottom, #4A7C59 0%, #A8D5BA 100%)" : PAGE_BG;
   const cardBg = v2 ? "rgba(255,255,255,0.85)" : "#FFFFFF";
   const cardBorderStyle = v2 ? "1px solid #D0E8D0" : CARD_BORDER;
   const cardRadius = v2 ? 16 : 4;
@@ -135,8 +139,6 @@ function ElderHome() {
     });
   }, [now, reminders, announcementsEnabled, elder.name]);
 
-
-
   const dateDayStr = now ? formatDateDay(now) : "";
   const timeStr = now ? formatTime(now) : "";
   const greet = now ? greeting(now) : "Hello";
@@ -146,7 +148,13 @@ function ElderHome() {
 
   const items = useMemo(() => {
     const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
-    const list: { key: string; time: string; reminder: typeof reminders[number]; completed: boolean; minutes: number }[] = [];
+    const list: {
+      key: string;
+      time: string;
+      reminder: (typeof reminders)[number];
+      completed: boolean;
+      minutes: number;
+    }[] = [];
     reminders.forEach((r) => {
       r.times.forEach((t) => {
         const min = toMinutes(t);
@@ -186,7 +194,7 @@ function ElderHome() {
     return diff > 0 ? `in ${txt}` : `${txt} ago`;
   }
 
-  function frequencyLabel(r: typeof reminders[number]) {
+  function frequencyLabel(r: (typeof reminders)[number]) {
     if (r.repeatSchedule) return r.repeatSchedule;
     return r.repeats ? "Repeats" : "Does not repeat";
   }
@@ -222,7 +230,16 @@ function ElderHome() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src={whiteLogo} alt="" width={24} height={24} style={{ display: "block" }} />
-          <h1 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: v2 ? 24 : 20, color: "#FFFFFF", margin: 0, textShadow: headerTextShadow }}>
+          <h1
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontWeight: 700,
+              fontSize: v2 ? 24 : 20,
+              color: "#FFFFFF",
+              margin: 0,
+              textShadow: headerTextShadow,
+            }}
+          >
             {greet}, {elder.name || "Albert"}
           </h1>
         </div>
@@ -267,10 +284,29 @@ function ElderHome() {
               boxShadow: cardShadow,
             }}
           >
-            <div data-readable="true" style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line1Size, color: cardText, lineHeight: 1.3, marginBottom: 8 }}>
+            <div
+              data-readable="true"
+              style={{
+                fontFamily: "Georgia, serif",
+                fontWeight: 700,
+                fontSize: line1Size,
+                color: cardText,
+                lineHeight: 1.3,
+                marginBottom: 8,
+              }}
+            >
               {dateDayStr}
             </div>
-            <div data-readable="true" style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: line2Size, color: cardText, lineHeight: 1.2 }}>
+            <div
+              data-readable="true"
+              style={{
+                fontFamily: "Georgia, serif",
+                fontWeight: 700,
+                fontSize: line2Size,
+                color: cardText,
+                lineHeight: 1.2,
+              }}
+            >
               {timeStr}
             </div>
           </div>
@@ -303,7 +339,7 @@ function ElderHome() {
                 aspectRatio: "1 / 1",
                 flexShrink: 0,
                 borderRadius: "50%",
-                background: v2 ? "#FFFFFF" : "#000000",
+                background: v2 ? "##000000" : "#000000",
                 border: `2px solid ${micBorderColor}`,
                 display: "flex",
                 alignItems: "center",
@@ -312,7 +348,16 @@ function ElderHome() {
             >
               <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
             </div>
-            <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 16, color: cardTextBlack, textAlign: "center", paddingTop: 16 }}>
+            <div
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 700,
+                fontSize: 16,
+                color: cardTextBlack,
+                textAlign: "center",
+                paddingTop: 16,
+              }}
+            >
               Tap to Ask a Question
             </div>
           </button>
@@ -333,14 +378,32 @@ function ElderHome() {
               boxShadow: cardShadow,
             }}
           >
-            <h2 data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 18, color: cardTextBlack, margin: 0, paddingBottom: 12 }}>
+            <h2
+              data-readable="true"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 700,
+                fontSize: 18,
+                color: cardTextBlack,
+                margin: 0,
+                paddingBottom: 12,
+              }}
+            >
               Today's Reminders
             </h2>
 
-
             <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
               {items.length === 0 ? (
-                <p data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: COMPLETED_COLOR, textAlign: "center", marginTop: 24 }}>
+                <p
+                  data-readable="true"
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: 14,
+                    color: COMPLETED_COLOR,
+                    textAlign: "center",
+                    marginTop: 24,
+                  }}
+                >
                   No reminders scheduled today
                 </p>
               ) : (
@@ -396,7 +459,9 @@ function ElderHome() {
                               }}
                             >
                               <ReminderIcon type={i.reminder.type} size={20} color={COMPLETED_COLOR} />
-                              <span data-readable="true">{formatTimeStr(i.time)} — {i.reminder.name}</span>
+                              <span data-readable="true">
+                                {formatTimeStr(i.time)} — {i.reminder.name}
+                              </span>
                             </button>
                           ))}
                         </div>
@@ -432,7 +497,9 @@ function ElderHome() {
                           >
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
-                              <span data-readable="true" style={{ fontSize: 16, fontWeight: 700 }}>{i.reminder.name}</span>
+                              <span data-readable="true" style={{ fontSize: 16, fontWeight: 700 }}>
+                                {i.reminder.name}
+                              </span>
                             </div>
                             <div data-readable="true" style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>
                               {timeText} — {rel}
@@ -460,9 +527,13 @@ function ElderHome() {
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
-                            <span data-readable="true" style={{ fontSize: 16 }}>{i.reminder.name}</span>
+                            <span data-readable="true" style={{ fontSize: 16 }}>
+                              {i.reminder.name}
+                            </span>
                           </div>
-                          <div data-readable="true" style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>{timeText}</div>
+                          <div data-readable="true" style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>
+                            {timeText}
+                          </div>
                         </button>
                       );
                     })}
@@ -547,11 +618,7 @@ function CompletedRow({ label, color }: { label: string; color: string }) {
 }
 
 function Column({ width, children }: { width: string; children: React.ReactNode }) {
-  return (
-    <div style={{ width, display: "flex", flexDirection: "column", gap: 16, overflow: "hidden" }}>
-      {children}
-    </div>
-  );
+  return <div style={{ width, display: "flex", flexDirection: "column", gap: 16, overflow: "hidden" }}>{children}</div>;
 }
 
 function CardBox({
@@ -657,7 +724,15 @@ function OverlayView({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <h2 style={{ margin: 0, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 20, color: theme.text }}>
+          <h2
+            style={{
+              margin: 0,
+              fontFamily: "'Trebuchet MS', sans-serif",
+              fontWeight: 700,
+              fontSize: 20,
+              color: theme.text,
+            }}
+          >
             {title}
           </h2>
           <button
@@ -680,7 +755,13 @@ const EMERGENCY_CONTACTS = [
   { id: "e2", name: "Poison Control", phone: "1-800-222-1222" },
 ];
 
-function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: string; text: string; border: string; overlay: string; muted: string } }) {
+function CallPopup({
+  onClose,
+  theme,
+}: {
+  onClose: () => void;
+  theme: { card: string; text: string; border: string; overlay: string; muted: string };
+}) {
   const { elder } = useCarer();
   const { cardBorder, appearance } = useSettings();
   const contacts = elder.contacts ?? [];
@@ -695,7 +776,9 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
   });
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
@@ -706,17 +789,31 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
       role="dialog"
       aria-modal="true"
       style={{
-        position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 16, zIndex: 2000, boxSizing: "border-box",
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+        zIndex: 2000,
+        boxSizing: "border-box",
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: theme.card, border: cardBorder, borderRadius: 8, padding: 24,
-          width: "90%", maxWidth: 500, maxHeight: "90vh",
-          display: "flex", flexDirection: "column", boxSizing: "border-box", color: theme.text,
+          background: theme.card,
+          border: cardBorder,
+          borderRadius: 8,
+          padding: 24,
+          width: "90%",
+          maxWidth: 500,
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          boxSizing: "border-box",
+          color: theme.text,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -724,7 +821,9 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
             Make a Call
           </h2>
           <button
-            type="button" onClick={onClose} aria-label="Close"
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
             style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: theme.text }}
           >
             <X size={20} strokeWidth={1.5} color={theme.text} />
@@ -774,12 +873,7 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               {EMERGENCY_CONTACTS.map((c) => (
-                <EmergencyRow
-                  key={c.id}
-                  name={c.name}
-                  phone={c.phone}
-                  isDark={isDark}
-                />
+                <EmergencyRow key={c.id} name={c.name} phone={c.phone} isDark={isDark} />
               ))}
             </div>
           </div>
@@ -789,17 +883,36 @@ function CallPopup({ onClose, theme }: { onClose: () => void; theme: { card: str
   );
 }
 
-function ContactRow({ name, phone, theme, separator }: { name: string; phone: string; theme: { text: string; muted: string }; separator: string }) {
+function ContactRow({
+  name,
+  phone,
+  theme,
+  separator,
+}: {
+  name: string;
+  phone: string;
+  theme: { text: string; muted: string };
+  separator: string;
+}) {
   return (
     <a
       href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
       style={{
-        display: "flex", flexDirection: "column", padding: 12,
-        borderBottom: `1px solid ${separator}`, textDecoration: "none", color: "inherit", cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        padding: 12,
+        borderBottom: `1px solid ${separator}`,
+        textDecoration: "none",
+        color: "inherit",
+        cursor: "pointer",
         transition: "background 0.15s",
       }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "#F5F5F5"; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "#F5F5F5";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "transparent";
+      }}
     >
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>{name}</div>
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>{phone}</div>
@@ -815,12 +928,21 @@ function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; is
     <a
       href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
       style={{
-        display: "flex", flexDirection: "column", padding: 12,
-        borderBottom: `1px solid ${separator}`, textDecoration: "none", color: "inherit", cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        padding: 12,
+        borderBottom: `1px solid ${separator}`,
+        textDecoration: "none",
+        color: "inherit",
+        cursor: "pointer",
         transition: "background 0.15s",
       }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = isDark ? "#D32F2F" : "#FFB3B3"; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.background = isDark ? "#D32F2F" : "#FFB3B3";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.background = "transparent";
+      }}
     >
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: textColor }}>{name}</div>
       <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: phoneColor, marginTop: 2 }}>{phone}</div>
@@ -829,7 +951,10 @@ function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; is
 }
 
 function ReminderDetailsPopup({
-  onClose, reminder, time, frequency,
+  onClose,
+  reminder,
+  time,
+  frequency,
 }: {
   onClose: () => void;
   reminder: { name: string; details?: string; notes?: string; photo?: string; dose?: number; type: ReminderType };
@@ -840,16 +965,17 @@ function ReminderDetailsPopup({
   const { highContrast } = useSettings();
   const v2 = !highContrast;
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
   const timeStr = formatTimeStr(time);
-  const detailsText = [
-    reminder.dose ? `${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}` : null,
-    reminder.details,
-  ].filter(Boolean).join(" — ");
+  const detailsText = [reminder.dose ? `${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}` : null, reminder.details]
+    .filter(Boolean)
+    .join(" — ");
 
   const textColor = v2 ? "#1B5E5E" : "#000000";
   const iconColor = v2 ? "#1B5E5E" : "#000000";
@@ -863,21 +989,44 @@ function ReminderDetailsPopup({
       role="dialog"
       aria-modal="true"
       style={{
-        position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 16, zIndex: 2000, boxSizing: "border-box",
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
+        zIndex: 2000,
+        boxSizing: "border-box",
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#FFFFFF", border: containerBorder, borderRadius: 8, padding: 20,
-          width: "90%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto",
-          display: "flex", flexDirection: "column", boxSizing: "border-box",
-          color: textColor, boxShadow: containerShadow,
+          background: "#FFFFFF",
+          border: containerBorder,
+          borderRadius: 8,
+          padding: 20,
+          width: "90%",
+          maxWidth: 600,
+          maxHeight: "90vh",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          boxSizing: "border-box",
+          color: textColor,
+          boxShadow: containerShadow,
         }}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 12,
+            marginBottom: 8,
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 12 }}>
             <ReminderIcon type={reminder.type} size={24} color={iconColor} />
             <h2 style={{ margin: 0, fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 24, color: textColor }}>
@@ -885,7 +1034,9 @@ function ReminderDetailsPopup({
             </h2>
           </div>
           <button
-            type="button" onClick={onClose} aria-label="Close"
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
             style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, color: iconColor }}
           >
             <X size={24} strokeWidth={2} color={iconColor} />
@@ -909,22 +1060,37 @@ function ReminderDetailsPopup({
         )}
 
         {reminder.notes && (
-          <div style={{
-            fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor,
-            background: notesBg, borderRadius: 4, padding: 12, marginTop: 12,
-          }}>
+          <div
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontSize: 16,
+              color: textColor,
+              background: notesBg,
+              borderRadius: 4,
+              padding: 12,
+              marginTop: 12,
+            }}
+          >
             {reminder.notes}
           </div>
         )}
 
         {reminder.photo && (
           <div style={{ marginTop: 16 }}>
-            <img src={reminder.photo} alt={reminder.name}
-              style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 4, border: `1px solid ${v2 ? "#A8D5BA" : "#D0D0D0"}` }} />
+            <img
+              src={reminder.photo}
+              alt={reminder.name}
+              style={{
+                width: 100,
+                height: 100,
+                objectFit: "cover",
+                borderRadius: 4,
+                border: `1px solid ${v2 ? "#A8D5BA" : "#D0D0D0"}`,
+              }}
+            />
           </div>
         )}
       </div>
     </div>
   );
 }
-
