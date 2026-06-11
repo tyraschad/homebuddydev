@@ -278,10 +278,12 @@ function CarerPortal() {
 
       {/* INSTRUCTION CONTEXT CARD */}
       <section ref={icRef} style={whiteCard}>
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => setIcOpen((v) => !v)}
-          style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, width: "100%" }}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setIcOpen((v) => !v); } }}
+          style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16, width: "100%" }}
         >
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Georgia, serif", color: theme.text }}>Instruction Context</div>
@@ -300,7 +302,7 @@ function CarerPortal() {
             ><Edit size={16} /></button>
           )}
           {icOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
-        </button>
+        </div>
 
         {icOpen && (
           <div style={{ marginTop: 16 }}>
