@@ -46,7 +46,7 @@ function InlineMicButton({ status, error, onStart, onStop, onReset, disabled }: 
     else if (!isBusy) onStart();
   };
   const label = error || (isRec ? "Tap to stop" : isBusy ? "Transcribing…" : "Click to talk");
-  const labelColor = isRec ? "#DC2626" : "#888888";
+  const labelColor = isRec ? "#DC2626" : "#000000";
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
       <button type="button" onClick={handleClick} disabled={disabled || isBusy} aria-label={label}
@@ -54,14 +54,14 @@ function InlineMicButton({ status, error, onStart, onStop, onReset, disabled }: 
         onMouseLeave={() => setHovered(false)}
         style={{
           width: 48, height: 48, borderRadius: "50%",
-          background: hovered && !disabled && !isBusy && !isRec ? ACCENT_DARK : ACCENT,
-          border: isRec ? `2px solid ${ACCENT}` : "none",
+          background: "#000000",
+          border: isRec ? `2px solid #000000` : "none",
           cursor: disabled || isBusy ? "default" : "pointer",
           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           opacity: disabled ? 0.4 : 1,
           animation: isRec ? "ttt-pulse 0.8s infinite" : undefined,
           transition: "background 0.2s, box-shadow 0.2s",
-          boxShadow: hovered && !disabled && !isBusy && !isRec ? `0 2px 8px ${ACCENT}40` : "none",
+          boxShadow: hovered && !disabled && !isBusy && !isRec ? `0 2px 8px rgba(0,0,0,0.3)` : "none",
         }}>
         {isBusy
           ? <Loader2 size={24} color="#FFFFFF" style={{ animation: "spin 1s linear infinite" }} />
