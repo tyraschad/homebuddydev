@@ -9,8 +9,8 @@ const GREEN = "#2F8F4E";
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
 
-function defaultQuestions(name: string): string[] {
-  const n = name.toLowerCase();
+function defaultQuestions(nameOrType: string): string[] {
+  const n = nameOrType.toLowerCase();
   if (/remote|tv/.test(n)) return ["Change channel", "Turn up volume", "Find Netflix"];
   if (/phone/.test(n)) return ["Make a call", "Answer a call", "Save contact"];
   if (/microwave/.test(n)) return ["Heat up food", "Set the timer", "Stop it"];
