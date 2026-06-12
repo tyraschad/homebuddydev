@@ -147,31 +147,42 @@ export function DeviceListEditor({
                   <Camera size={20} color={theme.muted} />
                 </button>
               )}
-              
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, color: theme.muted, marginBottom: 4 }}>Device name</div>
-                <input
-                  style={inputStyle}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={analyzing ? "Identifying…" : "e.g., TV Remote"}
-                  disabled={analyzing}
-                />
+
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 12, color: theme.muted, marginBottom: 4 }}>Brand (optional)</div>
+                  <input style={inputStyle} value={brand} onChange={(e) => setBrand(e.target.value)} placeholder="e.g., Samsung" disabled={analyzing} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, color: theme.muted, marginBottom: 4 }}>Type</div>
+                  <input style={inputStyle} value={deviceType} onChange={(e) => setDeviceType(e.target.value)} placeholder="e.g., TV remote" disabled={analyzing} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, color: theme.muted, marginBottom: 4 }}>Device name</div>
+                  <input
+                    style={inputStyle}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={analyzing ? "Identifying…" : "Auto-filled after Generate"}
+                    disabled={analyzing}
+                  />
+                </div>
                 {photo && (
-                  <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ marginTop: 4, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     <button
                       type="button"
-                      onClick={() => photo && void runIdentify(photo)}
-                      disabled={analyzing}
+                      onClick={() => void runIdentify()}
+                      disabled={analyzing || !deviceType.trim()}
                       style={{
                         ...btnSecondary, height: 32, padding: "0 12px", fontSize: 13,
                         display: "inline-flex", alignItems: "center", gap: 6,
-                        opacity: analyzing ? 0.6 : 1, cursor: analyzing ? "not-allowed" : "pointer",
+                        opacity: analyzing || !deviceType.trim() ? 0.6 : 1,
+                        cursor: analyzing || !deviceType.trim() ? "not-allowed" : "pointer",
                       }}
-                      aria-label="Try identifying again"
+                      aria-label="Generate questions from photo"
                     >
                       {analyzing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-                      Try again
+                      {name ? "Re-identify" : "Generate questions"}
                     </button>
                     {analyzing && <span style={{ fontSize: 12, color: theme.muted }}>Identifying device…</span>}
                   </div>
