@@ -37,8 +37,12 @@ export const generateSteps = createServerFn({ method: "POST" })
     if (data.reminder) {
       ctx.push(`Reminder: ${data.reminder.name}${data.reminder.time ? ` at ${data.reminder.time}` : ""}${data.reminder.dose ? `, ${data.reminder.dose} pill(s)` : ""}${data.reminder.notes ? `. Notes: ${data.reminder.notes}` : ""}.`);
     }
-    const photoNote = data.device?.photo ? " The attached photo shows the device — use it to give accurate visual cues (button color, position, labels)." : "";
-    const userPrompt = `${ctx.join(" ")}\nUser request: "${data.query}"\nProduce 3-5 step-by-step instructions to help them. Each step 1-3 sentences.${photoNote}`;
+    const photoNote = data.device?.photo
+      ? " The attached photo shows the device. When referencing a button, name it EXACTLY as it appears in the photo (label, color, rough position — e.g. 'the SOURCE button, top-right, blue'). If you cannot read a label, describe its shape and position instead. Do NOT invent labels."
+      : "";
+    const checkpointNote =
+      " After any step that changes what's on screen or what the device shows, include a short verification cue starting with 'You should now see…' or 'You should now hear…' INSIDE the same step (one short sentence — do NOT add a separate confirmation step).";
+    const userPrompt = `${ctx.join(" ")}\nUser request: "${data.query}"\nProduce 3-5 step-by-step instructions to help them. Each step 1-3 sentences.${photoNote}${checkpointNote}`;
 
     const userContent: Array<Record<string, unknown>> = [{ type: "text", text: userPrompt }];
     if (data.device?.photo) {
