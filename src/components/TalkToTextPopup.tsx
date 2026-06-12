@@ -452,6 +452,25 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       return;
     }
 
+    // Continue an active clarify session
+    if (clarifyCtx) {
+      setSending(true);
+      try {
+        await runClarifyTurn({
+          device: clarifyCtx.device,
+          query: clarifyCtx.query,
+          history: [...clarifyCtx.history, { role: "user", content: query }],
+          turnCount: clarifyCtx.turnCount,
+        });
+      } catch (e) {
+        setClarifyCtx(null);
+        streamAssistant(e instanceof Error ? e.message : "Something went wrong");
+      } finally {
+        setSending(false);
+      }
+      return;
+    }
+
     // Continue an active reminder conversation
     if (reminderCtx) {
       setSending(true);
