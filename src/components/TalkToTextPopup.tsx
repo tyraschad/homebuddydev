@@ -563,8 +563,6 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     const reminder = matchReminder(query);
     if (device) { bumpDeviceAccess(device.id); setSending(false); return startGuide(query, device, null); }
     if (reminder) { setSending(false); return startReminderChat(reminder); }
-
-
     setSending(true);
     try {
       const { answer } = await callAnswer({
