@@ -555,10 +555,15 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       return;
     }
 
-    const device = matchDevice(query);
+    setSending(true);
+    let device: Device | null = null;
+    try {
+      device = await matchDevice(query);
+    } catch { /* fail soft */ }
     const reminder = matchReminder(query);
-    if (device) { bumpDeviceAccess(device.id); return startGuide(query, device, null); }
-    if (reminder) return startReminderChat(reminder);
+    if (device) { bumpDeviceAccess(device.id); setSending(false); return startGuide(query, device, null); }
+    if (reminder) { setSending(false); return startReminderChat(reminder); }
+
 
     setSending(true);
     try {
