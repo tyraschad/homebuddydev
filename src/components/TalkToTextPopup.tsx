@@ -202,6 +202,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const callAnswer = useServerFn(answerQuestion);
   const callSpeak = useServerFn(speak);
   const callReminderChat = useServerFn(reminderChat);
+  const callClarify = useServerFn(clarifyOrAnswer);
 
   const v2 = !highContrast;
   const TEAL = "#1B5E5E";
