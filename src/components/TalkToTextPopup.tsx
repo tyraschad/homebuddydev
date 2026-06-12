@@ -219,6 +219,13 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const [guide, setGuide] = useState<Guide | null>(null);
   const [wellDone, setWellDone] = useState<string | null>(null);
   const [reminderCtx, setReminderCtx] = useState<{ reminder: Reminder; stage: "intro" | "followup" } | null>(null);
+  const [clarifyCtx, setClarifyCtx] = useState<{
+    device: Device;
+    query: string;
+    history: { role: "user" | "assistant"; content: string }[];
+    turnCount: number;
+    quickReplies?: string[];
+  } | null>(null);
   const [sending, setSending] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [speaking, setSpeaking] = useState(false);
