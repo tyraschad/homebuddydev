@@ -1,87 +1,70 @@
-# Phase 1.5 — Device label + Phase 2 — Clarifying questions
+# Smarter device matching + more accurate steps
 
-Two stages. Stage A is a small adjustment to the existing photo flow. Stage B is the full Phase 2 build with the new "≥1 question unless the photo answers it" rule.
-
----
-
-## Stage A — Brand + Type label on device capture
-
-Goal: let the user tell us what the device is so image recognition gets it right (especially for unusual remotes/appliances), and so the AI has stronger context later. Same flow works in onboarding and Carer Portal because both use `DeviceListEditor`.
-
-### Data model
-- Extend `Device` (`src/lib/carer-store.tsx`) with optional `brand?: string` and `type?: string`. Keep existing `name` as the canonical display label (auto-filled by identify, editable). Migration-safe: both new fields optional, no breaking changes to existing devices.
-
-### Capture flow (`src/components/instruction-context-form.tsx`)
-New order:
-1. **Upload photo** (existing button).
-2. Photo preview appears with **two new inputs above the name field**:
-   - `Brand` (e.g. Samsung, LG, Panasonic) — optional
-   - `Type` (e.g. TV remote, microwave, landline) — required to enable Generate
-3. **Generate questions** button (replaces the auto-identify-on-upload behavior). Disabled until `Type` is filled.
-4. On click → calls `identifyDevice` with `{ dataUrl, brand, type }`. Response fills `name` and `questions` (uses `defaultQuestions(type)` if AI returns nothing useful).
-5. **Re-identify** button stays for retries; **Save device** writes `{ name, brand, type, photo, questions }`.
-
-Edge cases:
-- User skips photo entirely → still works (just type Brand/Type/Name manually, no AI call). Save remains enabled.
-- Editing an existing device → prefill brand/type if present.
-
-### Server fn (`src/lib/identify-device.functions.ts`)
-- Add `brand?: string` and `type?: string` to input validator.
-- Prepend hint to prompt when provided:
-  > "The user says this is a {brand} {type}. Use that as a strong hint; confirm or correct it based on the photo. Return the device name only."
-- Keep return shape `{ name }`.
-
-### Onboarding parity
-- No code changes needed in `src/routes/onboarding.tsx` — it already mounts `DeviceListEditor`, so brand/type capture comes free.
-- Carer Portal Instruction Context already uses the same component too.
+Two small, independent improvements. Both land in `talk.functions.ts` + the popup.
 
 ---
 
-## Stage B — Phase 2 clarifying questions (≥1 floor)
+## 1. Smarter device matching (keywords → AI fallback)
 
-Goal: before returning steps for any device question, the AI asks **at least one** grounding question (e.g. "What's on the TV right now?"). It may skip the question only when the attached photo already answers it (e.g. user asks "what does this button do?" + photo clearly shows the button).
+Today `matchDevice` in `TalkToTextPopup.tsx` only matches when the query contains the device's literal name or the first 8 chars of a saved question. "How do I change the input" never matches a "TV remote" device, so no photo and no device context get passed to the AI.
 
-### New server fn — `clarifyOrAnswer` in `src/lib/talk.functions.ts`
-- Input: existing `ContextInput` (now also carrying `brand`/`type` via device) plus `clarifyHistory: { role: "user" | "assistant"; content: string }[]` and `turnCount: number`.
-- Two-tool schema, `tool_choice: "auto"`:
-  - `ask_clarifying_question` → `{ question: string, quickReplies?: string[], expectsFreeText: boolean }`
-  - `return_steps` → `{ steps: string[] }`
-- System-prompt rules:
-  - **Minimum 1 clarifying question per session** unless the attached photo clearly answers the only thing you'd need to ask. If photo answers it, you may go straight to `return_steps`.
-  - Hard max: **2** questions (1 for cognitive/memory conditions).
-  - Chip vs free-text mode per question:
-    - Small known answer set (yes/no, on/off, channel, app) → 2-4 `quickReplies`, `expectsFreeText: false`.
-    - Open-ended (what they see, channel number, name) → omit chips, `expectsFreeText: true`.
-    - Always inject "Not sure" as a chip when chips are present.
-  - Use `brand`/`type` to tailor the question ("On your Samsung remote, do you see the SOURCE button?").
-- After `return_steps` is chosen, return `{ steps }` exactly like `generateSteps` does today, so the popup's step renderer keeps working unchanged.
+### Keyword pass (in-component, no AI call)
+Add a small keyword table keyed on the device's `type` field (now captured in Stage A) and `name` fallback:
 
-### UI (`src/components/TalkToTextPopup.tsx`)
-- Replace direct `generateSteps` call for device-flow questions with `clarifyOrAnswer`.
-- New state: `clarifyHistory` (cleared on close / restart / device switch), `turnCount`.
-- Render each AI question as an assistant chat bubble.
-- Below it:
-  - **Chip row** if `quickReplies` present — large tappable buttons, "Not sure" auto-added. Tapping a chip = same handler as typed/voice input.
-  - **Text + mic composer is always visible** (reuses existing `transcribe` fn for voice answers).
-- On user answer → append to `clarifyHistory`, increment `turnCount`, call `clarifyOrAnswer` again.
-- When response is `return_steps` → render steps with the existing step UI.
+```
+TV / remote     → tv, remote, channel, input, source, hdmi, volume, mute, netflix, youtube, prime, cable, antenna
+Phone           → phone, call, dial, answer, voicemail, contact, hang up
+Microwave       → microwave, heat, warm, reheat, timer, defrost, popcorn
+Thermostat      → thermostat, temperature, heat, cool, ac, warmer, cooler
+Stove / oven    → stove, oven, burner, bake, broil, preheat
+Washer/dryer    → washer, dryer, laundry, wash, spin, dry
+Lights / lamp   → light, lamp, brightness, dim
+```
 
-### Condition-aware tweaks
-- Low-vision: chip text size +2pt, higher contrast.
-- Cognitive/memory: cap at 1 question, simpler wording (prompt already adapts via `buildSystem`).
+For each device, build its keyword set from (type, name, saved questions). Score every device against the query; pick the highest scorer over a small threshold.
+
+### AI fallback (one cheap call)
+If no device scores above threshold AND the elder has ≥1 device with photo/questions, call a new lightweight server fn `routeDevice` (Gemini Flash, no image needed) with the query + the device list `[{id, name, brand, type}]`. It returns `{ deviceId: string | null }`. Cache the answer for the session so re-asking the same query doesn't re-route.
+
+### Wire-up
+- `matchDevice(query)` becomes async-friendly: keyword pass first (sync). If no hit and devices exist, await `routeDevice`. If still null, fall through to `answerQuestion` as today.
+- The matched device flows into `startGuide` exactly like before, so the instruction panel automatically shows `guide.device.photo` (already implemented).
 
 ---
 
-## Order & verification
+## 2. More accurate steps (photo-grounded + verification checkpoints)
 
-1. **Stage A first** — small, mechanical, isolated to one component + one server fn. Verify in onboarding and Carer Portal that brand/type capture and identify-with-hint both work.
-2. **Stage B next** — net-new server fn + popup branch + chip row. Verify:
-   - "How do I change the channel" with no photo → asks ≥1 question (likely "what channel are you on now?" with chips like NBC/CBS/Fox/Not sure), then asks for target channel via free text, then returns steps.
-   - Same question on a device with a clear photo → may skip straight to steps if photo answers it; otherwise still asks 1.
-   - Cognitive condition elder → max 1 question, simpler wording.
+Two prompt changes in `generateSteps` (and the `clarifyOrAnswer` `return_steps` branch):
+
+### A. Photo-grounded button names
+When `device.photo` is attached, add to the system/user prompt:
+
+> "Look at the attached photo. When you reference a button, name it EXACTLY as it appears on the device (label, color, and rough position — e.g. 'the SOURCE button, top-right, blue'). If you cannot read a label from the photo, describe its shape and position instead. Do NOT invent button labels."
+
+This is a prompt-only change; the photo is already passed.
+
+### B. "You should now see…" checkpoints
+Append to the steps instruction:
+
+> "After any step that changes what's on screen or what the device shows, include a short verification cue starting with 'You should now see…' or 'You should now hear…'. Keep it to one short sentence inside the same step (do NOT add a separate confirmation step)."
+
+This keeps step count the same (3-5) but each visually-changing step gains a built-in check.
+
+### Apply to both paths
+- `generateSteps` handler — add both rules to `userPrompt`.
+- `clarifyOrAnswer` system rules — same two bullets so the `return_steps` tool output uses them.
+- Also fold in the user's clarifying-question answers explicitly: the `clarifyHistory` already flows into the model, but add to the system prompt: *"Use the user's answers above to make the steps concrete (e.g. if they said channel 7, write 'press 7 then OK', not 'press the desired channel')."* — small nudge, big effect.
+
+---
+
+## Verification
+
+1. Ask "how do I change the input on the TV" on an elder whose only device is a "TV remote" (with photo). Expected: device matched via keywords, instruction panel shows the remote photo, steps reference real button labels visible in the photo (e.g. SOURCE, INPUT), and include "You should now see the input list on screen."
+2. Ask "what should I press to call mom" with a saved "Landline phone" + a contact. Expected: phone matched via AI fallback (no obvious keyword), photo shown, steps reference visible buttons.
+3. Ask "what's for dinner" → no device match, falls through to `answerQuestion` as today.
 
 ## Technical notes
-- No DB schema changes (devices live in local store today).
-- No new dependencies.
-- No new secrets — reuses `LOVABLE_API_KEY` and `GEMINI_API_KEY`.
-- `reminderChat` flow untouched.
+
+- New server fn `routeDevice` reuses `LOVABLE_API_KEY` + Gemini Flash, text-only, small JSON output. Cheap (~1 cent per 1000 calls).
+- No DB changes, no new secrets, no UI layout changes — the instruction panel already renders `guide.device.photo`.
+- Keep the existing `clarifyOrAnswer` `≥1 question` floor and 2-question cap.
