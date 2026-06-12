@@ -93,7 +93,13 @@ export const answerQuestion = createServerFn({ method: "POST" })
     const ctx: string[] = [];
     if (data.device) ctx.push(`Device available: ${data.device.name}.`);
     if (data.reminder) ctx.push(`Reminder: ${data.reminder.name}${data.reminder.time ? ` at ${data.reminder.time}` : ""}.`);
-    const userPrompt = `${ctx.join(" ")}\nQuestion: "${data.query}"\nGive ONE concise answer (1-3 sentences).`;
+    const photoNote = data.device?.photo ? " The attached photo shows the device — use it to ground your answer in what's visible." : "";
+    const userPrompt = `${ctx.join(" ")}\nQuestion: "${data.query}"\nGive ONE concise answer (1-3 sentences).${photoNote}`;
+
+    const userContent: Array<Record<string, unknown>> = [{ type: "text", text: userPrompt }];
+    if (data.device?.photo) {
+      userContent.push({ type: "image_url", image_url: { url: data.device.photo } });
+    }
 
     const res = await fetch(AI_URL, {
       method: "POST",
@@ -102,7 +108,7 @@ export const answerQuestion = createServerFn({ method: "POST" })
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: system },
-          { role: "user", content: userPrompt },
+          { role: "user", content: userContent },
         ],
       }),
     });
