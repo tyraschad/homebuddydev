@@ -207,11 +207,16 @@ export function DeviceListEditor({
               + Add question
             </button>
             <div style={{ display: "flex", gap: 8 }}>
-              <button type="button" onClick={save} disabled={!name.trim() || analyzing} style={{
-                ...btnPrimary,
-                background: name.trim() && !analyzing ? GREEN : "#9CC2A9",
-                cursor: name.trim() && !analyzing ? "pointer" : "not-allowed",
-              }}>{editingId ? "Update device" : "Save device"}</button>
+              {(() => {
+                const canSave = !!(name.trim() || (brand.trim() && deviceType.trim()) || deviceType.trim());
+                return (
+                  <button type="button" onClick={save} disabled={!canSave || analyzing} style={{
+                    ...btnPrimary,
+                    background: canSave && !analyzing ? GREEN : "#9CC2A9",
+                    cursor: canSave && !analyzing ? "pointer" : "not-allowed",
+                  }}>{editingId ? "Update device" : "Save device"}</button>
+                );
+              })()}
               <button type="button" onClick={reset} style={btnSecondary}>Cancel</button>
             </div>
 
