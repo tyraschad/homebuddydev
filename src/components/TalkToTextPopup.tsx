@@ -743,6 +743,27 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           background: v2 ? "#FFFFFF" : "#565656",
           display: "flex", flexDirection: "column", gap: 12,
         }}>
+          {clarifyCtx?.quickReplies && clarifyCtx.quickReplies.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {clarifyCtx.quickReplies.map((chip) => (
+                <button key={chip} type="button" disabled={sending}
+                  onClick={() => { void handleQuery(chip); }}
+                  style={{
+                    minHeight: 44, padding: "0 16px",
+                    background: v2 ? BEIGE : "#F0F0F0",
+                    color: v2 ? TEAL : "#000000",
+                    border: v2 ? `1px solid ${ACCENT}` : "1px solid #000000",
+                    borderRadius: 999,
+                    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700,
+                    fontSize: sizes.body >= 28 ? 17 : 15,
+                    cursor: sending ? "not-allowed" : "pointer",
+                    opacity: sending ? 0.6 : 1,
+                  }}>
+                  {chip}
+                </button>
+              ))}
+            </div>
+          )}
           <div style={{ display: "flex", gap: 12, height: 180 }}>
             <button type="button"
               onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
