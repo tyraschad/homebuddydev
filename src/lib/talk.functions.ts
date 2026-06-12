@@ -375,3 +375,65 @@ export const clarifyOrAnswer = createServerFn({ method: "POST" })
     const steps: string[] = Array.isArray(parsed.steps) ? parsed.steps.map((s: unknown) => String(s)).filter(Boolean) : [];
     return { kind: "steps", steps };
   });
+
+type RouteDeviceInput = {
+  query: string;
+  devices: { id: string; name: string; brand?: string; type?: string }[];
+};
+
+export const routeDevice = createServerFn({ method: "POST" })
+  .inputValidator((d: RouteDeviceInput) => d)
+  .handler(async ({ data }): Promise<{ deviceId: string | null }> => {
+    if (!data.devices.length) return { deviceId: null };
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("LOVABLE_API_KEY not configured");
+
+    const list = data.devices
+      .map((d, i) => `${i + 1}. id=${d.id} — ${[d.brand, d.type].filter(Boolean).join(" ")}${d.name ? ` ("${d.name}")` : ""}`)
+      .join("\n");
+
+    const system = `You route an elder's question to the most relevant device they own. Reply with the device id, or "none" if no device is clearly relevant. Be conservative — only match when the question is clearly about that device's function.`;
+    const user = `Question: "${data.query}"\n\nDevices:\n${list}\n\nReturn just the matching device id or "none".`;
+
+    const res = await fetch(AI_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+        tools: [{
+          type: "function",
+          function: {
+            name: "pick_device",
+            description: "Return the id of the most relevant device, or 'none'.",
+            parameters: {
+              type: "object",
+              properties: { deviceId: { type: "string" } },
+              required: ["deviceId"],
+              additionalProperties: false,
+            },
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "pick_device" } },
+      }),
+    });
+    if (!res.ok) {
+      // Fail soft — router is best-effort
+      return { deviceId: null };
+    }
+    const json = await res.json();
+    const args = json.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+    if (!args) return { deviceId: null };
+    try {
+      const parsed = JSON.parse(args) as { deviceId?: string };
+      const id = (parsed.deviceId || "").trim();
+      if (!id || id.toLowerCase() === "none") return { deviceId: null };
+      const valid = data.devices.some((d) => d.id === id);
+      return { deviceId: valid ? id : null };
+    } catch {
+      return { deviceId: null };
+    }
+  });
