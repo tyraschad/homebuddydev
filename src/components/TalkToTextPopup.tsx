@@ -3,7 +3,7 @@ import { X, Mic, Send, ArrowUp, Volume2, VolumeX, ChevronLeft, ChevronRight, Loa
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, cleanQuickActionLabel, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
-import { generateSteps, answerQuestion, speak, reminderChat, clarifyOrAnswer } from "@/lib/talk.functions";
+import { generateSteps, answerQuestion, speak, reminderChat, clarifyOrAnswer, routeDevice } from "@/lib/talk.functions";
 import { useVoiceRecorder, type VoiceStatus } from "@/lib/use-voice-recorder";
 
 type ChatMsg = {
@@ -336,9 +336,66 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     return result;
   }, [reminders, elder.devices, theme.text, nowTick]);
 
-  const matchDevice = (q: string): Device | null => {
-    const lower = q.toLowerCase();
-    return elder.devices.find((d) => lower.includes(d.name.toLowerCase()) || d.questions.some((qq) => lower.includes(qq.toLowerCase().slice(0, 8)))) ?? null;
+  const routeDeviceFn = useServerFn(routeDevice);
+  const routeCacheRef = useRef<Map<string, string | null>>(new Map());
+
+  // Keyword groups → tokens that imply this device family
+  const DEVICE_KEYWORDS: Record<string, string[]> = {
+    tv: ["tv", "remote", "channel", "input", "source", "hdmi", "volume", "mute", "netflix", "youtube", "prime", "cable", "antenna", "subtitle", "guide"],
+    phone: ["phone", "call", "dial", "answer", "voicemail", "contact", "hang up", "speaker"],
+    microwave: ["microwave", "heat", "warm", "reheat", "timer", "defrost", "popcorn"],
+    thermostat: ["thermostat", "temperature", "ac", "warmer", "cooler", "heating", "cooling"],
+    stove: ["stove", "oven", "burner", "bake", "broil", "preheat", "cooktop"],
+    laundry: ["washer", "dryer", "laundry", "wash", "spin", "dry cycle"],
+    light: ["light", "lamp", "brightness", "dim"],
+  };
+
+  function familyFor(d: Device): string[] {
+    const text = `${d.type ?? ""} ${d.name ?? ""}`.toLowerCase();
+    const families: string[] = [];
+    for (const [fam, words] of Object.entries(DEVICE_KEYWORDS)) {
+      if (words.some((w) => text.includes(w))) families.push(fam);
+    }
+    return families;
+  }
+
+  function keywordScore(query: string, d: Device): number {
+    const lower = query.toLowerCase();
+    let score = 0;
+    if (d.name && lower.includes(d.name.toLowerCase())) score += 10;
+    if (d.type && lower.includes(d.type.toLowerCase())) score += 6;
+    if (d.brand && lower.includes(d.brand.toLowerCase())) score += 4;
+    for (const fam of familyFor(d)) {
+      for (const w of DEVICE_KEYWORDS[fam]) {
+        if (lower.includes(w)) score += 2;
+      }
+    }
+    if (d.questions.some((qq) => lower.includes(qq.toLowerCase().slice(0, 8)))) score += 5;
+    return score;
+  }
+
+  const matchDevice = async (q: string): Promise<Device | null> => {
+    const devices = elder.devices;
+    if (!devices.length) return null;
+    const scored = devices.map((d) => ({ d, s: keywordScore(q, d) })).sort((a, b) => b.s - a.s);
+    if (scored[0]?.s >= 4) return scored[0].d;
+
+    // AI fallback (cached per query)
+    const cacheKey = q.trim().toLowerCase();
+    const cached = routeCacheRef.current.get(cacheKey);
+    if (cached !== undefined) return devices.find((d) => d.id === cached) ?? null;
+    try {
+      const { deviceId } = await routeDeviceFn({
+        data: {
+          query: q,
+          devices: devices.map((d) => ({ id: d.id, name: d.name, brand: d.brand, type: d.type })),
+        },
+      });
+      routeCacheRef.current.set(cacheKey, deviceId);
+      return deviceId ? devices.find((d) => d.id === deviceId) ?? null : null;
+    } catch {
+      return null;
+    }
   };
   const matchReminder = (q: string): Reminder | null => {
     const lower = q.toLowerCase();
@@ -498,11 +555,14 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       return;
     }
 
-    const device = matchDevice(query);
+    setSending(true);
+    let device: Device | null = null;
+    try {
+      device = await matchDevice(query);
+    } catch { /* fail soft */ }
     const reminder = matchReminder(query);
-    if (device) { bumpDeviceAccess(device.id); return startGuide(query, device, null); }
-    if (reminder) return startReminderChat(reminder);
-
+    if (device) { bumpDeviceAccess(device.id); setSending(false); return startGuide(query, device, null); }
+    if (reminder) { setSending(false); return startReminderChat(reminder); }
     setSending(true);
     try {
       const { answer } = await callAnswer({

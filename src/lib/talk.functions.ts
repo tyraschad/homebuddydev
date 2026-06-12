@@ -37,8 +37,12 @@ export const generateSteps = createServerFn({ method: "POST" })
     if (data.reminder) {
       ctx.push(`Reminder: ${data.reminder.name}${data.reminder.time ? ` at ${data.reminder.time}` : ""}${data.reminder.dose ? `, ${data.reminder.dose} pill(s)` : ""}${data.reminder.notes ? `. Notes: ${data.reminder.notes}` : ""}.`);
     }
-    const photoNote = data.device?.photo ? " The attached photo shows the device — use it to give accurate visual cues (button color, position, labels)." : "";
-    const userPrompt = `${ctx.join(" ")}\nUser request: "${data.query}"\nProduce 3-5 step-by-step instructions to help them. Each step 1-3 sentences.${photoNote}`;
+    const photoNote = data.device?.photo
+      ? " The attached photo shows the device. When referencing a button, name it EXACTLY as it appears in the photo (label, color, rough position — e.g. 'the SOURCE button, top-right, blue'). If you cannot read a label, describe its shape and position instead. Do NOT invent labels."
+      : "";
+    const checkpointNote =
+      " After any step that changes what's on screen or what the device shows, include a short verification cue starting with 'You should now see…' or 'You should now hear…' INSIDE the same step (one short sentence — do NOT add a separate confirmation step).";
+    const userPrompt = `${ctx.join(" ")}\nUser request: "${data.query}"\nProduce 3-5 step-by-step instructions to help them. Each step 1-3 sentences.${photoNote}${checkpointNote}`;
 
     const userContent: Array<Record<string, unknown>> = [{ type: "text", text: userPrompt }];
     if (data.device?.photo) {
@@ -269,6 +273,11 @@ export const clarifyOrAnswer = createServerFn({ method: "POST" })
       `  - When you provide quickReplies, always include "Not sure" as one of them (the UI will add it if you forget).`,
       dev?.brand || dev?.type ? `Tailor wording to the device (e.g. "On your ${[dev.brand, dev.type].filter(Boolean).join(" ")}, ...").` : "",
       `When you have enough context, call return_steps with 3-5 short steps (1-3 sentences each).`,
+      `Use the user's answers above to make the steps CONCRETE (e.g. if they said channel 7, write "press 7 then OK", not "press the desired channel").`,
+      dev?.photo
+        ? `When referencing a button, name it EXACTLY as it appears in the attached photo (label, color, rough position — e.g. "the SOURCE button, top-right, blue"). If you cannot read a label, describe its shape and position. Do NOT invent labels.`
+        : "",
+      `After any step that changes what's on screen or what the device shows, include a short verification cue starting with "You should now see…" or "You should now hear…" INSIDE the same step (one short sentence — do NOT add a separate confirmation step).`,
       `Questions asked so far this session: ${Math.max(0, data.turnCount)}.`,
     ].filter(Boolean).join("\n");
 
@@ -365,4 +374,66 @@ export const clarifyOrAnswer = createServerFn({ method: "POST" })
     // return_steps
     const steps: string[] = Array.isArray(parsed.steps) ? parsed.steps.map((s: unknown) => String(s)).filter(Boolean) : [];
     return { kind: "steps", steps };
+  });
+
+type RouteDeviceInput = {
+  query: string;
+  devices: { id: string; name: string; brand?: string; type?: string }[];
+};
+
+export const routeDevice = createServerFn({ method: "POST" })
+  .inputValidator((d: RouteDeviceInput) => d)
+  .handler(async ({ data }): Promise<{ deviceId: string | null }> => {
+    if (!data.devices.length) return { deviceId: null };
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("LOVABLE_API_KEY not configured");
+
+    const list = data.devices
+      .map((d, i) => `${i + 1}. id=${d.id} — ${[d.brand, d.type].filter(Boolean).join(" ")}${d.name ? ` ("${d.name}")` : ""}`)
+      .join("\n");
+
+    const system = `You route an elder's question to the most relevant device they own. Reply with the device id, or "none" if no device is clearly relevant. Be conservative — only match when the question is clearly about that device's function.`;
+    const user = `Question: "${data.query}"\n\nDevices:\n${list}\n\nReturn just the matching device id or "none".`;
+
+    const res = await fetch(AI_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+        tools: [{
+          type: "function",
+          function: {
+            name: "pick_device",
+            description: "Return the id of the most relevant device, or 'none'.",
+            parameters: {
+              type: "object",
+              properties: { deviceId: { type: "string" } },
+              required: ["deviceId"],
+              additionalProperties: false,
+            },
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "pick_device" } },
+      }),
+    });
+    if (!res.ok) {
+      // Fail soft — router is best-effort
+      return { deviceId: null };
+    }
+    const json = await res.json();
+    const args = json.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+    if (!args) return { deviceId: null };
+    try {
+      const parsed = JSON.parse(args) as { deviceId?: string };
+      const id = (parsed.deviceId || "").trim();
+      if (!id || id.toLowerCase() === "none") return { deviceId: null };
+      const valid = data.devices.some((d) => d.id === id);
+      return { deviceId: valid ? id : null };
+    } catch {
+      return { deviceId: null };
+    }
   });
