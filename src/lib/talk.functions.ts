@@ -273,6 +273,11 @@ export const clarifyOrAnswer = createServerFn({ method: "POST" })
       `  - When you provide quickReplies, always include "Not sure" as one of them (the UI will add it if you forget).`,
       dev?.brand || dev?.type ? `Tailor wording to the device (e.g. "On your ${[dev.brand, dev.type].filter(Boolean).join(" ")}, ...").` : "",
       `When you have enough context, call return_steps with 3-5 short steps (1-3 sentences each).`,
+      `Use the user's answers above to make the steps CONCRETE (e.g. if they said channel 7, write "press 7 then OK", not "press the desired channel").`,
+      dev?.photo
+        ? `When referencing a button, name it EXACTLY as it appears in the attached photo (label, color, rough position — e.g. "the SOURCE button, top-right, blue"). If you cannot read a label, describe its shape and position. Do NOT invent labels.`
+        : "",
+      `After any step that changes what's on screen or what the device shows, include a short verification cue starting with "You should now see…" or "You should now hear…" INSIDE the same step (one short sentence — do NOT add a separate confirmation step).`,
       `Questions asked so far this session: ${Math.max(0, data.turnCount)}.`,
     ].filter(Boolean).join("\n");
 
