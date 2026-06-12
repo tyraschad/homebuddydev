@@ -541,7 +541,25 @@ function PhotoField({ label, photo, onPhoto, theme, cardBorder, buttonBorder }: 
           onChange={(e) => {
             const f = e.target.files?.[0]; if (!f) return;
             const reader = new FileReader();
-            reader.onload = () => onPhoto(String(reader.result));
+            reader.onload = () => {
+              const src = String(reader.result);
+              const img = new Image();
+              img.onload = () => {
+                const MAX = 1024;
+                const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+                const w = Math.round(img.width * scale);
+                const h = Math.round(img.height * scale);
+                const canvas = document.createElement("canvas");
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) { onPhoto(src); return; }
+                ctx.drawImage(img, 0, 0, w, h);
+                try { onPhoto(canvas.toDataURL("image/jpeg", 0.8)); }
+                catch { onPhoto(src); }
+              };
+              img.onerror = () => onPhoto(src);
+              img.src = src;
+            };
             reader.readAsDataURL(f);
           }} />
       </div>
