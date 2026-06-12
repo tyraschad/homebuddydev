@@ -4,7 +4,7 @@ const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 type ContextInput = {
   query: string;
-  device?: { name: string; photo?: string; questions: string[] } | null;
+  device?: { name: string; brand?: string; type?: string; photo?: string; questions: string[] } | null;
   reminder?: { name: string; time?: string; dose?: number; notes?: string; type?: string; details?: string } | null;
   conditions: string[];
   mode: "steps" | "answer";
@@ -33,7 +33,7 @@ export const generateSteps = createServerFn({ method: "POST" })
     if (!key) throw new Error("LOVABLE_API_KEY not configured");
     const system = buildSystem(data.conditions);
     const ctx: string[] = [];
-    if (data.device) ctx.push(`Device: ${data.device.name}.`);
+    if (data.device) ctx.push(`Device: ${data.device.name}${data.device.brand ? ` (brand: ${data.device.brand})` : ""}${data.device.type ? ` [${data.device.type}]` : ""}.`);
     if (data.reminder) {
       ctx.push(`Reminder: ${data.reminder.name}${data.reminder.time ? ` at ${data.reminder.time}` : ""}${data.reminder.dose ? `, ${data.reminder.dose} pill(s)` : ""}${data.reminder.notes ? `. Notes: ${data.reminder.notes}` : ""}.`);
     }
@@ -230,4 +230,139 @@ export const transcribe = createServerFn({ method: "POST" })
     }
     const json = await res.json();
     return { text: String(json.text || "").trim() };
+  });
+
+type ClarifyMsg = { role: "user" | "assistant"; content: string };
+type ClarifyInput = {
+  query: string;
+  device?: { name: string; brand?: string; type?: string; photo?: string; questions: string[] } | null;
+  conditions: string[];
+  clarifyHistory: ClarifyMsg[];
+  turnCount: number;
+};
+type ClarifyResult =
+  | { kind: "question"; question: string; quickReplies?: string[]; expectsFreeText: boolean }
+  | { kind: "steps"; steps: string[] };
+
+export const clarifyOrAnswer = createServerFn({ method: "POST" })
+  .inputValidator((d: ClarifyInput) => d)
+  .handler(async ({ data }): Promise<ClarifyResult> => {
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("LOVABLE_API_KEY not configured");
+    const baseSystem = buildSystem(data.conditions);
+
+    const lower = data.conditions.map((c) => c.toLowerCase());
+    const cognitive = lower.some((c) => c.includes("cognitive") || c.includes("dementia") || c.includes("memory"));
+    const maxQuestions = cognitive ? 1 : 2;
+
+    const dev = data.device;
+    const devLine = dev
+      ? `Device: ${dev.name}${dev.brand ? ` (brand: ${dev.brand})` : ""}${dev.type ? ` [type: ${dev.type}]` : ""}.${dev.photo ? " A photo of the device is attached." : ""}`
+      : "No device specified.";
+
+    const rules = [
+      `You are guiding an elderly person. Before returning steps, ask AT LEAST ONE short clarifying question to ground your answer in their current situation, UNLESS the attached photo already answers the only thing you'd need to ask — then you may go straight to steps.`,
+      `Hard maximum of ${maxQuestions} clarifying question(s) total in this session.`,
+      `For each question, pick the answer mode:`,
+      `  - If the answer is from a small known set (yes/no, on/off, channel/app name, simple state) → provide 2-4 short quickReplies and set expectsFreeText to false.`,
+      `  - If the answer is open-ended (what they see, a channel number, a name) → omit quickReplies (or provide at most 2 hints) and set expectsFreeText to true.`,
+      `  - When you provide quickReplies, always include "Not sure" as one of them (the UI will add it if you forget).`,
+      dev?.brand || dev?.type ? `Tailor wording to the device (e.g. "On your ${[dev.brand, dev.type].filter(Boolean).join(" ")}, ...").` : "",
+      `When you have enough context, call return_steps with 3-5 short steps (1-3 sentences each).`,
+      `Questions asked so far this session: ${Math.max(0, data.turnCount)}.`,
+    ].filter(Boolean).join("\n");
+
+    const userIntro = `${devLine}\nUser request: "${data.query}"`;
+    const userContent: Array<Record<string, unknown>> = [{ type: "text", text: userIntro }];
+    if (dev?.photo) userContent.push({ type: "image_url", image_url: { url: dev.photo } });
+
+    const messages: Array<Record<string, unknown>> = [
+      { role: "system", content: `${baseSystem}\n\n${rules}` },
+      { role: "user", content: userContent },
+      ...data.clarifyHistory.map((m) => ({ role: m.role, content: m.content })),
+    ];
+
+    // If we've already hit the cap, force steps.
+    const forceSteps = data.turnCount >= maxQuestions;
+
+    const tools = [
+      {
+        type: "function",
+        function: {
+          name: "ask_clarifying_question",
+          description: "Ask a single short clarifying question to ground the next answer.",
+          parameters: {
+            type: "object",
+            properties: {
+              question: { type: "string" },
+              quickReplies: { type: "array", items: { type: "string" }, maxItems: 5 },
+              expectsFreeText: { type: "boolean" },
+            },
+            required: ["question", "expectsFreeText"],
+            additionalProperties: false,
+          },
+        },
+      },
+      {
+        type: "function",
+        function: {
+          name: "return_steps",
+          description: "Return the final ordered step-by-step instructions.",
+          parameters: {
+            type: "object",
+            properties: {
+              steps: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 6 },
+            },
+            required: ["steps"],
+            additionalProperties: false,
+          },
+        },
+      },
+    ];
+
+    const body: Record<string, unknown> = {
+      model: "google/gemini-3-flash-preview",
+      messages,
+      tools,
+      tool_choice: forceSteps
+        ? { type: "function", function: { name: "return_steps" } }
+        : "auto",
+    };
+
+    const res = await fetch(AI_URL, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const t = await res.text();
+      if (res.status === 429) throw new Error("Rate limit. Please wait and try again.");
+      if (res.status === 402) throw new Error("AI credits exhausted.");
+      throw new Error(`AI error ${res.status}: ${t.slice(0, 200)}`);
+    }
+    const json = await res.json();
+    const call = json.choices?.[0]?.message?.tool_calls?.[0];
+    const fnName = call?.function?.name;
+    const args = call?.function?.arguments;
+    if (!fnName || !args) {
+      // Fall back to text answer as a single step
+      const txt = json.choices?.[0]?.message?.content ?? "";
+      return { kind: "steps", steps: [String(txt).trim() || "Sorry, I couldn't find steps. Please try again."] };
+    }
+    const parsed = JSON.parse(args);
+    if (fnName === "ask_clarifying_question") {
+      const q = String(parsed.question || "").trim();
+      if (!q) return { kind: "steps", steps: ["Sorry, I couldn't think of a good next step. Please try rephrasing."] };
+      const expectsFreeText = Boolean(parsed.expectsFreeText);
+      let quickReplies: string[] | undefined = Array.isArray(parsed.quickReplies)
+        ? parsed.quickReplies.map((s: unknown) => String(s).trim()).filter(Boolean)
+        : undefined;
+      if (quickReplies && quickReplies.length && !quickReplies.some((r) => r.toLowerCase() === "not sure")) {
+        quickReplies = [...quickReplies, "Not sure"];
+      }
+      return { kind: "question", question: q, quickReplies, expectsFreeText };
+    }
+    // return_steps
+    const steps: string[] = Array.isArray(parsed.steps) ? parsed.steps.map((s: unknown) => String(s)).filter(Boolean) : [];
+    return { kind: "steps", steps };
   });

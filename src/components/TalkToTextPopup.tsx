@@ -3,7 +3,7 @@ import { X, Mic, Send, ArrowUp, Volume2, VolumeX, ChevronLeft, ChevronRight, Loa
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, cleanQuickActionLabel, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
-import { generateSteps, answerQuestion, speak, reminderChat } from "@/lib/talk.functions";
+import { generateSteps, answerQuestion, speak, reminderChat, clarifyOrAnswer } from "@/lib/talk.functions";
 import { useVoiceRecorder, type VoiceStatus } from "@/lib/use-voice-recorder";
 
 type ChatMsg = {
@@ -202,6 +202,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const callAnswer = useServerFn(answerQuestion);
   const callSpeak = useServerFn(speak);
   const callReminderChat = useServerFn(reminderChat);
+  const callClarify = useServerFn(clarifyOrAnswer);
 
   const v2 = !highContrast;
   const TEAL = "#1B5E5E";
@@ -218,6 +219,13 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
   const [guide, setGuide] = useState<Guide | null>(null);
   const [wellDone, setWellDone] = useState<string | null>(null);
   const [reminderCtx, setReminderCtx] = useState<{ reminder: Reminder; stage: "intro" | "followup" } | null>(null);
+  const [clarifyCtx, setClarifyCtx] = useState<{
+    device: Device;
+    query: string;
+    history: { role: "user" | "assistant"; content: string }[];
+    turnCount: number;
+    quickReplies?: string[];
+  } | null>(null);
   const [sending, setSending] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [speaking, setSpeaking] = useState(false);
@@ -339,25 +347,69 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
   const pushUser = (content: string) => setMessages((m) => [...m, { role: "user", content }]);
 
+  const beginGuideSteps = async (label: string, device: Device | null, reminder: Reminder | null, steps: string[]) => {
+    if (!steps.length) throw new Error("No steps returned");
+    const intro = `Here's how — I'll walk you through ${steps.length} step${steps.length === 1 ? "" : "s"}.`;
+    streamAssistant(intro);
+    setGuide({ label, device, reminder, steps, index: 0 });
+    void playTTS(steps[0]);
+  };
+
+  const runClarifyTurn = async (
+    ctx: { device: Device; query: string; history: { role: "user" | "assistant"; content: string }[]; turnCount: number },
+  ) => {
+    const result = await callClarify({
+      data: {
+        query: ctx.query,
+        device: {
+          name: ctx.device.name,
+          brand: ctx.device.brand,
+          type: ctx.device.type,
+          photo: ctx.device.photo,
+          questions: ctx.device.questions,
+        },
+        conditions: elder.conditions,
+        clarifyHistory: ctx.history,
+        turnCount: ctx.turnCount,
+      },
+    });
+    if (result.kind === "question") {
+      streamAssistant(result.question);
+      void playTTS(result.question);
+      const nextHistory = [...ctx.history, { role: "assistant" as const, content: result.question }];
+      setClarifyCtx({
+        device: ctx.device,
+        query: ctx.query,
+        history: nextHistory,
+        turnCount: ctx.turnCount + 1,
+        quickReplies: result.expectsFreeText ? undefined : result.quickReplies,
+      });
+    } else {
+      setClarifyCtx(null);
+      await beginGuideSteps(ctx.query, ctx.device, null, result.steps);
+    }
+  };
+
   const startGuide = async (query: string, device: Device | null, reminder: Reminder | null) => {
     setWellDone(null);
     setSending(true);
     try {
-      const { steps } = await callSteps({
-        data: {
-          query,
-          device: device ? { name: device.name, photo: device.photo, questions: device.questions } : null,
-          reminder: reminder ? { name: reminder.name, time: reminder.times[0], dose: reminder.dose, notes: reminder.notes, type: reminder.type, details: reminder.details } : null,
-          conditions: elder.conditions,
-          mode: "steps",
-        },
-      });
-      if (!steps.length) throw new Error("No steps returned");
-      const intro = `Here's how — I'll walk you through ${steps.length} step${steps.length === 1 ? "" : "s"}.`;
-      streamAssistant(intro);
-      setGuide({ label: query, device, reminder, steps, index: 0 });
-      void playTTS(steps[0]);
+      if (device && !reminder) {
+        await runClarifyTurn({ device, query, history: [], turnCount: 0 });
+      } else {
+        const { steps } = await callSteps({
+          data: {
+            query,
+            device: device ? { name: device.name, brand: device.brand, type: device.type, photo: device.photo, questions: device.questions } : null,
+            reminder: reminder ? { name: reminder.name, time: reminder.times[0], dose: reminder.dose, notes: reminder.notes, type: reminder.type, details: reminder.details } : null,
+            conditions: elder.conditions,
+            mode: "steps",
+          },
+        });
+        await beginGuideSteps(query, device, reminder, steps);
+      }
     } catch (e) {
+      setClarifyCtx(null);
       streamAssistant(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setSending(false);
@@ -397,6 +449,25 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
       const response = buildScheduleResponse(query, reminders);
       streamAssistant(response);
       void playTTS(response);
+      return;
+    }
+
+    // Continue an active clarify session
+    if (clarifyCtx) {
+      setSending(true);
+      try {
+        await runClarifyTurn({
+          device: clarifyCtx.device,
+          query: clarifyCtx.query,
+          history: [...clarifyCtx.history, { role: "user", content: query }],
+          turnCount: clarifyCtx.turnCount,
+        });
+      } catch (e) {
+        setClarifyCtx(null);
+        streamAssistant(e instanceof Error ? e.message : "Something went wrong");
+      } finally {
+        setSending(false);
+      }
       return;
     }
 
@@ -672,6 +743,27 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           background: v2 ? "#FFFFFF" : "#565656",
           display: "flex", flexDirection: "column", gap: 12,
         }}>
+          {clarifyCtx?.quickReplies && clarifyCtx.quickReplies.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {clarifyCtx.quickReplies.map((chip) => (
+                <button key={chip} type="button" disabled={sending}
+                  onClick={() => { void handleQuery(chip); }}
+                  style={{
+                    minHeight: 44, padding: "0 16px",
+                    background: v2 ? BEIGE : "#F0F0F0",
+                    color: v2 ? TEAL : "#000000",
+                    border: v2 ? `1px solid ${ACCENT}` : "1px solid #000000",
+                    borderRadius: 999,
+                    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700,
+                    fontSize: sizes.body >= 28 ? 17 : 15,
+                    cursor: sending ? "not-allowed" : "pointer",
+                    opacity: sending ? 0.6 : 1,
+                  }}>
+                  {chip}
+                </button>
+              ))}
+            </div>
+          )}
           <div style={{ display: "flex", gap: 12, height: 180 }}>
             <button type="button"
               onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
