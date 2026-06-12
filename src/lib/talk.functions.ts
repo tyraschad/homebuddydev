@@ -33,7 +33,7 @@ export const generateSteps = createServerFn({ method: "POST" })
     if (!key) throw new Error("LOVABLE_API_KEY not configured");
     const system = buildSystem(data.conditions);
     const ctx: string[] = [];
-    if (data.device) ctx.push(`Device: ${data.device.name}.`);
+    if (data.device) ctx.push(`Device: ${data.device.name}${data.device.brand ? ` (brand: ${data.device.brand})` : ""}${data.device.type ? ` [${data.device.type}]` : ""}.`);
     if (data.reminder) {
       ctx.push(`Reminder: ${data.reminder.name}${data.reminder.time ? ` at ${data.reminder.time}` : ""}${data.reminder.dose ? `, ${data.reminder.dose} pill(s)` : ""}${data.reminder.notes ? `. Notes: ${data.reminder.notes}` : ""}.`);
     }
