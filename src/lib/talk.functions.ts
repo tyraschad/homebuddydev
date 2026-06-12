@@ -4,7 +4,7 @@ const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 type ContextInput = {
   query: string;
-  device?: { name: string; photo?: string; questions: string[] } | null;
+  device?: { name: string; brand?: string; type?: string; photo?: string; questions: string[] } | null;
   reminder?: { name: string; time?: string; dose?: number; notes?: string; type?: string; details?: string } | null;
   conditions: string[];
   mode: "steps" | "answer";
