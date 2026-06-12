@@ -34,6 +34,8 @@ export type Contact = { id: string; name: string; phone: string };
 export type Device = {
   id: string;
   name: string;
+  brand?: string;
+  type?: string;
   photo?: string;
   questions: string[];
   accessCount?: number;
