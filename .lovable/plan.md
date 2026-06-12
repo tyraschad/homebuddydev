@@ -1,67 +1,87 @@
-# AI chat upgrades: device photos + context-aware clarifications
+# Phase 1.5 — Device label + Phase 2 — Clarifying questions
 
-Two sequential phases. Both are doable with the existing Lovable AI Gateway + Gemini Flash setup — no new dependencies, secrets, or DB tables.
-
-## Phase 1 — Wire device photos into the AI calls
-
-Send the uploaded device photo to the model so it can give visually accurate steps ("press the RED button bottom-left") instead of generic guesses.
-
-Doable because: Gemini Flash is multimodal, the Gateway is OpenAI-compatible, photos are already stored as data URLs in `device.photo` and already flow through `TalkToTextPopup.tsx` line 349 into `ContextInput`. The field just isn't read in the handler.
-
-### Steps
-
-1. `**src/lib/talk.functions.ts` — `generateSteps` handler (~line 40-50)**
-  Build a multimodal user message when a photo exists:
-   Add to `userPrompt`: "The attached photo shows the device — use it to give accurate visual cues (button color, position, labels)."
-2. `**src/lib/talk.functions.ts` — `answerQuestion` handler (~line 90-100)**
-  Same multimodal pattern.
-3. **Leave `reminderChat` alone** — it intentionally avoids mentioning devices.
-4. **(Recommended) Downscale on upload** in `src/routes/onboarding.tsx` `PhotoField` (~line 516). Canvas resize to ~1024px long edge, re-export `toDataURL("image/jpeg", 0.8)`. Avoids 413/timeout on big phone photos. Frontend-only.
-5. **Verify**: open the popup on an elder with a device that has a photo, ask "how do I use the remote", confirm response references visible details (button colors, layout). Check network tab for `image_url` block.
+Two stages. Stage A is a small adjustment to the existing photo flow. Stage B is the full Phase 2 build with the new "≥1 question unless the photo answers it" rule.
 
 ---
 
-## Phase 2 — Context-aware clarifying questions (with hybrid input)
+## Stage A — Brand + Type label on device capture
 
-Before returning steps, the AI may ask 1-2 short clarifying questions to ground the answer in the user's current situation. Each question supports **both** quick-reply chips and free text/voice — user picks whichever is faster.
+Goal: let the user tell us what the device is so image recognition gets it right (especially for unusual remotes/appliances), and so the AI has stronger context later. Same flow works in onboarding and Carer Portal because both use `DeviceListEditor`.
 
-### How it works
+### Data model
+- Extend `Device` (`src/lib/carer-store.tsx`) with optional `brand?: string` and `type?: string`. Keep existing `name` as the canonical display label (auto-filled by identify, editable). Migration-safe: both new fields optional, no breaking changes to existing devices.
 
-1. New server fn `clarifyOrAnswer` replaces the direct `generateSteps` call for device questions.
-2. AI decides one of two tool calls per turn:
-  - `ask_clarifying_question` → `{ question, quickReplies?: string[], expectsFreeText: boolean }`
-  - `return_steps` → `{ steps: string[] }` (final, ends the loop)
-3. Popup renders the question as an assistant bubble. **Below it:**
-  - If `quickReplies` present → row of large tappable chips (with auto-injected "Not sure" chip).
-  - The existing text+mic composer is **always visible** — user can type or hold-to-talk for open-ended questions like "what are you trying to cook?".
-4. User answer (tap, typed, or transcribed via existing `transcribe` fn) is appended to `clarifyHistory` and sent back to `clarifyOrAnswer`. Loop continues until `return_steps`.
+### Capture flow (`src/components/instruction-context-form.tsx`)
+New order:
+1. **Upload photo** (existing button).
+2. Photo preview appears with **two new inputs above the name field**:
+   - `Brand` (e.g. Samsung, LG, Panasonic) — optional
+   - `Type` (e.g. TV remote, microwave, landline) — required to enable Generate
+3. **Generate questions** button (replaces the auto-identify-on-upload behavior). Disabled until `Type` is filled.
+4. On click → calls `identifyDevice` with `{ dataUrl, brand, type }`. Response fills `name` and `questions` (uses `defaultQuestions(type)` if AI returns nothing useful).
+5. **Re-identify** button stays for retries; **Save device** writes `{ name, brand, type, photo, questions }`.
 
-### System prompt rules (capped behavior)
+Edge cases:
+- User skips photo entirely → still works (just type Brand/Type/Name manually, no AI call). Save remains enabled.
+- Editing an existing device → prefill brand/type if present.
 
-- Max **2** clarifying questions total (1 for cognitive/memory conditions).
-- Pick the answer mode per question:
-  - Small known answer set (yes/no, on/off, device state) → 2-4 `quickReplies`, `expectsFreeText: false`.
-  - Open-ended (what they see, what they want, a name) → omit chips or only 1-2 hints, `expectsFreeText: true`.
-  - Always include "Not sure" as a chip when chips are present.
-- **If a device photo is attached, skip visual questions** and use the image instead. Compounds with Phase 1.
-- Condition-aware: low-vision → larger chip text; cognitive → max 1 question, simpler wording.
+### Server fn (`src/lib/identify-device.functions.ts`)
+- Add `brand?: string` and `type?: string` to input validator.
+- Prepend hint to prompt when provided:
+  > "The user says this is a {brand} {type}. Use that as a strong hint; confirm or correct it based on the photo. Return the device name only."
+- Keep return shape `{ name }`.
 
-### Implementation
-
-1. `**src/lib/talk.functions.ts**` — new `clarifyOrAnswer` server fn with two-tool schema (`ask_clarifying_question` + `return_steps`), `tool_choice: "auto"`, takes `clarifyHistory: {role, content}[]` in addition to existing `ContextInput`.
-2. `**src/components/TalkToTextPopup.tsx**`:
-  - New state: `clarifyHistory`, cleared on close/restart.
-  - Chip row component above the existing composer; chips call same handler that typed/voice input uses.
-  - Reuse existing `transcribe` fn for voice answers — no new server work.
-  - Keep mic + text input visible for every clarification turn.
-3. **Verify**: ask "how do I change the input" (no photo) → expect 1-2 chip-style questions then steps. Ask "what should I cook for dinner" → expect open question with composer focused. Ask same device question after adding photo → expect fewer/no questions.
+### Onboarding parity
+- No code changes needed in `src/routes/onboarding.tsx` — it already mounts `DeviceListEditor`, so brand/type capture comes free.
+- Carer Portal Instruction Context already uses the same component too.
 
 ---
 
-## Recommended order
+## Stage B — Phase 2 clarifying questions (≥1 floor)
 
-**Phase 1 first.** Reasons:
+Goal: before returning steps for any device question, the AI asks **at least one** grounding question (e.g. "What's on the TV right now?"). It may skip the question only when the attached photo already answers it (e.g. user asks "what does this button do?" + photo clearly shows the button).
 
-1. Photos shrink the question count — tune clarifications against what the AI still can't see, not against blind guessing.
-2. Phase 1 is ~30 min mechanical; Phase 2 is bigger (new server fn, tool branch, UI state, chip row). Land the small win first.
-3. Sequential = easier to attribute regressions.
+### New server fn — `clarifyOrAnswer` in `src/lib/talk.functions.ts`
+- Input: existing `ContextInput` (now also carrying `brand`/`type` via device) plus `clarifyHistory: { role: "user" | "assistant"; content: string }[]` and `turnCount: number`.
+- Two-tool schema, `tool_choice: "auto"`:
+  - `ask_clarifying_question` → `{ question: string, quickReplies?: string[], expectsFreeText: boolean }`
+  - `return_steps` → `{ steps: string[] }`
+- System-prompt rules:
+  - **Minimum 1 clarifying question per session** unless the attached photo clearly answers the only thing you'd need to ask. If photo answers it, you may go straight to `return_steps`.
+  - Hard max: **2** questions (1 for cognitive/memory conditions).
+  - Chip vs free-text mode per question:
+    - Small known answer set (yes/no, on/off, channel, app) → 2-4 `quickReplies`, `expectsFreeText: false`.
+    - Open-ended (what they see, channel number, name) → omit chips, `expectsFreeText: true`.
+    - Always inject "Not sure" as a chip when chips are present.
+  - Use `brand`/`type` to tailor the question ("On your Samsung remote, do you see the SOURCE button?").
+- After `return_steps` is chosen, return `{ steps }` exactly like `generateSteps` does today, so the popup's step renderer keeps working unchanged.
+
+### UI (`src/components/TalkToTextPopup.tsx`)
+- Replace direct `generateSteps` call for device-flow questions with `clarifyOrAnswer`.
+- New state: `clarifyHistory` (cleared on close / restart / device switch), `turnCount`.
+- Render each AI question as an assistant chat bubble.
+- Below it:
+  - **Chip row** if `quickReplies` present — large tappable buttons, "Not sure" auto-added. Tapping a chip = same handler as typed/voice input.
+  - **Text + mic composer is always visible** (reuses existing `transcribe` fn for voice answers).
+- On user answer → append to `clarifyHistory`, increment `turnCount`, call `clarifyOrAnswer` again.
+- When response is `return_steps` → render steps with the existing step UI.
+
+### Condition-aware tweaks
+- Low-vision: chip text size +2pt, higher contrast.
+- Cognitive/memory: cap at 1 question, simpler wording (prompt already adapts via `buildSystem`).
+
+---
+
+## Order & verification
+
+1. **Stage A first** — small, mechanical, isolated to one component + one server fn. Verify in onboarding and Carer Portal that brand/type capture and identify-with-hint both work.
+2. **Stage B next** — net-new server fn + popup branch + chip row. Verify:
+   - "How do I change the channel" with no photo → asks ≥1 question (likely "what channel are you on now?" with chips like NBC/CBS/Fox/Not sure), then asks for target channel via free text, then returns steps.
+   - Same question on a device with a clear photo → may skip straight to steps if photo answers it; otherwise still asks 1.
+   - Cognitive condition elder → max 1 question, simpler wording.
+
+## Technical notes
+- No DB schema changes (devices live in local store today).
+- No new dependencies.
+- No new secrets — reuses `LOVABLE_API_KEY` and `GEMINI_API_KEY`.
+- `reminderChat` flow untouched.
