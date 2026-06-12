@@ -347,25 +347,69 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
   const pushUser = (content: string) => setMessages((m) => [...m, { role: "user", content }]);
 
+  const beginGuideSteps = async (label: string, device: Device | null, reminder: Reminder | null, steps: string[]) => {
+    if (!steps.length) throw new Error("No steps returned");
+    const intro = `Here's how — I'll walk you through ${steps.length} step${steps.length === 1 ? "" : "s"}.`;
+    streamAssistant(intro);
+    setGuide({ label, device, reminder, steps, index: 0 });
+    void playTTS(steps[0]);
+  };
+
+  const runClarifyTurn = async (
+    ctx: { device: Device; query: string; history: { role: "user" | "assistant"; content: string }[]; turnCount: number },
+  ) => {
+    const result = await callClarify({
+      data: {
+        query: ctx.query,
+        device: {
+          name: ctx.device.name,
+          brand: ctx.device.brand,
+          type: ctx.device.type,
+          photo: ctx.device.photo,
+          questions: ctx.device.questions,
+        },
+        conditions: elder.conditions,
+        clarifyHistory: ctx.history,
+        turnCount: ctx.turnCount,
+      },
+    });
+    if (result.kind === "question") {
+      streamAssistant(result.question);
+      void playTTS(result.question);
+      const nextHistory = [...ctx.history, { role: "assistant" as const, content: result.question }];
+      setClarifyCtx({
+        device: ctx.device,
+        query: ctx.query,
+        history: nextHistory,
+        turnCount: ctx.turnCount + 1,
+        quickReplies: result.expectsFreeText ? undefined : result.quickReplies,
+      });
+    } else {
+      setClarifyCtx(null);
+      await beginGuideSteps(ctx.query, ctx.device, null, result.steps);
+    }
+  };
+
   const startGuide = async (query: string, device: Device | null, reminder: Reminder | null) => {
     setWellDone(null);
     setSending(true);
     try {
-      const { steps } = await callSteps({
-        data: {
-          query,
-          device: device ? { name: device.name, photo: device.photo, questions: device.questions } : null,
-          reminder: reminder ? { name: reminder.name, time: reminder.times[0], dose: reminder.dose, notes: reminder.notes, type: reminder.type, details: reminder.details } : null,
-          conditions: elder.conditions,
-          mode: "steps",
-        },
-      });
-      if (!steps.length) throw new Error("No steps returned");
-      const intro = `Here's how — I'll walk you through ${steps.length} step${steps.length === 1 ? "" : "s"}.`;
-      streamAssistant(intro);
-      setGuide({ label: query, device, reminder, steps, index: 0 });
-      void playTTS(steps[0]);
+      if (device && !reminder) {
+        await runClarifyTurn({ device, query, history: [], turnCount: 0 });
+      } else {
+        const { steps } = await callSteps({
+          data: {
+            query,
+            device: device ? { name: device.name, brand: device.brand, type: device.type, photo: device.photo, questions: device.questions } : null,
+            reminder: reminder ? { name: reminder.name, time: reminder.times[0], dose: reminder.dose, notes: reminder.notes, type: reminder.type, details: reminder.details } : null,
+            conditions: elder.conditions,
+            mode: "steps",
+          },
+        });
+        await beginGuideSteps(query, device, reminder, steps);
+      }
     } catch (e) {
+      setClarifyCtx(null);
       streamAssistant(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setSending(false);
