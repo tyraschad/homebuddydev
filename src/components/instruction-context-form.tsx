@@ -30,6 +30,8 @@ export function DeviceListEditor({
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const [analyzing, setAnalyzing] = useState(false);
   const [identifyError, setIdentifyError] = useState<string | null>(null);
+  const [brand, setBrand] = useState("");
+  const [deviceType, setDeviceType] = useState("");
   const [name, setName] = useState("");
   const [questions, setQuestions] = useState<string[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -53,16 +55,26 @@ export function DeviceListEditor({
   };
   const card: CSSProperties = { background: theme.card, border: cardBorder, borderRadius: 8, padding: 16 };
 
-  const reset = () => { setPhoto(undefined); setName(""); setQuestions([]); setAnalyzing(false); setIdentifyError(null); setEditingId(null); };
+  const reset = () => {
+    setPhoto(undefined); setBrand(""); setDeviceType(""); setName(""); setQuestions([]);
+    setAnalyzing(false); setIdentifyError(null); setEditingId(null);
+  };
 
-  const runIdentify = async (dataUrl: string) => {
+  const runIdentify = async () => {
+    if (!photo) return;
+    if (!deviceType.trim()) {
+      setIdentifyError("Add a device type (e.g. TV remote) first");
+      return;
+    }
     setAnalyzing(true);
     setIdentifyError(null);
     try {
-      const { name: suggested } = await identifyFn({ data: { dataUrl } });
-      const finalName = suggested || "";
-      setName(finalName);
-      if (finalName) setQuestions(defaultQuestions(finalName));
+      const { name: suggested } = await identifyFn({ data: { dataUrl: photo, brand: brand.trim() || undefined, type: deviceType.trim() } });
+      const finalName = (suggested || [brand, deviceType].filter(Boolean).join(" ")).trim();
+      if (finalName) setName(finalName);
+      if (!questions.length || questions.every((q) => !q.trim())) {
+        setQuestions(defaultQuestions(deviceType || finalName));
+      }
     } catch {
       setIdentifyError("Couldn't identify this device — try again or type the name manually");
     } finally {
@@ -75,19 +87,26 @@ export function DeviceListEditor({
     reader.onload = () => {
       const dataUrl = String(reader.result);
       setPhoto(dataUrl);
-      void runIdentify(dataUrl);
+      setIdentifyError(null);
     };
     reader.readAsDataURL(f);
   };
 
   const save = () => {
-    const trimmed = name.trim();
+    const trimmed = name.trim() || [brand, deviceType].filter(Boolean).join(" ").trim();
     if (!trimmed) return;
     const cleanQs = questions.map(cleanQuickActionLabel).filter(Boolean);
+    const payload = {
+      name: trimmed,
+      brand: brand.trim() || undefined,
+      type: deviceType.trim() || undefined,
+      photo,
+      questions: cleanQs,
+    };
     if (editingId) {
-      onChange(devices.map((d) => d.id === editingId ? { ...d, name: trimmed, photo, questions: cleanQs } : d));
+      onChange(devices.map((d) => d.id === editingId ? { ...d, ...payload } : d));
     } else {
-      onChange([...devices, { id: uid(), name: trimmed, photo, questions: cleanQs }]);
+      onChange([...devices, { id: uid(), ...payload }]);
     }
     reset();
   };
@@ -95,6 +114,8 @@ export function DeviceListEditor({
   const startEdit = (d: Device) => {
     setEditingId(d.id);
     setPhoto(d.photo);
+    setBrand(d.brand ?? "");
+    setDeviceType(d.type ?? "");
     setName(d.name);
     setQuestions(d.questions.length ? d.questions : [""]);
     setAnalyzing(false);
