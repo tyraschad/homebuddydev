@@ -3,7 +3,7 @@ import { X, Mic, Send, ArrowUp, Volume2, VolumeX, ChevronLeft, ChevronRight, Loa
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, currentTimePeriod, timeCategoryDevices, inferDeviceCategory, cleanQuickActionLabel, type Device, type Reminder } from "@/lib/carer-store";
 import { useServerFn } from "@tanstack/react-start";
-import { generateSteps, answerQuestion, speak, reminderChat, clarifyOrAnswer } from "@/lib/talk.functions";
+import { generateSteps, answerQuestion, speak, reminderChat, clarifyOrAnswer, routeDevice } from "@/lib/talk.functions";
 import { useVoiceRecorder, type VoiceStatus } from "@/lib/use-voice-recorder";
 
 type ChatMsg = {
