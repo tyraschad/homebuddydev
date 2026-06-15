@@ -769,7 +769,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           )}
 
           {!guide && !wellDone && messages.map((m, i) => {
-            const userBg = v2 ? BEIGE : ACCENT;
+            const userBg = v2 ? BEIGE : "#CBE894";
             const userColor = v2 ? TEAL : "#000000";
             const userBorder = !v2 && m.role === "user" ? "2px solid #000000" : undefined;
             return (
