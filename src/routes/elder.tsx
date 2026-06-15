@@ -222,22 +222,23 @@ function ElderHome() {
   const [showCompleted, setShowCompleted] = useState(false);
 
   return (
-    <main
-      style={{
-        width: "100%",
-        minHeight: "100vh",
-        background: pageBg,
-        padding: 16,
-        display: "flex",
-        flexDirection: "column",
-        boxSizing: "border-box",
-        color: cardText,
-        lineHeight: 1.5,
-        position: "relative",
-        zIndex: 1,
-      }}
-    >
+    <>
       {v2 && <GradientBackground />}
+      <main
+        style={{
+          width: "100%",
+          minHeight: "100vh",
+          background: pageBg,
+          padding: 16,
+          display: "flex",
+          flexDirection: "column",
+          boxSizing: "border-box",
+          color: cardText,
+          lineHeight: 1.5,
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
       <header
         style={{
           display: "flex",
