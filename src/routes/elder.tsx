@@ -994,11 +994,11 @@ function ReminderDetailsPopup({
     .filter(Boolean)
     .join(" — ");
 
-  const textColor = v2 ? "#1B5E5E" : "#000000";
-  const iconColor = v2 ? "#1B5E5E" : "#000000";
-  const containerBorder = v2 ? "2px solid #4A7C59" : "2px solid #000000";
-  const containerShadow = v2 ? "0 8px 16px rgba(0,0,0,0.25)" : "0 4px 8px rgba(0,0,0,0.2)";
-  const notesBg = v2 ? "#E8F5E9" : "#F9F9F9";
+  const textColor = v2 ? "#25483A" : "#000000";
+  const iconColor = textColor;
+  const containerBorder = v2 ? "2px solid #519D46" : "2px solid #000000";
+  const containerShadow = v2 ? "0 8px 16px rgba(37,72,58,0.18)" : "0 4px 8px rgba(0,0,0,0.2)";
+  const notesBg = v2 ? "#CBE894" : "#FFFFFF";
 
   return (
     <div
@@ -1046,7 +1046,7 @@ function ReminderDetailsPopup({
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 12 }}>
             <ReminderIcon type={reminder.type} size={24} color={iconColor} />
-            <h2 style={{ margin: 0, fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 24, color: textColor }}>
+            <h2 style={{ margin: 0, fontFamily: v2 ? "Newsreader, serif" : "Inter, sans-serif", fontWeight: 700, fontSize: 24, color: textColor }}>
               {reminder.name}
             </h2>
           </div>
@@ -1102,7 +1102,7 @@ function ReminderDetailsPopup({
                 height: 100,
                 objectFit: "cover",
                 borderRadius: 4,
-                border: `1px solid ${v2 ? "#A8D5BA" : "#D0D0D0"}`,
+                border: `1px solid ${v2 ? "#CBE894" : "#000000"}`,
               }}
             />
           </div>
