@@ -615,7 +615,8 @@ function ElderHome() {
           .elder-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
-    </main>
+      </main>
+    </>
   );
 }
 
