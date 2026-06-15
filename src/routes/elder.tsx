@@ -419,7 +419,7 @@ function ElderHome() {
                   style={{
                     fontFamily: "Inter, sans-serif",
                     fontSize: 14,
-                    color: COMPLETED_COLOR,
+                    color: mutedText,
                     textAlign: "center",
                     marginTop: 24,
                   }}
@@ -448,7 +448,7 @@ function ElderHome() {
                           fontFamily: "Inter, sans-serif",
                           fontSize: 14,
                           fontWeight: 700,
-                          color: COMPLETED_COLOR,
+                          color: mutedText,
                         }}
                         aria-expanded={showCompleted}
                       >
@@ -470,7 +470,7 @@ function ElderHome() {
                                 padding: "4px 0",
                                 fontFamily: "Inter, sans-serif",
                                 fontSize: 14,
-                                color: COMPLETED_COLOR,
+                                color: mutedText,
                                 opacity: 0.6,
                                 textDecoration: "line-through",
                                 display: "flex",
@@ -478,7 +478,7 @@ function ElderHome() {
                                 gap: 8,
                               }}
                             >
-                              <ReminderIcon type={i.reminder.type} size={20} color={COMPLETED_COLOR} />
+                              <ReminderIcon type={i.reminder.type} size={20} color={mutedText} />
                               <span data-readable="true">
                                 {formatTimeStr(i.time)} — {i.reminder.name}
                               </span>
@@ -521,7 +521,7 @@ function ElderHome() {
                                 {i.reminder.name}
                               </span>
                             </div>
-                            <div data-readable="true" style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>
+                            <div data-readable="true" style={{ fontSize: 14, color: mutedText, paddingLeft: 28 }}>
                               {timeText} — {rel}
                             </div>
                           </button>
@@ -551,7 +551,7 @@ function ElderHome() {
                               {i.reminder.name}
                             </span>
                           </div>
-                          <div data-readable="true" style={{ fontSize: 14, color: COMPLETED_COLOR, paddingLeft: 28 }}>
+                          <div data-readable="true" style={{ fontSize: 14, color: mutedText, paddingLeft: 28 }}>
                             {timeText}
                           </div>
                         </button>
