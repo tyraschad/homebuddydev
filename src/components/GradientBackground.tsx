@@ -43,6 +43,7 @@ export function GradientBackground({ opacity = 1, style }: Props) {
         fov={45}
       >
         <ShaderGradient
+          {...({ bgColor1: "#25483A", bgColor2: "#000000" } as any)}
           animate="on"
           type="waterPlane"
           shader="defaults"
