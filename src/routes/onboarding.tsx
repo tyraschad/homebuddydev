@@ -228,25 +228,32 @@ function Onboarding() {
 
   if (!hydrated) return <main style={page} />;
 
+  const gradientOverlay = <GradientBackground opacity={0.12} style={{ zIndex: 2 }} />;
+
+
   // Resume prompt
   if (resumePrompt) {
     return (
-      <main style={page}>
-        <div style={container}>
-          <div style={{ ...card, marginTop: 48 }}>
-            <h2 style={h1}>Welcome back</h2>
-            <p style={muted}>
-              You have an incomplete setup in progress. Resume from page {data.step}?
-            </p>
-            <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
-              <button type="button" onClick={() => setResumePrompt(false)} style={btnPrimary()}>Continue setup</button>
-              <button type="button" onClick={startOver} style={btnSecondary}>Start over</button>
+      <>
+        <main style={page}>
+          <div style={container}>
+            <div style={{ ...card, marginTop: 48 }}>
+              <h2 style={h1}>Welcome back</h2>
+              <p style={muted}>
+                You have an incomplete setup in progress. Resume from page {data.step}?
+              </p>
+              <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
+                <button type="button" onClick={() => setResumePrompt(false)} style={btnPrimary()}>Continue setup</button>
+                <button type="button" onClick={startOver} style={btnSecondary}>Start over</button>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+        {gradientOverlay}
+      </>
     );
   }
+
 
   return (
     <main style={page}>
