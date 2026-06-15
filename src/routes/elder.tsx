@@ -34,7 +34,7 @@ const V2_AMBER = "#FEE78C";
 const V2_WHITE = "#FFFFFF";
 
 const FONT_INTER = "Inter, sans-serif";
-const FONT_NEWSREADER = "Newsreader, Georgia, serif";
+const FONT_NEWSREADER = "Newsreader, Inter, sans-serif";
 
 function ReminderIcon({ type, size = 20, color = "#000000" }: { type: ReminderType; size?: number; color?: string }) {
   const props = { size, strokeWidth: 2, color };
@@ -618,7 +618,7 @@ function CompletedRow({ label, color }: { label: string; color: string }) {
   return (
     <div
       style={{
-        fontFamily: "Verdana, sans-serif",
+        fontFamily: "Inter, sans-serif",
         fontSize: 16,
 
         fontWeight: 400,
@@ -743,7 +743,7 @@ function OverlayView({
           <h2
             style={{
               margin: 0,
-              fontFamily: "'Trebuchet MS', sans-serif",
+              fontFamily: "Inter, sans-serif",
               fontWeight: 700,
               fontSize: 20,
               color: theme.text,
@@ -833,7 +833,7 @@ function CallPopup({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 24, color: theme.text }}>
+          <h2 style={{ margin: 0, fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 24, color: theme.text }}>
             Make a Call
           </h2>
           <button
@@ -850,7 +850,7 @@ function CallPopup({
           {/* Personal Contacts */}
           {personalContacts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "24px 0" }}>
-              <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted }}>
+              <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: theme.muted }}>
                 No personal contacts saved
               </div>
             </div>
@@ -876,7 +876,7 @@ function CallPopup({
           >
             <div
               style={{
-                fontFamily: "'Trebuchet MS', sans-serif",
+                fontFamily: "Inter, sans-serif",
                 fontWeight: 700,
                 fontSize: 14,
                 color: "#1A1A2E",
@@ -930,8 +930,8 @@ function ContactRow({
         (e.currentTarget as HTMLElement).style.background = "transparent";
       }}
     >
-      <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>{name}</div>
-      <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>{phone}</div>
+      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>{name}</div>
+      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>{phone}</div>
     </a>
   );
 }
@@ -960,8 +960,8 @@ function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; is
         (e.currentTarget as HTMLElement).style.background = "transparent";
       }}
     >
-      <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 16, fontWeight: 700, color: textColor }}>{name}</div>
-      <div style={{ fontFamily: "Verdana, sans-serif", fontSize: 14, color: phoneColor, marginTop: 2 }}>{phone}</div>
+      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: textColor }}>{name}</div>
+      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: phoneColor, marginTop: 2 }}>{phone}</div>
     </a>
   );
 }
