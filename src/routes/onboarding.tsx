@@ -8,6 +8,7 @@ import { useSettings } from "@/lib/settings-store";
 import { useCarer, type Reminder, type ReminderType, type Contact, type Device } from "@/lib/carer-store";
 import { CategoryPicker, ReminderForm, uid } from "@/components/reminder-form";
 import { DeviceListEditor } from "@/components/instruction-context-form";
+import { GradientBackground } from "@/components/GradientBackground";
 
 
 export const Route = createFileRoute("/onboarding")({
@@ -119,6 +120,7 @@ function Onboarding() {
     minHeight: "100vh", background: theme.bg, color: theme.text,
     fontFamily: "Verdana, sans-serif", lineHeight: 1.5,
     display: "flex", flexDirection: "column",
+    position: "relative", zIndex: 1,
   };
   const container: CSSProperties = {
     maxWidth: 720, width: "100%", margin: "0 auto", padding: 24, boxSizing: "border-box",
