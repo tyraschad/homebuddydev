@@ -233,7 +233,7 @@ function ElderHome() {
         display: "flex",
         flexDirection: "column",
         boxSizing: "border-box",
-        color: "#1A1A2E",
+        color: cardText,
         lineHeight: 1.5,
         position: "relative",
       }}
@@ -249,13 +249,13 @@ function ElderHome() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src={whiteLogo} alt="" width={24} height={24} style={{ display: "block" }} />
+          <img src={horizontalLogo.url} alt="HomeBuddy" height={28} style={{ display: "block", height: 28, width: "auto" }} />
           <h1
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: headerFont,
               fontWeight: 700,
               fontSize: v2 ? 24 : 20,
-              color: "#FFFFFF",
+              color: headerTextColor,
               margin: 0,
               textShadow: headerTextShadow,
             }}
@@ -269,15 +269,15 @@ function ElderHome() {
             display: "inline-flex",
             alignItems: "center",
             gap: 12,
-            color: "#FFFFFF",
-            fontFamily: "Inter, sans-serif",
+            color: headerTextColor,
+            fontFamily: FONT_INTER,
             fontWeight: 700,
             fontSize: 16,
             textDecoration: "none",
           }}
         >
           <span>Settings</span>
-          <Settings size={28} strokeWidth={2} color="#FFFFFF" />
+          <Settings size={28} strokeWidth={2} color={headerTextColor} />
         </Link>
       </header>
 
@@ -307,7 +307,7 @@ function ElderHome() {
             <div
               data-readable="true"
               style={{
-                fontFamily: "Georgia, serif",
+                fontFamily: headerFont,
                 fontWeight: 700,
                 fontSize: line1Size,
                 color: cardText,
@@ -320,7 +320,7 @@ function ElderHome() {
             <div
               data-readable="true"
               style={{
-                fontFamily: "Georgia, serif",
+                fontFamily: headerFont,
                 fontWeight: 700,
                 fontSize: line2Size,
                 color: cardText,
