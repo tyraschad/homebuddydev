@@ -1,18 +1,15 @@
-## Add HomeBuddy logos to project
+## Create Brand Guidelines Document
 
-Upload both logo images as Lovable Assets (CDN-hosted) with pointer files committed to `src/assets/` for reference and future use.
+Write a reference markdown file at `/continuity/brand-guidelines.md` containing the user's brand guidelines split into two sections:
 
-### Files to create
-- `src/assets/homebuddy-vertical-logo.png.asset.json` — vertical lockup (icon above wordmark)
-- `src/assets/homebuddy-horizontal-logo.png.asset.json` — horizontal lockup (icon beside wordmark)
+1. **V1 Elder Screen**
+   - Colors: Dark Grey (#8F8F8F), Black (#000000), Green (#6CA24E)
+   - Typefaces: Inter Bold (clock/headers), Inter (body/buttons/labels)
 
-### How
-Run `lovable-assets create` against the uploads at `/mnt/user-uploads/Vertical_Logo.png` and `/mnt/user-uploads/Horizontal_Logo.png`, writing the resulting pointer JSON into `src/assets/`. No binary files added to the repo; no components changed.
+2. **Rest of App**
+   - Colors: Sage Green (#519D46), Light Sage (#CBE894), Dark Navy (#25483A), Amber (#FEE78C), Pure White (#FFFFFF)
+   - Typefaces: Newsreader (headers), Newsreader Italic (subheaders/emphasis), Inter (body/buttons/labels)
 
-### Usage later
-```tsx
-import verticalLogo from "@/assets/homebuddy-vertical-logo.png.asset.json";
-<img src={verticalLogo.url} alt="HomeBuddy" />
-```
+Include references to the existing logo assets in `src/assets/` (homebuddy-vertical-logo.png.asset.json, homebuddy-horizontal-logo.png.asset.json, white-logo.svg).
 
-The existing `src/assets/white-logo.svg` stays untouched.
+No other file changes required — this is a standalone reference document.
