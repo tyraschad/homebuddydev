@@ -770,13 +770,15 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
 
           {!guide && !wellDone && messages.map((m, i) => {
             const userBg = v2 ? BEIGE : ACCENT;
-            const userColor = v2 ? TEAL : "#FFFFFF";
+            const userColor = v2 ? TEAL : "#000000";
+            const userBorder = !v2 && m.role === "user" ? "2px solid #000000" : undefined;
             return (
               <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
                 <div style={{
                   maxWidth: "85%",
                   background: m.role === "user" ? userBg : aiBubbleBg,
                   color: m.role === "user" ? userColor : aiBubbleText,
+                  border: userBorder,
                   borderRadius: 12, padding: "10px 14px",
                   fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
                   whiteSpace: "pre-wrap", wordBreak: "break-word",
