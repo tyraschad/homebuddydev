@@ -234,7 +234,7 @@ function ElderHome() {
         color: cardText,
         lineHeight: 1.5,
         position: "relative",
-        zIndex: 0,
+        zIndex: 1,
       }}
     >
       {v2 && <GradientBackground />}
