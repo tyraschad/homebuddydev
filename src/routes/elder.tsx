@@ -94,7 +94,7 @@ function buildAnnouncement(name: string, reminderName: string, offsetMin: number
 
 function ElderHome() {
   const { theme, textSize, announcementsEnabled, highContrast } = useSettings();
-  const v2 = !highContrast;
+  const v2 = true; // TEMP-VERIFY
 
   // Variant tokens
   const pageBg = v2 ? V2_WHITE : V1_BG;
