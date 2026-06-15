@@ -196,10 +196,6 @@ function ElderHome() {
   const [openItemKey, setOpenItemKey] = useState<string | null>(null);
   const openItem = items.find((i) => i.key === openItemKey) ?? null;
 
-  const timelineColor = appearance === "dark" ? "#5A5A6E" : "#D0D0D0";
-  const nextBg = appearance === "dark" ? "#2E5A2E" : "#E8F5E9";
-  const nextBorder = appearance === "dark" ? "#3F7A3F" : "#A5D6A7";
-  const completedColor = appearance === "dark" ? "#B0B0B0" : "#6B6860";
 
   function formatRelative(min: number) {
     const diff = min - nowMin;
