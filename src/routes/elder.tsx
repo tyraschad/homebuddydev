@@ -779,11 +779,10 @@ function CallPopup({
   theme: { card: string; text: string; border: string; overlay: string; muted: string };
 }) {
   const { elder } = useCarer();
-  const { cardBorder, appearance } = useSettings();
+  const { cardBorder } = useSettings();
   const contacts = elder.contacts ?? [];
-  const separator = appearance === "dark" ? "#4A4A5E" : "#EFEFEF";
-  const dividerColor = appearance === "dark" ? "#6B6B7B" : "#BDBDBD";
-  const isDark = appearance === "dark";
+  const separator = "#E5E5E5";
+  const dividerColor = "#BDBDBD";
 
   const emergencyPhones = new Set(EMERGENCY_CONTACTS.map((c) => c.phone.replace(/[^0-9]/g, "")));
   const personalContacts = contacts.filter((c) => {
