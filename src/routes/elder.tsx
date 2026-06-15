@@ -868,7 +868,8 @@ function CallPopup({
           {/* Emergency Contacts */}
           <div
             style={{
-              background: isDark ? "#C62828" : "#FFCCCC",
+              background: "#FFFFFF",
+              border: "2px solid #000000",
               borderRadius: 4,
               padding: "8px 0",
               overflow: "hidden",
@@ -879,7 +880,7 @@ function CallPopup({
                 fontFamily: "Inter, sans-serif",
                 fontWeight: 700,
                 fontSize: 14,
-                color: "#1A1A2E",
+                color: "#000000",
                 textTransform: "uppercase",
                 padding: "4px 12px 8px 12px",
                 letterSpacing: "0.5px",
@@ -889,7 +890,7 @@ function CallPopup({
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               {EMERGENCY_CONTACTS.map((c) => (
-                <EmergencyRow key={c.id} name={c.name} phone={c.phone} isDark={isDark} />
+                <EmergencyRow key={c.id} name={c.name} phone={c.phone} />
               ))}
             </div>
           </div>
@@ -936,10 +937,10 @@ function ContactRow({
   );
 }
 
-function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; isDark: boolean }) {
-  const textColor = "#1A1A2E";
-  const phoneColor = isDark ? "#2A2A3E" : "#4A4A4A";
-  const separator = isDark ? "#B71C1C" : "#FFB3B3";
+function EmergencyRow({ name, phone }: { name: string; phone: string }) {
+  const textColor = "#000000";
+  const phoneColor = "#4A4A4A";
+  const separator = "#E5E5E5";
   return (
     <a
       href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
@@ -954,7 +955,7 @@ function EmergencyRow({ name, phone, isDark }: { name: string; phone: string; is
         transition: "background 0.15s",
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.background = isDark ? "#D32F2F" : "#FFB3B3";
+        (e.currentTarget as HTMLElement).style.background = "#F5F5F5";
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLElement).style.background = "transparent";
