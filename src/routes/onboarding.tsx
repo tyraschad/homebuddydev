@@ -256,7 +256,8 @@ function Onboarding() {
 
 
   return (
-    <main style={page}>
+    <>
+      <main style={page}>
       <div style={container}>
         {renderHeader()}
 
@@ -504,6 +505,8 @@ function Onboarding() {
         )}
       </div>
     </main>
+    {gradientOverlay}
+    </>
   );
 }
 
