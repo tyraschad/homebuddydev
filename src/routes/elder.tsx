@@ -16,13 +16,27 @@ import { useSettings } from "@/lib/settings-store";
 import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib/carer-store";
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { speak } from "@/lib/talk.functions";
-import whiteLogo from "@/assets/white-logo.svg";
+import horizontalLogo from "@/assets/homebuddy-horizontal-logo.png.asset.json";
 
-const PAGE_BG = "#8F8F8F";
-const CARD_BORDER = "1px solid #D0D0D0";
-const COMPLETED_COLOR = "#6B6860";
+// V1 Elder palette (WCAG): #8F8F8F bg, #000000 text/mic, #6CA24E phone
+const V1_BG = "#8F8F8F";
+const V1_FG = "#000000";
+const V1_PHONE = "#6CA24E";
+const V1_CARD_BORDER = "1px solid #000000";
+const V1_MUTED = "rgba(0,0,0,0.55)";
+const V1_RULE = "rgba(0,0,0,0.2)";
 
-function ReminderIcon({ type, size = 20, color = "#1A1A2E" }: { type: ReminderType; size?: number; color?: string }) {
+// V2 Elder palette (Rest of App): Sage / Light Sage / Dark Navy / Amber / White
+const V2_SAGE = "#519D46";
+const V2_SAGE_LIGHT = "#CBE894";
+const V2_NAVY = "#25483A";
+const V2_AMBER = "#FEE78C";
+const V2_WHITE = "#FFFFFF";
+
+const FONT_INTER = "Inter, sans-serif";
+const FONT_NEWSREADER = "Newsreader, Georgia, serif";
+
+function ReminderIcon({ type, size = 20, color = "#000000" }: { type: ReminderType; size?: number; color?: string }) {
   const props = { size, strokeWidth: 2, color };
   if (type === "medication") return <Pill {...props} />;
   if (type === "appointment") return <CalendarDays {...props} />;
