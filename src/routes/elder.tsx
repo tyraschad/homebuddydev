@@ -96,23 +96,29 @@ function ElderHome() {
   const { theme, appearance, textSize, announcementsEnabled, highContrast } = useSettings();
   const v2 = !highContrast;
 
-  // V2 design tokens
-  const pageBg = v2 ? "linear-gradient(to bottom, #4A7C59 0%, #A8D5BA 100%)" : PAGE_BG;
-  const cardBg = v2 ? "rgba(255,255,255,0.85)" : "#FFFFFF";
-  const cardBorderStyle = v2 ? "1px solid #D0E8D0" : CARD_BORDER;
+  // Variant tokens
+  const pageBg = v2 ? V2_WHITE : V1_BG;
+  const cardBg = V2_WHITE;
+  const cardBorderStyle = v2 ? `1px solid ${V2_SAGE_LIGHT}` : V1_CARD_BORDER;
   const cardRadius = v2 ? 16 : 4;
-  const cardShadow = v2 ? "0 4px 8px rgba(0,0,0,0.1)" : "none";
-  const cardText = v2 ? "#1B5E5E" : "#1A1A2E";
-  const cardTextBlack = v2 ? "#1B5E5E" : "#000000";
-  const headerTextShadow = v2 ? "0 2px 4px rgba(0,0,0,0.3)" : "none";
-  const micBorderColor = v2 ? "#6BA24A" : "#000000";
-  const micIconColor = v2 ? "#1B5E5E" : "#FFFFFF";
+  const cardShadow = v2 ? "0 4px 12px rgba(37,72,58,0.08)" : "none";
+  const cardText = v2 ? V2_NAVY : V1_FG;
+  const cardTextBlack = cardText;
+  const headerTextColor = v2 ? V2_NAVY : V1_FG;
+  const headerTextShadow = "none";
+  const micBorderColor = v2 ? V2_SAGE : V1_FG;
+  const micFill = v2 ? V2_WHITE : V1_FG;
+  const micIconColor = v2 ? V2_NAVY : V2_WHITE;
   const micSize = v2 ? 150 : 120;
-  const micIconPx = v2 ? 80 : 80;
-  const nextBorderV = v2 ? "1px solid #1B5E5E" : "1px solid #000000";
-  const remIconColor = v2 ? "#1B5E5E" : "#000000";
-  const fabBg = v2 ? "#FFFFFF" : "#6BA24A";
-  const fabIconColor = v2 ? "#6BA24A" : "#FFFFFF";
+  const micIconPx = 80;
+  const nextBorderV = v2 ? `2px solid ${V2_SAGE}` : `1px solid ${V1_FG}`;
+  const nextBgV = v2 ? V2_AMBER : V2_WHITE;
+  const remIconColor = v2 ? V2_NAVY : V1_FG;
+  const fabBg = v2 ? V2_SAGE : V1_PHONE;
+  const fabIconColor = V2_WHITE;
+  const mutedText = v2 ? "rgba(37,72,58,0.65)" : V1_MUTED;
+  const ruleColor = v2 ? V2_SAGE_LIGHT : V1_RULE;
+  const headerFont = v2 ? FONT_NEWSREADER : FONT_INTER;
   const { reminders, elder } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
