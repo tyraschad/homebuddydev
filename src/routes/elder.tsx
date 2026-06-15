@@ -355,7 +355,7 @@ function ElderHome() {
                 aspectRatio: "1 / 1",
                 flexShrink: 0,
                 borderRadius: "50%",
-                background: v2 ? "#FFFFFF" : "#000000",
+                background: micFill,
                 border: `2px solid ${micBorderColor}`,
                 display: "flex",
                 alignItems: "center",
@@ -397,7 +397,7 @@ function ElderHome() {
             <h2
               data-readable="true"
               style={{
-                fontFamily: "Inter, sans-serif",
+                fontFamily: headerFont,
                 fontWeight: 700,
                 fontSize: 18,
                 color: cardTextBlack,
@@ -425,7 +425,7 @@ function ElderHome() {
               ) : (
                 <div style={{ position: "relative", paddingLeft: 16 }}>
                   {/* Timeline vertical line */}
-                  <div style={{ position: "absolute", left: 4, top: 4, bottom: 4, width: 2, background: "#D0D0D0" }} />
+                  <div style={{ position: "absolute", left: 4, top: 4, bottom: 4, width: 2, background: ruleColor }} />
 
                   {/* Completed (collapsible) */}
                   {completedItems.length > 0 && (
@@ -498,7 +498,7 @@ function ElderHome() {
                             type="button"
                             onClick={() => setOpenItemKey(i.key)}
                             style={{
-                              background: "#FFFFFF",
+                              background: nextBgV,
                               border: nextBorderV,
                               borderRadius: v2 ? 8 : 4,
                               padding: "12px 16px",
