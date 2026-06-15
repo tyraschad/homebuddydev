@@ -15,6 +15,7 @@ import {
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib/carer-store";
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
+import { GradientBackground } from "@/components/GradientBackground";
 import { speak } from "@/lib/talk.functions";
 import horizontalLogo from "@/assets/homebuddy-horizontal-logo.png.asset.json";
 import horizontalLogoWhite from "@/assets/homebuddy-horizontal-logo-white.png.asset.json";
@@ -98,7 +99,7 @@ function ElderHome() {
   const v2 = !highContrast;
 
   // Variant tokens
-  const pageBg = v2 ? V2_WHITE : V1_BG;
+  const pageBg = v2 ? "transparent" : V1_BG;
   const cardBg = V2_WHITE;
   const cardBorderStyle = v2 ? `1px solid ${V2_SAGE_LIGHT}` : V1_CARD_BORDER;
   const cardRadius = v2 ? 16 : 4;
@@ -221,20 +222,23 @@ function ElderHome() {
   const [showCompleted, setShowCompleted] = useState(false);
 
   return (
-    <main
-      style={{
-        width: "100%",
-        minHeight: "100vh",
-        background: pageBg,
-        padding: 16,
-        display: "flex",
-        flexDirection: "column",
-        boxSizing: "border-box",
-        color: cardText,
-        lineHeight: 1.5,
-        position: "relative",
-      }}
-    >
+    <>
+      {v2 && <GradientBackground />}
+      <main
+        style={{
+          width: "100%",
+          minHeight: "100vh",
+          background: pageBg,
+          padding: 16,
+          display: "flex",
+          flexDirection: "column",
+          boxSizing: "border-box",
+          color: cardText,
+          lineHeight: 1.5,
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
       <header
         style={{
           display: "flex",
@@ -611,7 +615,8 @@ function ElderHome() {
           .elder-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
-    </main>
+      </main>
+    </>
   );
 }
 
