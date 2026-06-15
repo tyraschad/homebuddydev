@@ -1,22 +1,8 @@
-Update the V1 user chat bubble background color in the Elder chat popup.
+## Plan
 
-## What
-Change the background of user-sent message bubbles in V1 (not V2) from the current green (`#6BA24A`) to the lighter green `#CBE894`.
+Upload `Horizontal_Logo_White.png` to Lovable Assets CDN and create `src/assets/homebuddy-horizontal-logo-white.png.asset.json` so it can be imported in the V1 elder screen (dark backgrounds).
 
-## Where
-`src/components/TalkToTextPopup.tsx`, line 772 inside the `messages.map` render.
+### Step
+1. Run `lovable-assets create --file /mnt/user-uploads/Horizontal_Logo_White.png --filename homebuddy-horizontal-logo-white.png` and write the JSON output to `src/assets/homebuddy-horizontal-logo-white.png.asset.json`.
 
-## How
-Change:
-```
-const userBg = v2 ? BEIGE : ACCENT;
-```
-to:
-```
-const userBg = v2 ? BEIGE : "#CBE894";
-```
-
-This only affects the user bubble background in V1. The black 2px border and black text from the previous update remain unchanged. AI/carer bubbles and all other `ACCENT` usages (buttons, icons, borders) are left as-is.
-
-## Verify
-Open the Elder V1 chat and send a message to confirm the bubble background is `#CBE894`.
+No code changes in the elder screen itself — the user asked only to add it to the assets file.
