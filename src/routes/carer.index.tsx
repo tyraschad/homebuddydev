@@ -501,6 +501,12 @@ function CarerPortal() {
         />
       )}
 
+      <div style={{ display: "flex", justifyContent: "center", padding: "24px 16px 40px" }}>
+        <button type="button" onClick={handleResetSetup} style={btnSecondary}>
+          Reset setup
+        </button>
+      </div>
+
       {savedToast && (
         <div style={{
           position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
