@@ -106,7 +106,7 @@ function ElderHome() {
   const cardShadow = v2 ? "0 4px 12px rgba(37,72,58,0.08)" : "none";
   const cardText = v2 ? V2_NAVY : V1_FG;
   const cardTextBlack = cardText;
-  const headerTextColor = v2 ? V2_NAVY : V1_FG;
+  const headerTextColor = v2 ? V2_WHITE : V1_FG;
   const headerTextShadow = "none";
   const micBorderColor = v2 ? V2_SAGE : V1_FG;
   const micFill = v2 ? V2_WHITE : V1_FG;
@@ -114,7 +114,7 @@ function ElderHome() {
   const micSize = v2 ? 150 : 120;
   const micIconPx = 80;
   const nextBorderV = v2 ? `2px solid ${V2_SAGE}` : `1px solid ${V1_FG}`;
-  const nextBgV = v2 ? V2_AMBER : V2_WHITE;
+  const nextBgV = v2 ? V2_SAGE_LIGHT : V2_WHITE;
   const remIconColor = v2 ? V2_NAVY : V1_FG;
   const fabBg = v2 ? V2_SAGE : V1_PHONE;
   const fabIconColor = V2_WHITE;
@@ -250,7 +250,7 @@ function ElderHome() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src={v2 ? horizontalLogo.url : horizontalLogoWhite.url} alt="HomeBuddy" height={28} style={{ display: "block", height: 28, width: "auto" }} />
+          <img src={v2 ? horizontalLogoWhite.url : horizontalLogo.url} alt="HomeBuddy" height={28} style={{ display: "block", height: 28, width: "auto" }} />
           <h1
             style={{
               fontFamily: headerFont,
@@ -259,6 +259,7 @@ function ElderHome() {
               color: headerTextColor,
               margin: 0,
               textShadow: headerTextShadow,
+              fontStyle: v2 ? "italic" : "normal",
             }}
           >
             {greet}, {elder.name || "Albert"}
