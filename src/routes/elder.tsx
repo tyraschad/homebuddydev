@@ -250,7 +250,7 @@ function ElderHome() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src={v2 ? horizontalLogoWhite.url : horizontalLogo.url} alt="HomeBuddy" height={28} style={{ display: "block", height: 28, width: "auto" }} />
+          <img src={horizontalLogoWhite.url} alt="HomeBuddy" height={28} style={{ display: "block", height: 28, width: "auto" }} />
           <h1
             style={{
               fontFamily: headerFont,
