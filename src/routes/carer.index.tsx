@@ -93,6 +93,16 @@ function CarerPortal() {
   const buttonBorder = "1px solid #D0D0D0";
   const inputBorder = "1px solid #D0D0D0";
   const { elder, setElder, reminders, addReminder, updateReminder, deleteReminder } = useCarer();
+  const navigate = useNavigate();
+
+  const handleResetSetup = () => {
+    if (!window.confirm("Reset setup? This will clear onboarding progress and return you to the start.")) return;
+    try {
+      localStorage.removeItem("homebuddy.onboarding.v2");
+      localStorage.removeItem("homebuddy.onboarding.completed.v1");
+    } catch {}
+    navigate({ to: "/onboarding" });
+  };
 
   const [view, setView] = useState<ViewMode>("day");
   const [cursor, setCursor] = useState<Date | null>(null);
