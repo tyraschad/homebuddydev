@@ -250,7 +250,7 @@ function ElderHome() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src={v2 ? horizontalLogoWhite.url : horizontalLogo.url} alt="HomeBuddy" height={28} style={{ display: "block", height: 28, width: "auto" }} />
+          <img src={horizontalLogoWhite.url} alt="HomeBuddy" height={28} style={{ display: "block", height: 28, width: "auto" }} />
           <h1
             style={{
               fontFamily: headerFont,
@@ -917,6 +917,7 @@ function ContactRow({
   theme: { text: string; muted: string };
   separator: string;
 }) {
+  const [hover, setHover] = useState(false);
   return (
     <a
       href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
@@ -929,16 +930,13 @@ function ContactRow({
         color: "inherit",
         cursor: "pointer",
         transition: "background 0.15s",
+        background: hover ? "#FFFFFF" : "transparent",
       }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "#F5F5F5";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "transparent";
-      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
     >
-      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>{name}</div>
-      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>{phone}</div>
+      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: hover ? "#000000" : theme.text }}>{name}</div>
+      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: hover ? "#000000" : theme.muted, marginTop: 2 }}>{phone}</div>
     </a>
   );
 }
@@ -947,6 +945,7 @@ function EmergencyRow({ name, phone }: { name: string; phone: string }) {
   const textColor = "#000000";
   const phoneColor = "#4A4A4A";
   const separator = "#E5E5E5";
+  const [hover, setHover] = useState(false);
   return (
     <a
       href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
@@ -959,16 +958,13 @@ function EmergencyRow({ name, phone }: { name: string; phone: string }) {
         color: "inherit",
         cursor: "pointer",
         transition: "background 0.15s",
+        background: hover ? "#FFFFFF" : "transparent",
       }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "#F5F5F5";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.background = "transparent";
-      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
     >
-      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: textColor }}>{name}</div>
-      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: phoneColor, marginTop: 2 }}>{phone}</div>
+      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: hover ? "#000000" : textColor }}>{name}</div>
+      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: hover ? "#000000" : phoneColor, marginTop: 2 }}>{phone}</div>
     </a>
   );
 }
