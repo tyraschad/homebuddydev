@@ -1,32 +1,41 @@
-# Add ShaderGradient background
+## Where it goes
 
-Install `@shadergradient/react` (+ peer `three`, `@react-three/fiber`) and use the provided gradient config as a fixed background layer behind V2 elder and onboarding.
+`src/routes/carer.index.tsx`, inside the `CarerPortal` component's returned `<main>` — just before the `savedToast` block (~line 493), after the calendar section closes. This places it as a footer-style action at the bottom of the page content, below the calendar card.
 
-## Steps
+```text
+<main>
+  <header />
+  <section profile />
+  <section instruction context />
+  <section schedule + calendar />
+  ── NEW: Reset setup footer row ──
+  {savedToast}
+  {tourOpen && <PortalTour />}
+</main>
+```
 
-1. **Install deps**
-   - `bun add @shadergradient/react three @react-three/fiber`
+## What the button does
 
-2. **Create reusable component** `src/components/GradientBackground.tsx`
-   - Renders `<ShaderGradientCanvas>` + `<ShaderGradient .../>` with the exact props you pasted.
-   - Wrapper div: `position: fixed; inset: 0; z-index: 0; pointer-events: none;` plus an `opacity` prop (default `1`).
-   - SSR-safe: dynamic import inside `useEffect` or guard with `typeof window !== "undefined"`, since `three`/`@react-three/fiber` touch `window`.
+1. Confirms via `window.confirm("Reset setup? This will clear onboarding progress and return you to the start.")`.
+2. Clears onboarding storage keys (matches `src/routes/onboarding.tsx`):
+   - `localStorage.removeItem("homebuddy.onboarding.v2")` (in-progress draft)
+   - `localStorage.removeItem("homebuddy.onboarding.completed.v1")` (completion flag)
+3. Navigates to `/onboarding` using `useNavigate()` from `@tanstack/react-router`.
 
-3. **Wire into V2 elder** (`src/routes/elder.tsx`, line 228 area)
-   - When `v2` is true: render `<GradientBackground />` as first child of the page wrapper, set `pageBg = "transparent"`, and ensure the page root has `position: relative; zIndex: 0` so cards sit above the canvas (cards already have their own white bg, so they read correctly).
-   - V1 path unchanged (keeps grey `V1_BG`).
+## Styling
 
-4. **Wire into onboarding** (`src/routes/onboarding.tsx`, line 119 area)
-   - Render `<GradientBackground opacity={0.12} />` behind the onboarding container.
-   - Keep `theme.bg` as-is (white/dark) but make the outer wrapper transparent so the 12% gradient shows through; or layer the canvas above the bg with `opacity: 0.12`. Net effect: subtle tinted gradient wash over the existing background.
+Reuse the existing `btnSecondary` style already defined in `CarerPortal` (grey `#F0F0F0`, 1px `#D0D0D0` border, black text — matches the V1 carer portal styling rule in memory). Wrap in a centered container with top margin so it reads as a quiet footer action, not a primary CTA:
 
-5. **Verify**
-   - Check preview at `/elder` (V2 default) and `/onboarding`.
-   - Confirm interactive elements still receive clicks (canvas has `pointer-events: none`).
-   - Confirm V1 elder (high-contrast) still shows solid grey.
+```tsx
+<div style={{ display: "flex", justifyContent: "center", padding: "24px 16px 40px" }}>
+  <button type="button" onClick={handleResetSetup} style={btnSecondary}>
+    Reset setup
+  </button>
+</div>
+```
 
-## Notes / trade-offs
+## Files touched
 
-- `@shadergradient/react` pulls in three.js (~150KB gzipped). Acceptable for these two screens; component is only mounted there.
-- On low-end devices the WebGL canvas can be heavy. We can add a `prefers-reduced-motion` fallback to a static CSS gradient if you want — say the word and I'll include it.
-- Not touching V1 elder, carer portal, or settings.
+- `src/routes/carer.index.tsx` — add `useNavigate` import (already imports from `@tanstack/react-router`), add `handleResetSetup` handler in `CarerPortal`, render the footer button block before `{savedToast && …}`.
+
+No changes to onboarding, no new dependencies, no styling token changes.
