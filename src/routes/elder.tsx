@@ -253,7 +253,7 @@ function ElderHome() {
               src={whiteLogo}
               alt="HomeBuddy"
               height={28}
-              style={{ display: "block", height: 28, width: "auto" }}
+              style={{ display: "block", height: 28, width: "auto", paddingBottom: 10 }}
             />
             <h1
               style={{
