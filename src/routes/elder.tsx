@@ -184,7 +184,7 @@ function ElderHome() {
           key: r.id + t,
           time: t,
           reminder: r,
-          completed: nowMin >= 0 && nowMin >= min,
+          completed: nowMin >= 0 && nowMin >= min + 5,
           minutes: min,
         });
       });
@@ -194,7 +194,9 @@ function ElderHome() {
   }, [reminders, now]);
 
   const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
-  const nextKey = items.find((i) => !i.completed)?.key;
+  const nextKey =
+    items.find((i) => i.minutes > nowMin)?.key ??
+    items.find((i) => !i.completed)?.key;
   const [openItemKey, setOpenItemKey] = useState<string | null>(null);
   const openItem = items.find((i) => i.key === openItemKey) ?? null;
 
