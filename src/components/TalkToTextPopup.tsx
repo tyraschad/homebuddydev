@@ -655,6 +655,8 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         @keyframes ttt-rec-dot { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
         @keyframes ttt-cursor { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
         @keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+        @keyframes iosConfirmPop { 0% { opacity: 0; transform: scale(0.92); } 45% { opacity: 1; transform: scale(1.035); } 70% { transform: scale(1.012); } 100% { opacity: 1; transform: scale(1); } }
+        .ttt-complete-pop { animation: iosConfirmPop 450ms cubic-bezier(0.22, 1, 0.36, 1); transform-origin: center; will-change: transform, opacity; }
         .suggestion-chip { transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; }
         .suggestion-chip:hover { border: 2px solid #D0D0D0 !important; background: #F9F9F9 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important; }
       `}</style>
