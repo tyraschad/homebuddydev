@@ -635,7 +635,7 @@ function formatHour(h: number) {
 }
 
 function DayView({ date, reminders, onOpen, onAdd, theme, appearance, gridLine }: {
-  date: Date; reminders: Reminder[]; onOpen: (r: Reminder) => void; onAdd: () => void;
+  date: Date; reminders: Reminder[]; onOpen: (r: Reminder) => void; onAdd: (time?: string) => void;
   theme: ThemeT; appearance: "light" | "dark"; gridLine: string;
 }) {
   const items = reminders.filter((r) => appliesOn(r, date));
