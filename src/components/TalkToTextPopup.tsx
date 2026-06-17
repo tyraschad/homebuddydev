@@ -607,11 +607,39 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     void playTTS(guide.steps[next]);
   };
 
+  const playDing = () => {
+    try {
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new Ctx();
+      const now = ctx.currentTime;
+      [
+        { f: 1046.5, t: now },
+        { f: 1318.5, t: now + 0.12 },
+      ].forEach(({ f, t }) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.18, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.4);
+      });
+      setTimeout(() => ctx.close(), 800);
+    } catch {
+      // ignore — audio is non-essential
+    }
+  };
+
   const finishGuide = () => {
     stopTTS();
     const label = guide?.label ?? "";
     setGuide(null);
     setWellDone(label);
+    playDing();
+    void playTTS("Well Done! You completed your task");
   };
 
   // (suggestions are always shown above input when available)
