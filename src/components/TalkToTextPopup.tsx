@@ -776,7 +776,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           )}
 
           {wellDone && !guide && (
-            <div style={{
+            <div className={v2 ? "ttt-complete-pop" : undefined} style={{
               background: "#FFFFFF",
               border: v2 ? "1px solid #E5E5E5" : "2px solid #000000",
               borderRadius: v2 ? 12 : 8,
