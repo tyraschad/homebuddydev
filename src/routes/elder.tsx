@@ -102,7 +102,7 @@ function ElderHome() {
   const pageBg = v2 ? "transparent" : V1_BG;
   const cardBg = V2_WHITE;
   const cardBorderStyle = v2 ? `1px solid ${V2_SAGE_LIGHT}` : V1_CARD_BORDER;
-  const cardRadius = v2 ? 16 : 4;
+  const cardRadius = v2 ? 8 : 2;
   const cardShadow = v2 ? "0 4px 12px rgba(37,72,58,0.08)" : "none";
   const cardText = v2 ? V2_NAVY : V1_FG;
   const cardTextBlack = cardText;
@@ -198,7 +198,6 @@ function ElderHome() {
   const [openItemKey, setOpenItemKey] = useState<string | null>(null);
   const openItem = items.find((i) => i.key === openItemKey) ?? null;
 
-
   function formatRelative(min: number) {
     const diff = min - nowMin;
     if (diff === 0) return "now";
@@ -239,379 +238,386 @@ function ElderHome() {
           zIndex: 1,
         }}
       >
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "12px 16px",
-          marginBottom: 16,
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src={horizontalLogoWhite.url} alt="HomeBuddy" height={28} style={{ display: "block", height: 28, width: "auto" }} />
-          <h1
-            style={{
-              fontFamily: headerFont,
-              fontWeight: 700,
-              fontSize: v2 ? 24 : 20,
-              color: headerTextColor,
-              margin: 0,
-              textShadow: headerTextShadow,
-              fontStyle: v2 ? "italic" : "normal",
-            }}
-          >
-            {greet}, {elder.name || "Albert"}
-          </h1>
-        </div>
-        <Link
-          to="/settings"
+        <header
           style={{
-            display: "inline-flex",
+            display: "flex",
             alignItems: "center",
-            gap: 12,
-            color: headerTextColor,
-            fontFamily: FONT_INTER,
-            fontWeight: 700,
-            fontSize: 16,
-            textDecoration: "none",
+            justifyContent: "space-between",
+            padding: "12px 16px",
+            marginBottom: 16,
+            flexShrink: 0,
           }}
         >
-          <span>Settings</span>
-          <Settings size={28} strokeWidth={2} color={headerTextColor} />
-        </Link>
-      </header>
-
-      <div
-        style={{
-          flex: 1,
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 16,
-          alignItems: "stretch",
-        }}
-        className="elder-grid"
-      >
-        {/* LEFT COLUMN */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
-          {/* Clock card */}
-          <div
-            style={{
-              background: cardBg,
-              border: cardBorderStyle,
-              borderRadius: cardRadius,
-              padding: 24,
-              textAlign: "center",
-              boxShadow: cardShadow,
-            }}
-          >
-            <div
-              data-readable="true"
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <img
+              src={horizontalLogoWhite.url}
+              alt="HomeBuddy"
+              height={28}
+              style={{ display: "block", height: 28, width: "auto" }}
+            />
+            <h1
               style={{
                 fontFamily: headerFont,
                 fontWeight: 700,
-                fontSize: line1Size,
-                color: cardText,
-                lineHeight: 1.3,
-                marginBottom: 8,
+                fontSize: v2 ? 24 : 20,
+                color: headerTextColor,
+                margin: 0,
+                textShadow: headerTextShadow,
+                fontStyle: v2 ? "italic" : "normal",
               }}
             >
-              {dateDayStr}
-            </div>
-            <div
-              data-readable="true"
-              style={{
-                fontFamily: headerFont,
-                fontWeight: 700,
-                fontSize: line2Size,
-                color: cardText,
-                lineHeight: 1.2,
-              }}
-            >
-              {timeStr}
-            </div>
+              {greet}, {elder.name || "Albert"}
+            </h1>
           </div>
-
-          {/* Ask a Question card */}
-          <button
-            type="button"
-            onClick={() => setOverlay("chat")}
+          <Link
+            to="/settings"
             style={{
-              background: cardBg,
-              border: cardBorderStyle,
-              borderRadius: cardRadius,
-              padding: 16,
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
+              display: "inline-flex",
               alignItems: "center",
-              justifyContent: "center",
-              gap: 16,
-              cursor: "pointer",
-              minHeight: 280,
-              boxShadow: cardShadow,
+              gap: 12,
+              color: headerTextColor,
+              fontFamily: FONT_INTER,
+              fontWeight: 700,
+              fontSize: 16,
+              textDecoration: "none",
             }}
-            aria-label="Tap to ask a question"
           >
+            <span>Settings</span>
+            <Settings size={28} strokeWidth={2} color={headerTextColor} />
+          </Link>
+        </header>
+
+        <div
+          style={{
+            flex: 1,
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 16,
+            alignItems: "stretch",
+          }}
+          className="elder-grid"
+        >
+          {/* LEFT COLUMN */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
+            {/* Clock card */}
             <div
               style={{
-                width: micSize,
-                height: micSize,
-                aspectRatio: "1 / 1",
-                flexShrink: 0,
-                borderRadius: "50%",
-                background: micFill,
-                border: `2px solid ${micBorderColor}`,
+                background: cardBg,
+                border: cardBorderStyle,
+                borderRadius: cardRadius,
+                padding: 24,
+                textAlign: "center",
+                boxShadow: cardShadow,
+              }}
+            >
+              <div
+                data-readable="true"
+                style={{
+                  fontFamily: headerFont,
+                  fontWeight: 700,
+                  fontSize: line1Size,
+                  color: cardText,
+                  lineHeight: 1.3,
+                  marginBottom: 8,
+                }}
+              >
+                {dateDayStr}
+              </div>
+              <div
+                data-readable="true"
+                style={{
+                  fontFamily: headerFont,
+                  fontWeight: 700,
+                  fontSize: line2Size,
+                  color: cardText,
+                  lineHeight: 1.2,
+                }}
+              >
+                {timeStr}
+              </div>
+            </div>
+
+            {/* Ask a Question card */}
+            <button
+              type="button"
+              onClick={() => setOverlay("chat")}
+              style={{
+                background: cardBg,
+                border: cardBorderStyle,
+                borderRadius: cardRadius,
+                padding: 16,
+                flex: 1,
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
+                gap: 16,
+                cursor: "pointer",
+                minHeight: 280,
+                boxShadow: cardShadow,
               }}
+              aria-label="Tap to ask a question"
             >
-              <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
-            </div>
+              <div
+                style={{
+                  width: micSize,
+                  height: micSize,
+                  aspectRatio: "1 / 1",
+                  flexShrink: 0,
+                  borderRadius: "50%",
+                  background: micFill,
+                  border: `2px solid ${micBorderColor}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
+              </div>
+              <div
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  fontWeight: 700,
+                  fontSize: 16,
+                  color: cardTextBlack,
+                  textAlign: "center",
+                  paddingTop: 16,
+                }}
+              >
+                Tap to Ask a Question
+              </div>
+            </button>
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
             <div
               style={{
-                fontFamily: "Inter, sans-serif",
-                fontWeight: 700,
-                fontSize: 16,
-                color: cardTextBlack,
-                textAlign: "center",
-                paddingTop: 16,
+                background: cardBg,
+                border: cardBorderStyle,
+                borderRadius: cardRadius,
+                padding: 16,
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                minHeight: 0,
+                boxShadow: cardShadow,
               }}
             >
-              Tap to Ask a Question
-            </div>
-          </button>
-        </div>
+              <h2
+                data-readable="true"
+                style={{
+                  fontFamily: headerFont,
+                  fontWeight: 700,
+                  fontSize: 18,
+                  color: cardTextBlack,
+                  margin: 0,
+                  paddingBottom: 12,
+                }}
+              >
+                Today's Reminders
+              </h2>
 
-        {/* RIGHT COLUMN */}
-        <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-          <div
-            style={{
-              background: cardBg,
-              border: cardBorderStyle,
-              borderRadius: cardRadius,
-              padding: 16,
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              minHeight: 0,
-              boxShadow: cardShadow,
-            }}
-          >
-            <h2
-              data-readable="true"
-              style={{
-                fontFamily: headerFont,
-                fontWeight: 700,
-                fontSize: 18,
-                color: cardTextBlack,
-                margin: 0,
-                paddingBottom: 12,
-              }}
-            >
-              Today's Reminders
-            </h2>
+              <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+                {items.length === 0 ? (
+                  <p
+                    data-readable="true"
+                    style={{
+                      fontFamily: "Inter, sans-serif",
+                      fontSize: 14,
+                      color: mutedText,
+                      textAlign: "center",
+                      marginTop: 24,
+                    }}
+                  >
+                    No reminders scheduled today
+                  </p>
+                ) : (
+                  <div style={{ position: "relative", paddingLeft: 16 }}>
+                    {/* Timeline vertical line */}
+                    <div
+                      style={{ position: "absolute", left: 4, top: 4, bottom: 4, width: 2, background: ruleColor }}
+                    />
 
-            <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
-              {items.length === 0 ? (
-                <p
-                  data-readable="true"
-                  style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: 14,
-                    color: mutedText,
-                    textAlign: "center",
-                    marginTop: 24,
-                  }}
-                >
-                  No reminders scheduled today
-                </p>
-              ) : (
-                <div style={{ position: "relative", paddingLeft: 16 }}>
-                  {/* Timeline vertical line */}
-                  <div style={{ position: "absolute", left: 4, top: 4, bottom: 4, width: 2, background: ruleColor }} />
+                    {/* Completed (collapsible) */}
+                    {completedItems.length > 0 && (
+                      <div style={{ marginBottom: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => setShowCompleted((v) => !v)}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            padding: "4px 0",
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            fontFamily: "Inter, sans-serif",
+                            fontSize: 14,
+                            fontWeight: 700,
+                            color: mutedText,
+                          }}
+                          aria-expanded={showCompleted}
+                        >
+                          {showCompleted ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          Completed Today ({completedItems.length})
+                        </button>
+                        {showCompleted && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
+                            {completedItems.map((i) => (
+                              <button
+                                key={i.key}
+                                type="button"
+                                onClick={() => setOpenItemKey(i.key)}
+                                style={{
+                                  background: "transparent",
+                                  border: "none",
+                                  textAlign: "left",
+                                  cursor: "pointer",
+                                  padding: "4px 0",
+                                  fontFamily: "Inter, sans-serif",
+                                  fontSize: 14,
+                                  color: mutedText,
+                                  opacity: 0.6,
+                                  textDecoration: "line-through",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                }}
+                              >
+                                <ReminderIcon type={i.reminder.type} size={20} color={mutedText} />
+                                <span data-readable="true">
+                                  {formatTimeStr(i.time)} — {i.reminder.name}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-                  {/* Completed (collapsible) */}
-                  {completedItems.length > 0 && (
-                    <div style={{ marginBottom: 8 }}>
-                      <button
-                        type="button"
-                        onClick={() => setShowCompleted((v) => !v)}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          padding: "4px 0",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                          fontFamily: "Inter, sans-serif",
-                          fontSize: 14,
-                          fontWeight: 700,
-                          color: mutedText,
-                        }}
-                        aria-expanded={showCompleted}
-                      >
-                        {showCompleted ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                        Completed Today ({completedItems.length})
-                      </button>
-                      {showCompleted && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
-                          {completedItems.map((i) => (
+                    {/* Upcoming */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {upcomingItems.map((i) => {
+                        const isNext = i.key === nextKey;
+                        const timeText = formatTimeStr(i.time);
+                        const rel = formatRelative(i.minutes);
+                        if (isNext) {
+                          return (
                             <button
                               key={i.key}
                               type="button"
                               onClick={() => setOpenItemKey(i.key)}
                               style={{
-                                background: "transparent",
-                                border: "none",
+                                background: nextBgV,
+                                border: nextBorderV,
+                                borderRadius: v2 ? 8 : 4,
+                                padding: "12px 16px",
                                 textAlign: "left",
                                 cursor: "pointer",
-                                padding: "4px 0",
                                 fontFamily: "Inter, sans-serif",
-                                fontSize: 14,
-                                color: mutedText,
-                                opacity: 0.6,
-                                textDecoration: "line-through",
+                                color: cardTextBlack,
                                 display: "flex",
-                                alignItems: "center",
-                                gap: 8,
+                                flexDirection: "column",
+                                gap: 4,
                               }}
                             >
-                              <ReminderIcon type={i.reminder.type} size={20} color={mutedText} />
-                              <span data-readable="true">
-                                {formatTimeStr(i.time)} — {i.reminder.name}
-                              </span>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
+                                <span data-readable="true" style={{ fontSize: 16, fontWeight: 700 }}>
+                                  {i.reminder.name}
+                                </span>
+                              </div>
+                              <div data-readable="true" style={{ fontSize: 14, color: mutedText, paddingLeft: 28 }}>
+                                {timeText} — {rel}
+                              </div>
                             </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Upcoming */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {upcomingItems.map((i) => {
-                      const isNext = i.key === nextKey;
-                      const timeText = formatTimeStr(i.time);
-                      const rel = formatRelative(i.minutes);
-                      if (isNext) {
+                          );
+                        }
                         return (
                           <button
                             key={i.key}
                             type="button"
                             onClick={() => setOpenItemKey(i.key)}
                             style={{
-                              background: nextBgV,
-                              border: nextBorderV,
-                              borderRadius: v2 ? 8 : 4,
-                              padding: "12px 16px",
+                              background: "transparent",
+                              border: "none",
                               textAlign: "left",
                               cursor: "pointer",
+                              padding: "4px 0",
                               fontFamily: "Inter, sans-serif",
                               color: cardTextBlack,
                               display: "flex",
                               flexDirection: "column",
-                              gap: 4,
+                              gap: 2,
                             }}
                           >
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
-                              <span data-readable="true" style={{ fontSize: 16, fontWeight: 700 }}>
+                              <span data-readable="true" style={{ fontSize: 16 }}>
                                 {i.reminder.name}
                               </span>
                             </div>
                             <div data-readable="true" style={{ fontSize: 14, color: mutedText, paddingLeft: 28 }}>
-                              {timeText} — {rel}
+                              {timeText}
                             </div>
                           </button>
                         );
-                      }
-                      return (
-                        <button
-                          key={i.key}
-                          type="button"
-                          onClick={() => setOpenItemKey(i.key)}
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            textAlign: "left",
-                            cursor: "pointer",
-                            padding: "4px 0",
-                            fontFamily: "Inter, sans-serif",
-                            color: cardTextBlack,
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 2,
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
-                            <span data-readable="true" style={{ fontSize: 16 }}>
-                              {i.reminder.name}
-                            </span>
-                          </div>
-                          <div data-readable="true" style={{ fontSize: 14, color: mutedText, paddingLeft: 28 }}>
-                            {timeText}
-                          </div>
-                        </button>
-                      );
-                    })}
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
-      {overlay === "call" && <CallPopup onClose={() => setOverlay(null)} theme={theme} />}
-      {openItem && (
-        <ReminderDetailsPopup
-          onClose={() => setOpenItemKey(null)}
-          reminder={openItem.reminder}
-          time={openItem.time}
-          relative={formatRelative(openItem.minutes)}
-          frequency={frequencyLabel(openItem.reminder)}
-        />
-      )}
+        {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
+        {overlay === "call" && <CallPopup onClose={() => setOverlay(null)} theme={theme} />}
+        {openItem && (
+          <ReminderDetailsPopup
+            onClose={() => setOpenItemKey(null)}
+            reminder={openItem.reminder}
+            time={openItem.time}
+            relative={formatRelative(openItem.minutes)}
+            frequency={frequencyLabel(openItem.reminder)}
+          />
+        )}
 
-      {/* Floating Phone Button */}
-      <button
-        type="button"
-        className="fab-phone"
-        onClick={() => setOverlay("call")}
-        aria-label="Make a call"
-        style={{
-          position: "fixed",
-          bottom: 24,
-          right: 24,
-          width: 64,
-          height: 64,
-          borderRadius: "50%",
-          background: fabBg,
-          border: "none",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          zIndex: 1000,
-          boxShadow: v2 ? "0 4px 8px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.2)",
-          transition: "background 0.2s, box-shadow 0.2s, transform 0.2s",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.05)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-        }}
-      >
-        <Phone size={36} strokeWidth={2} color={fabIconColor} />
-      </button>
-      <style>{`
+        {/* Floating Phone Button */}
+        <button
+          type="button"
+          className="fab-phone"
+          onClick={() => setOverlay("call")}
+          aria-label="Make a call"
+          style={{
+            position: "fixed",
+            bottom: 24,
+            right: 24,
+            width: 64,
+            height: 64,
+            borderRadius: "50%",
+            background: fabBg,
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            zIndex: 1000,
+            boxShadow: v2 ? "0 4px 8px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.2)",
+            transition: "background 0.2s, box-shadow 0.2s, transform 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+          }}
+        >
+          <Phone size={36} strokeWidth={2} color={fabIconColor} />
+        </button>
+        <style>{`
         @media (max-width: 720px) {
           .elder-grid { grid-template-columns: 1fr !important; }
         }
@@ -935,8 +941,21 @@ function ContactRow({
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: hover ? "#000000" : theme.text }}>{name}</div>
-      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: hover ? "#000000" : theme.muted, marginTop: 2 }}>{phone}</div>
+      <div
+        style={{
+          fontFamily: "Inter, sans-serif",
+          fontSize: 16,
+          fontWeight: 700,
+          color: hover ? "#000000" : theme.text,
+        }}
+      >
+        {name}
+      </div>
+      <div
+        style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: hover ? "#000000" : theme.muted, marginTop: 2 }}
+      >
+        {phone}
+      </div>
     </a>
   );
 }
@@ -963,8 +982,16 @@ function EmergencyRow({ name, phone }: { name: string; phone: string }) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: hover ? "#000000" : textColor }}>{name}</div>
-      <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: hover ? "#000000" : phoneColor, marginTop: 2 }}>{phone}</div>
+      <div
+        style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: hover ? "#000000" : textColor }}
+      >
+        {name}
+      </div>
+      <div
+        style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: hover ? "#000000" : phoneColor, marginTop: 2 }}
+      >
+        {phone}
+      </div>
     </a>
   );
 }
@@ -1048,7 +1075,15 @@ function ReminderDetailsPopup({
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 12 }}>
             <ReminderIcon type={reminder.type} size={24} color={iconColor} />
-            <h2 style={{ margin: 0, fontFamily: v2 ? "Newsreader, serif" : "Inter, sans-serif", fontWeight: 700, fontSize: 24, color: textColor }}>
+            <h2
+              style={{
+                margin: 0,
+                fontFamily: v2 ? "Newsreader, serif" : "Inter, sans-serif",
+                fontWeight: 700,
+                fontSize: 24,
+                color: textColor,
+              }}
+            >
               {reminder.name}
             </h2>
           </div>
