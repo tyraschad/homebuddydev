@@ -118,6 +118,7 @@ function CarerPortal() {
   }, []);
 
   const [pickCategoryOpen, setPickCategoryOpen] = useState(false);
+  const [prefillTime, setPrefillTime] = useState<string | null>(null);
   const [editing, setEditing] = useState<Reminder | null>(null);
   const [viewing, setViewing] = useState<Reminder | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
@@ -398,14 +399,14 @@ function CarerPortal() {
           </span>
           <button onClick={() => cursor && shiftCursor(view, cursor, setCursor, 1)} style={iconBtn(theme, buttonBorder)}><ChevronRight size={18} /></button>
         </div>
-        <button onClick={() => setPickCategoryOpen(true)} style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <button onClick={() => { setPrefillTime(null); setPickCategoryOpen(true); }} style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 6 }}>
           <Plus size={18} /> Add Reminder / Medication
         </button>
       </section>
 
       {/* CALENDAR */}
       <section ref={calendarRef} style={{ ...whiteCard, position: "relative" }}>
-        {cursor && view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={() => setPickCategoryOpen(true)} theme={theme} appearance={appearance} gridLine={gridLine} />}
+        {cursor && view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={(time) => { setPrefillTime(time ?? null); setPickCategoryOpen(true); }} theme={theme} appearance={appearance} gridLine={gridLine} />}
         {cursor && view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
         {cursor && view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => setDayPopup(d)} theme={theme} appearance={appearance} gridLine={gridLine} />}
         {cursor && view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
@@ -433,11 +434,13 @@ function CarerPortal() {
       {/* MODALS */}
       {pickCategoryOpen && (
         <CategoryPicker
-          onClose={() => setPickCategoryOpen(false)}
+          onClose={() => { setPickCategoryOpen(false); setPrefillTime(null); }}
           onPick={(type) => {
+            const startTime = prefillTime ?? "08:00";
             setPickCategoryOpen(false);
+            setPrefillTime(null);
             setEditing({
-              id: uid(), type, name: "", timesPerDay: 1, times: ["08:00"],
+              id: uid(), type, name: "", timesPerDay: 1, times: [startTime],
               repeatSchedule: "Daily", elderId: elder.id,
               dose: type === "medication" ? 1 : undefined,
               createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
@@ -623,7 +626,7 @@ function ReminderBlock({ r, time, onClick, appearance }: {
   );
 }
 
-function hours() { return Array.from({ length: 17 }, (_, i) => 6 + i); } // 6..22
+function hours() { return Array.from({ length: 24 }, (_, i) => i); } // 0..23
 
 function formatHour(h: number) {
   const period = h >= 12 ? "PM" : "AM";
@@ -632,7 +635,7 @@ function formatHour(h: number) {
 }
 
 function DayView({ date, reminders, onOpen, onAdd, theme, appearance, gridLine }: {
-  date: Date; reminders: Reminder[]; onOpen: (r: Reminder) => void; onAdd: () => void;
+  date: Date; reminders: Reminder[]; onOpen: (r: Reminder) => void; onAdd: (time?: string) => void;
   theme: ThemeT; appearance: "light" | "dark"; gridLine: string;
 }) {
   const items = reminders.filter((r) => appliesOn(r, date));
@@ -643,7 +646,7 @@ function DayView({ date, reminders, onOpen, onAdd, theme, appearance, gridLine }
         const slot = items.flatMap((r) => r.times.filter((t) => t.startsWith(hh)).map((t) => ({ r, t })));
         return (
           <div key={h}
-            onClick={() => slot.length === 0 && onAdd()}
+            onClick={() => slot.length === 0 && onAdd(`${hh}:00`)}
             style={{
               display: "grid", gridTemplateColumns: "70px 1fr",
               minHeight: 60, borderBottom: `1px solid ${gridLine}`,
