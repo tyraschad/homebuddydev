@@ -100,7 +100,7 @@ function ElderHome() {
 
   // Variant tokens
   const pageBg = v2 ? "transparent" : V1_BG;
-  const cardBg = V2_WHITE;
+  const cardBg = "rgba(255, 255, 255, 0.85)";
   const cardBorderStyle = v2 ? `1px solid ${V2_SAGE_LIGHT}` : V1_CARD_BORDER;
   const cardRadius = v2 ? 8 : 2;
   const cardShadow = v2 ? "0 4px 12px rgba(37,72,58,0.08)" : "none";
