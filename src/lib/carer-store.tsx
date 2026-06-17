@@ -203,6 +203,7 @@ export function CarerProvider({ children }: { children: ReactNode }) {
   const resetAll = () => {
     try {
       localStorage.removeItem(ELDER_KEY);
+      localStorage.removeItem("carer.reminders"); // legacy
       localStorage.removeItem(REMINDERS_KEY);
       localStorage.removeItem("homebuddy.onboarding.v2");
       localStorage.removeItem("homebuddy.onboarding.completed.v1");
