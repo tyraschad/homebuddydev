@@ -165,7 +165,7 @@ const defaultReminders: Reminder[] = [];
 const CarerContext = createContext<Ctx | null>(null);
 
 const ELDER_KEY = "carer.elder";
-const REMINDERS_KEY = "carer.reminders";
+const REMINDERS_KEY = "carer.reminders.v2";
 
 export function CarerProvider({ children }: { children: ReactNode }) {
   const [elder, setElderState] = useState<ElderProfile>(defaultElder);
