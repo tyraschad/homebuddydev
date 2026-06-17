@@ -607,11 +607,39 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     void playTTS(guide.steps[next]);
   };
 
+  const playDing = () => {
+    try {
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new Ctx();
+      const now = ctx.currentTime;
+      [
+        { f: 1046.5, t: now },
+        { f: 1318.5, t: now + 0.12 },
+      ].forEach(({ f, t }) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.18, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.4);
+      });
+      setTimeout(() => ctx.close(), 800);
+    } catch {
+      // ignore — audio is non-essential
+    }
+  };
+
   const finishGuide = () => {
     stopTTS();
     const label = guide?.label ?? "";
     setGuide(null);
     setWellDone(label);
+    playDing();
+    void playTTS("Well Done! You completed your task");
   };
 
   // (suggestions are always shown above input when available)
@@ -627,6 +655,8 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
         @keyframes ttt-rec-dot { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
         @keyframes ttt-cursor { 0%,49% { opacity: 1 } 50%,100% { opacity: 0 } }
         @keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }
+        @keyframes iosConfirmPop { 0% { opacity: 0; transform: scale(0.92); } 45% { opacity: 1; transform: scale(1.035); } 70% { transform: scale(1.012); } 100% { opacity: 1; transform: scale(1); } }
+        .ttt-complete-pop { animation: iosConfirmPop 450ms cubic-bezier(0.22, 1, 0.36, 1); transform-origin: center; will-change: transform, opacity; }
         .suggestion-chip { transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; }
         .suggestion-chip:hover { border: 2px solid #D0D0D0 !important; background: #F9F9F9 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important; }
       `}</style>
@@ -746,7 +776,7 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
           )}
 
           {wellDone && !guide && (
-            <div style={{
+            <div className={v2 ? "ttt-complete-pop" : undefined} style={{
               background: "#FFFFFF",
               border: v2 ? "1px solid #E5E5E5" : "2px solid #000000",
               borderRadius: v2 ? 12 : 8,
