@@ -434,11 +434,13 @@ function CarerPortal() {
       {/* MODALS */}
       {pickCategoryOpen && (
         <CategoryPicker
-          onClose={() => setPickCategoryOpen(false)}
+          onClose={() => { setPickCategoryOpen(false); setPrefillTime(null); }}
           onPick={(type) => {
+            const startTime = prefillTime ?? "08:00";
             setPickCategoryOpen(false);
+            setPrefillTime(null);
             setEditing({
-              id: uid(), type, name: "", timesPerDay: 1, times: ["08:00"],
+              id: uid(), type, name: "", timesPerDay: 1, times: [startTime],
               repeatSchedule: "Daily", elderId: elder.id,
               dose: type === "medication" ? 1 : undefined,
               createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
