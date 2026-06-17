@@ -145,20 +145,26 @@ export const reminderChat = createServerFn({ method: "POST" })
       r.type ? `Type: ${r.type}` : null,
       r.time ? `Scheduled time: ${r.time}` : null,
       r.dose ? `Dose: ${r.dose} pill(s)` : null,
-      r.details ? `Details/location: ${r.details}` : null,
-      r.notes ? `Notes / what to bring: ${r.notes}` : null,
+      `Details/location: ${r.details && r.details.trim() ? r.details : "(none provided)"}`,
+      `Notes / what to bring: ${r.notes && r.notes.trim() ? r.notes : "(none provided)"}`,
     ].filter(Boolean).join("\n");
+
+    const groundingRule =
+      `CRITICAL GROUNDING RULE: Only mention items to bring, locations, or specifics that appear VERBATIM in the Details or Notes fields above. ` +
+      `If Notes says "(none provided)", do NOT invent items to bring (no ID, no insurance card, no medication list, no water, no paperwork — nothing). ` +
+      `If the user asks what to bring and notes are empty, say plainly: "I don't have a list of what to bring for this — check with your carer or the appointment letter." ` +
+      `Never guess, never use generic appointment defaults.`;
 
     const introInstruction =
       `Reply in TWO short paragraphs.\n` +
-      `Paragraph 1: Conversationally tell them about this reminder. Include the time. If location/details exist, include them. If notes mention what to bring, include that.\n` +
+      `Paragraph 1: Conversationally tell them about this reminder. Include the time. If Details/location is provided, include it. If Notes lists items to bring, include them exactly as written. If Notes is "(none provided)", do NOT mention what to bring at all in this paragraph.\n` +
       `Paragraph 2: Ask an open-ended context question like "What do you see around you right now? Are you at home, in the car, or somewhere else?". Keep it warm.\n` +
-      `Do NOT use lists. Do NOT mention any device.`;
+      `Do NOT use lists. Do NOT mention any device.\n${groundingRule}`;
 
     const followupInstruction =
       `The user just told you where they are or what they see. Give warm, contextual next-step guidance based on their location and this reminder.\n` +
       `Use a short intro sentence, then a brief numbered list (2-5 short steps) of what to do next.\n` +
-      `Do NOT mention any device by name. Keep it conversational and reassuring.`;
+      `Do NOT mention any device by name. Keep it conversational and reassuring.\n${groundingRule}`;
 
     const system = `${base}\n\nYou are helping with a single reminder. Here are the reminder facts:\n${reminderFacts}\n\n${data.stage === "intro" ? introInstruction : followupInstruction}`;
 

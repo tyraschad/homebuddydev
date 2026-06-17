@@ -196,7 +196,8 @@ export function DeviceListEditor({
             {questions.map((q, i) => (
               <div key={i} style={{ display: "flex", gap: 8 }}>
                 <input style={inputStyle} value={q}
-                  onChange={(e) => setQuestions(questions.map((x, j) => j === i ? cleanQuickActionLabel(e.target.value) : x))}
+                  onChange={(e) => setQuestions(questions.map((x, j) => j === i ? e.target.value : x))}
+                  onBlur={(e) => setQuestions(questions.map((x, j) => j === i ? cleanQuickActionLabel(e.target.value) : x))}
                   placeholder="Question…" />
                 <button type="button" onClick={() => setQuestions(questions.filter((_, j) => j !== i))}
                   style={{ ...btnSecondary, width: 40, padding: 0, display: "inline-flex", alignItems: "center", justifyContent: "center" }}
