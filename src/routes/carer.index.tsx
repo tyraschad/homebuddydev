@@ -646,7 +646,7 @@ function DayView({ date, reminders, onOpen, onAdd, theme, appearance, gridLine }
         const slot = items.flatMap((r) => r.times.filter((t) => t.startsWith(hh)).map((t) => ({ r, t })));
         return (
           <div key={h}
-            onClick={() => slot.length === 0 && onAdd()}
+            onClick={() => slot.length === 0 && onAdd(`${hh}:00`)}
             style={{
               display: "grid", gridTemplateColumns: "70px 1fr",
               minHeight: 60, borderBottom: `1px solid ${gridLine}`,
