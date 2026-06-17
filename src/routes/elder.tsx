@@ -18,7 +18,7 @@ import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { GradientBackground } from "@/components/GradientBackground";
 import { speak } from "@/lib/talk.functions";
 import horizontalLogo from "@/assets/homebuddy-horizontal-logo.png.asset.json";
-import LogoWhite from "@/assets/homebuddy-src/assets/white-logo.svg.asset.json";
+import horizontalLogoWhite from "@/assets/homebuddy-horizontal-logo-white.png.asset.json";
 
 // V1 Elder palette (WCAG): #8F8F8F bg, #000000 text/mic, #6CA24E phone
 const V1_BG = "#8F8F8F";
