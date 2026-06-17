@@ -184,7 +184,7 @@ function ElderHome() {
           key: r.id + t,
           time: t,
           reminder: r,
-          completed: nowMin >= 0 && nowMin >= min,
+          completed: nowMin >= 0 && nowMin >= min + 5,
           minutes: min,
         });
       });
@@ -194,7 +194,9 @@ function ElderHome() {
   }, [reminders, now]);
 
   const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
-  const nextKey = items.find((i) => !i.completed)?.key;
+  const nextKey =
+    items.find((i) => i.minutes > nowMin)?.key ??
+    items.find((i) => !i.completed)?.key;
   const [openItemKey, setOpenItemKey] = useState<string | null>(null);
   const openItem = items.find((i) => i.key === openItemKey) ?? null;
 
@@ -217,7 +219,7 @@ function ElderHome() {
   }
 
   const completedItems = items.filter((i) => i.completed);
-  const upcomingItems = items.filter((i) => !i.completed);
+  const upcomingItems = items.filter((i) => !i.completed).slice(0, 3);
   const [showCompleted, setShowCompleted] = useState(false);
 
   return (
@@ -252,16 +254,17 @@ function ElderHome() {
             <img
               src={whiteLogo}
               alt="HomeBuddy"
-              height={28}
-              style={{ display: "block", height: 28, width: "auto", paddingBottom: 10 }}
+              style={{ display: "block", height: 32, width: "auto" }}
             />
             <h1
+              data-readable="true"
               style={{
                 fontFamily: headerFont,
                 fontWeight: 400,
                 fontSize: v2 ? 24 : 20,
                 color: headerTextColor,
                 margin: 0,
+                lineHeight: 1,
                 textShadow: headerTextShadow,
                 fontStyle: v2 ? "italic" : "normal",
               }}
@@ -282,7 +285,7 @@ function ElderHome() {
               textDecoration: "none",
             }}
           >
-            <span>Settings</span>
+            <span data-readable="true">Settings</span>
             <Settings size={28} strokeWidth={2} color={headerTextColor} />
           </Link>
         </header>
@@ -375,6 +378,7 @@ function ElderHome() {
                 <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
               </div>
               <div
+                data-readable="true"
                 style={{
                   fontFamily: "Inter, sans-serif",
                   fontWeight: 700,
@@ -461,7 +465,7 @@ function ElderHome() {
                           aria-expanded={showCompleted}
                         >
                           {showCompleted ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                          Completed Today ({completedItems.length})
+                          <span data-readable="true">Completed Today ({completedItems.length})</span>
                         </button>
                         {showCompleted && (
                           <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
@@ -1076,6 +1080,7 @@ function ReminderDetailsPopup({
           <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 12 }}>
             <ReminderIcon type={reminder.type} size={24} color={iconColor} />
             <h2
+              data-readable="true"
               style={{
                 margin: 0,
                 fontFamily: v2 ? "Newsreader, serif" : "Inter, sans-serif",
@@ -1097,24 +1102,25 @@ function ReminderDetailsPopup({
           </button>
         </div>
 
-        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: textColor, paddingBottom: 8 }}>
+        <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: textColor, paddingBottom: 8 }}>
           {timeStr}
         </div>
 
         {frequency && (
-          <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
+          <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
             {frequency}
           </div>
         )}
 
         {detailsText && (
-          <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
+          <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
             {detailsText}
           </div>
         )}
 
         {reminder.notes && (
           <div
+            data-readable="true"
             style={{
               fontFamily: "Inter, sans-serif",
               fontSize: 16,

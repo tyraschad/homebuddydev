@@ -38,8 +38,6 @@ export function TextReader() {
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      // Excluded surface: chat modal
-      if (target.closest('[role="dialog"]')) return stop();
       const readable = target.closest('[data-readable="true"]') as HTMLElement | null;
       if (!readable) return stop();
       const text = (readable.innerText || readable.textContent || "").trim();

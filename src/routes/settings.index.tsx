@@ -70,10 +70,11 @@ function SettingsPage() {
           }}
         >
           <ArrowLeft size={24} strokeWidth={2.5} color={BLACK} />
-          <span>Back to elder screen</span>
+          <span data-readable="true">Back to elder screen</span>
         </button>
 
         <h1
+          data-readable="true"
           style={{
             margin: 0,
             fontFamily: "Inter, system-ui, sans-serif",
@@ -163,7 +164,7 @@ function SettingCard({
   return (
     <button type="button" onClick={onToggle} aria-pressed={on} style={card}>
       <span style={{ flexShrink: 0, display: "inline-flex" }}>{icon}</span>
-      <span style={{ flex: 1, fontWeight: 700, fontSize: 18, color: BLACK }}>{label}</span>
+      <span data-readable="true" style={{ flex: 1, fontWeight: 700, fontSize: 18, color: BLACK }}>{label}</span>
       <Toggle on={on} />
     </button>
   );
