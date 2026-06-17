@@ -118,6 +118,7 @@ function CarerPortal() {
   }, []);
 
   const [pickCategoryOpen, setPickCategoryOpen] = useState(false);
+  const [prefillTime, setPrefillTime] = useState<string | null>(null);
   const [editing, setEditing] = useState<Reminder | null>(null);
   const [viewing, setViewing] = useState<Reminder | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
