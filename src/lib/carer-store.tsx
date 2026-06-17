@@ -160,45 +160,7 @@ const defaultElder: ElderProfile = {
   devices: [],
 };
 
-const defaultReminders: Reminder[] = [
-  {
-    id: "r1",
-    type: "medication",
-    name: "Aspirin",
-    dose: 1,
-    timesPerDay: 1,
-    times: ["08:00"],
-    repeatSchedule: "Daily",
-    notes: "Take with food.",
-    elderId: "elder-1",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "r2",
-    type: "appointment",
-    name: "Dr. Patel checkup",
-    details: "Clinic, Room 3",
-    timesPerDay: 1,
-    times: ["10:30"],
-    repeatSchedule: "Weekly",
-    elderId: "elder-1",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "r3",
-    type: "activity",
-    name: "Afternoon walk",
-    details: "20 minutes in the park",
-    timesPerDay: 1,
-    times: ["15:00"],
-    repeatSchedule: "Weekdays",
-    elderId: "elder-1",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+const defaultReminders: Reminder[] = [];
 
 const CarerContext = createContext<Ctx | null>(null);
 
