@@ -18,7 +18,7 @@ import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { GradientBackground } from "@/components/GradientBackground";
 import { speak } from "@/lib/talk.functions";
 import horizontalLogo from "@/assets/homebuddy-horizontal-logo.png.asset.json";
-import horizontalLogoWhite from "@/assets/homebuddy-horizontal-logo-white.png.asset.json";
+import whiteLogo from "@/assets/white-logo.svg";
 
 // V1 Elder palette (WCAG): #8F8F8F bg, #000000 text/mic, #6CA24E phone
 const V1_BG = "#8F8F8F";
@@ -250,7 +250,7 @@ function ElderHome() {
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <img
-              src={horizontalLogoWhite.url}
+              src={whiteLogo}
               alt="HomeBuddy"
               height={28}
               style={{ display: "block", height: 28, width: "auto" }}
@@ -258,7 +258,7 @@ function ElderHome() {
             <h1
               style={{
                 fontFamily: headerFont,
-                fontWeight: 700,
+                fontWeight: 400,
                 fontSize: v2 ? 24 : 20,
                 color: headerTextColor,
                 margin: 0,
