@@ -133,6 +133,16 @@ function CarerPortal() {
   const scheduleRef = useRef<HTMLElement | null>(null);
   const calendarRef = useRef<HTMLElement | null>(null);
   const todayBtnRef = useRef<HTMLButtonElement | null>(null);
+  const calendarScrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (view !== "day" && view !== "week") return;
+    const el = calendarScrollRef.current;
+    if (!el) return;
+    const HOUR_ROW = 60;
+    const HEADER = view === "week" ? 60 : 0;
+    el.scrollTop = HEADER + HOUR_ROW * 6;
+  }, [view, cursor]);
 
   const today = new Date();
   const isToday = cursor != null && ymd(cursor) === ymd(today);
