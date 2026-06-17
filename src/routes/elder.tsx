@@ -252,16 +252,17 @@ function ElderHome() {
             <img
               src={whiteLogo}
               alt="HomeBuddy"
-              height={28}
-              style={{ display: "block", height: 28, width: "auto", paddingBottom: 10 }}
+              style={{ display: "block", height: 32, width: "auto" }}
             />
             <h1
+              data-readable="true"
               style={{
                 fontFamily: headerFont,
                 fontWeight: 400,
                 fontSize: v2 ? 24 : 20,
                 color: headerTextColor,
                 margin: 0,
+                lineHeight: 1,
                 textShadow: headerTextShadow,
                 fontStyle: v2 ? "italic" : "normal",
               }}
