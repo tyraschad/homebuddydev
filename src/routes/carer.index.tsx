@@ -133,6 +133,16 @@ function CarerPortal() {
   const scheduleRef = useRef<HTMLElement | null>(null);
   const calendarRef = useRef<HTMLElement | null>(null);
   const todayBtnRef = useRef<HTMLButtonElement | null>(null);
+  const calendarScrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (view !== "day" && view !== "week") return;
+    const el = calendarScrollRef.current;
+    if (!el) return;
+    const HOUR_ROW = 60;
+    const HEADER = view === "week" ? 60 : 0;
+    el.scrollTop = HEADER + HOUR_ROW * 6;
+  }, [view, cursor]);
 
   const today = new Date();
   const isToday = cursor != null && ymd(cursor) === ymd(today);
@@ -406,10 +416,12 @@ function CarerPortal() {
 
       {/* CALENDAR */}
       <section ref={calendarRef} style={{ ...whiteCard, position: "relative" }}>
-        {cursor && view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={(time) => { setPrefillTime(time ?? null); setPickCategoryOpen(true); }} theme={theme} appearance={appearance} gridLine={gridLine} />}
-        {cursor && view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
-        {cursor && view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => setDayPopup(d)} theme={theme} appearance={appearance} gridLine={gridLine} />}
-        {cursor && view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
+        <div ref={calendarScrollRef} style={{ maxHeight: 600, overflowY: "auto", overflowX: "hidden" }}>
+          {cursor && view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={(time) => { setPrefillTime(time ?? null); setPickCategoryOpen(true); }} theme={theme} appearance={appearance} gridLine={gridLine} />}
+          {cursor && view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
+          {cursor && view === "month" && <MonthView date={cursor} reminders={reminders} onPickDay={(d) => setDayPopup(d)} theme={theme} appearance={appearance} gridLine={gridLine} />}
+          {cursor && view === "list" && <ListView reminders={reminders} onOpen={setViewing} onEdit={(r) => setEditing(r)} onDelete={(r) => setConfirmDelete(r)} theme={theme} appearance={appearance} gridLine={gridLine} panelBg={panelBg} />}
+        </div>
       </section>
 
       {/* FLOATING GO-TO-TODAY BUTTON */}

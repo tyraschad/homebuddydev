@@ -160,50 +160,12 @@ const defaultElder: ElderProfile = {
   devices: [],
 };
 
-const defaultReminders: Reminder[] = [
-  {
-    id: "r1",
-    type: "medication",
-    name: "Aspirin",
-    dose: 1,
-    timesPerDay: 1,
-    times: ["08:00"],
-    repeatSchedule: "Daily",
-    notes: "Take with food.",
-    elderId: "elder-1",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "r2",
-    type: "appointment",
-    name: "Dr. Patel checkup",
-    details: "Clinic, Room 3",
-    timesPerDay: 1,
-    times: ["10:30"],
-    repeatSchedule: "Weekly",
-    elderId: "elder-1",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "r3",
-    type: "activity",
-    name: "Afternoon walk",
-    details: "20 minutes in the park",
-    timesPerDay: 1,
-    times: ["15:00"],
-    repeatSchedule: "Weekdays",
-    elderId: "elder-1",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+const defaultReminders: Reminder[] = [];
 
 const CarerContext = createContext<Ctx | null>(null);
 
 const ELDER_KEY = "carer.elder";
-const REMINDERS_KEY = "carer.reminders";
+const REMINDERS_KEY = "carer.reminders.v2";
 
 export function CarerProvider({ children }: { children: ReactNode }) {
   const [elder, setElderState] = useState<ElderProfile>(defaultElder);
@@ -241,6 +203,7 @@ export function CarerProvider({ children }: { children: ReactNode }) {
   const resetAll = () => {
     try {
       localStorage.removeItem(ELDER_KEY);
+      localStorage.removeItem("carer.reminders"); // legacy
       localStorage.removeItem(REMINDERS_KEY);
       localStorage.removeItem("homebuddy.onboarding.v2");
       localStorage.removeItem("homebuddy.onboarding.completed.v1");
