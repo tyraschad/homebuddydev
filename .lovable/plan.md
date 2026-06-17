@@ -1,104 +1,84 @@
 ## Goal
 
-In `/carer`:
-1. Calendar grid covers a full 24 hours (00:00–23:00), not 06:00–22:00.
-2. Tapping an empty time slot opens the new-reminder flow with the **Time** field pre-filled to the hour that was clicked.
-
-All edits are in **`src/routes/carer.index.tsx`** (the carer screen + DayView/WeekView live here).
+1. Calendar (DayView + WeekView) starts scrolled to **6 AM** by default but the full 0–23 grid is still scrollable up to midnight.
+2. Remove the seeded "Aspirin / Dr. Patel checkup / Afternoon walk" reminders so the app starts empty. Reminders created by the user (already stored in the shared `CarerProvider` context + localStorage) continue to show up on `/elder`, `/carer`, popups, etc. — no other wiring needed because every screen already reads from `useCarer()`.
 
 ---
 
-## 1. Make the calendar 24-hour
+## 1. Sticky-at-6AM scrollable calendar
 
-Today the hour list is hard-coded to 17 hours starting at 6am — this is why both DayView and WeekView end at 10pm.
+**File:** `src/routes/carer.index.tsx`
 
-**File:** `src/routes/carer.index.tsx`, line 626
+Today DayView and WeekView render all 24 hour rows directly inside the white calendar `<section>` with no scroll container, so they just push the page down. Change:
+
+**a) Wrap the calendar body in a fixed-height scroll container** (around line 407):
 
 ```tsx
-// before
-function hours() { return Array.from({ length: 17 }, (_, i) => 6 + i); } // 6..22
-
-// after
-function hours() { return Array.from({ length: 24 }, (_, i) => i); } // 0..23
+<section ref={calendarRef} style={{ ...whiteCard, position: "relative" }}>
+  <div
+    ref={calendarScrollRef}
+    style={{ maxHeight: 600, overflowY: "auto", overflowX: "hidden" }}
+  >
+    {cursor && view === "day"  && <DayView ... />}
+    {cursor && view === "week" && <WeekView ... />}
+    {cursor && view === "month"&& <MonthView ... />}   {/* month/list don't need scroll but it's harmless */}
+    {cursor && view === "list" && <ListView ... />}
+  </div>
+</section>
 ```
 
-`formatHour` already handles `0` correctly (returns "12 AM"), so DayView (line 641) and WeekView (line 699) automatically render all 24 rows. No styling changes needed — the grid scrolls vertically as it does now.
+**b) Add the ref + an effect that scrolls to 6 AM** when day/week view is shown (near the other refs around line 133):
+
+```tsx
+const calendarScrollRef = useRef<HTMLDivElement | null>(null);
+
+useEffect(() => {
+  if (view !== "day" && view !== "week") return;
+  const el = calendarScrollRef.current;
+  if (!el) return;
+  const HOUR_ROW = 60;                  // matches minHeight: 60 in DayView/WeekView
+  const HEADER   = view === "week" ? 60 : 0;  // week view has the weekday header row
+  el.scrollTop = HEADER + HOUR_ROW * 6; // 6 AM
+}, [view, cursor]);
+```
+
+This keeps the 0–5 AM rows in place (user can scroll up to reach them) but the calendar opens with 6 AM at the top — same behaviour as Google/Apple Calendar.
 
 ---
 
-## 2. Prefill Time when tapping a calendar slot
+## 2. Remove hardcoded reminders + keep cross-screen sharing
 
-Currently, tapping an empty slot just opens the category picker with a hard-coded default time of `"08:00"`:
+**File:** `src/lib/carer-store.tsx`
 
-- Line 646 (DayView): `onClick={() => slot.length === 0 && onAdd()}` — no time passed
-- Line 408 (carer page): `onAdd={() => setPickCategoryOpen(true)}`
-- Line 440 (CategoryPicker.onPick): `times: ["08:00"]` (the hard-coded default)
+Every screen (`elder.tsx`, `carer.index.tsx`, popups) already pulls reminders from the shared `CarerProvider` via `useCarer()` — no per-screen state. The only reason fake reminders appear is the `defaultReminders` array (lines 163–201) seeded into state and persisted to localStorage on first load.
 
-### Changes
-
-**a) `DayView` passes the clicked hour up** (lines 634–646)
+**a) Empty the seed** (lines 163–201):
 
 ```tsx
-function DayView({ date, reminders, onOpen, onAdd, theme, appearance, gridLine }: {
-  date: Date; reminders: Reminder[]; onOpen: (r: Reminder) => void;
-  onAdd: (time?: string) => void;   // <- accept optional time
-  theme: ThemeT; appearance: "light" | "dark"; gridLine: string;
-}) {
-  ...
-  {hours().map((h) => {
-    const hh = String(h).padStart(2, "0");
-    const slot = ...;
-    return (
-      <div key={h}
-        onClick={() => slot.length === 0 && onAdd(`${hh}:00`)}  // <- pass "HH:00"
-        ...
+const defaultReminders: Reminder[] = [];
 ```
 
-**b) Carer page stores the prefill time and passes it into the new reminder** (around lines 120, 408, 434–446)
+**b) Bump the localStorage key** so existing users who already cached the old seed get a clean slate (line 206):
 
 ```tsx
-const [pickCategoryOpen, setPickCategoryOpen] = useState(false);
-const [prefillTime, setPrefillTime] = useState<string | null>(null);   // NEW
+const REMINDERS_KEY = "carer.reminders.v2";
 ```
+
+Also add the old key to `resetAll`'s cleanup (line 244) so "Reset setup" wipes any legacy entry:
 
 ```tsx
-// line 408
-<DayView
-  ...
-  onAdd={(time) => { setPrefillTime(time ?? null); setPickCategoryOpen(true); }}
-/>
-
-// the existing "+ Add reminder" button stays as-is (no prefill):
-<button onClick={() => { setPrefillTime(null); setPickCategoryOpen(true); }} ... >
+localStorage.removeItem("carer.reminders");      // legacy
+localStorage.removeItem(REMINDERS_KEY);
 ```
 
-```tsx
-// lines 434–446 — use prefillTime when creating the draft reminder
-{pickCategoryOpen && (
-  <CategoryPicker
-    onClose={() => { setPickCategoryOpen(false); setPrefillTime(null); }}
-    onPick={(type) => {
-      const startTime = prefillTime ?? "08:00";
-      setPickCategoryOpen(false);
-      setPrefillTime(null);
-      setEditing({
-        id: uid(), type, name: "", timesPerDay: 1,
-        times: [startTime],                       // <- prefilled hour
-        repeatSchedule: "Daily", elderId: elder.id,
-        dose: type === "medication" ? 1 : undefined,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-    }}
-  />
-)}
-```
-
-`ReminderForm` already binds its Time input to `initial.times[0]`, so the popup will open with the clicked hour already filled in. The user can still edit it before saving.
+After this:
+- Fresh load → empty reminders list everywhere.
+- Carer creates a reminder → `addReminder()` writes to context + `carer.reminders.v2`. The Elder screen, DayView, WeekView, MonthView, ListView, DatePopup, and ViewReminderModal all re-render from the same source. Already verified — no extra wiring needed.
 
 ---
 
 ## Out of scope
 
-- WeekView empty-cell clicks (cells are tiny chip wells, not a "tap to create" target today). Happy to add this in a follow-up if you want it too.
-- No changes to elder screen, settings, or styling.
+- No change to the 24-hour grid itself (done last turn).
+- No design changes to the calendar card; only adds an inner scroll container.
+- Empty-state copy already exists ("No reminders scheduled today" on elder, "No reminders yet. Add one to get started." in ListView).
