@@ -626,7 +626,7 @@ function ReminderBlock({ r, time, onClick, appearance }: {
   );
 }
 
-function hours() { return Array.from({ length: 17 }, (_, i) => 6 + i); } // 6..22
+function hours() { return Array.from({ length: 24 }, (_, i) => i); } // 0..23
 
 function formatHour(h: number) {
   const period = h >= 12 ? "PM" : "AM";
