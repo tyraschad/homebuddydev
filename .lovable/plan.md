@@ -1,112 +1,47 @@
-## Where this lives
+# Plan
 
-All changes are in `src/components/TalkToTextPopup.tsx` — the chat popup used on `/elder`. The "Well Done!" screen is rendered at lines 748–769, shown when `wellDone` state is set by `finishGuide()` (line 610). The popup already has a `v2` flag and existing `playTTS()` / `stopTTS()` helpers, so we reuse them.
+## 1. Elder V1 & V2 — never invent what to bring to an appointment
 
----
+**Where:** `src/lib/talk.functions.ts`, `reminderChat` server function (the function that powers the elder reminder chat in both V1 and V2).
 
-## 1. Speak "Well Done! You completed your task" (V1 + V2)
+**What's happening today**
 
-In `finishGuide` (around line 610), after `setWellDone(label)`, call the existing `playTTS` helper. Runs in both versions.
+- Lines 143–150 build `reminderFacts` from the reminder's `name`, `type`, `time`, `dose`, `details`, and `notes`.
+- Lines 152–156 (intro prompt) say: *"If notes mention what to bring, include that."*
 
-```tsx
-const finishGuide = () => {
-  stopTTS();
-  const label = guide?.label ?? "";
-  setGuide(null);
-  setWellDone(label);
+There is no rule telling the model what to do when notes/details are empty — so Gemini fills the gap and makes up items ("bring your ID, insurance card, medication list…").
 
-  playDing();                                       // see #2
-  void playTTS("Well Done! You completed your task"); // exact wording you asked for
-};
-```
+**Fix**
 
----
+Tighten the system prompt so the model is grounded strictly in the reminder fields:
 
-## 2. Soft positive ding sound (V1 + V2)
+1. In `reminderFacts` (around line 149), if `r.notes` is empty, emit an explicit line like `Notes / what to bring: (none provided)` instead of dropping the field. Same for `details`. This way the model sees the absence as a fact.
+2. Rewrite the `introInstruction` (lines 152–156) and `followupInstruction` (158–161) to add a hard rule:
+   - "Only mention items to bring that appear verbatim in Notes or Details above. If neither field lists anything to bring, do NOT invent items. Instead say something like: 'I don't have a list of what to bring for this — check with your carer or the appointment letter.'"
+   - "Never suggest generic items (ID, insurance card, medication list, water, etc.) unless they appear in the notes."
+3. Apply the same rule to `followupInstruction` so the follow-up steps don't reintroduce invented items.
 
-No audio file needed — synthesize a short two-note chime with WebAudio so it ships with zero new assets. Add this helper near the other helpers in the component:
+No UI changes; this is purely a prompt change and affects both V1 and V2 because both call the same server function.
 
-```tsx
-const playDing = () => {
-  try {
-    const Ctx = window.AudioContext || (window as any).webkitAudioContext;
-    const ctx = new Ctx();
-    const now = ctx.currentTime;
+## 2. /carer Instruction Context — allow spaces in the "What might they ask?" field
 
-    // Two soft sine tones: C6 then E6 — gentle "ding-ding"
-    [
-      { f: 1046.5, t: now },
-      { f: 1318.5, t: now + 0.12 },
-    ].forEach(({ f, t }) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = f;
-      gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.18, t + 0.02);      // soft attack
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35); // gentle decay
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.4);
-    });
+**Where:** `src/components/instruction-context-form.tsx`, line 199.
 
-    setTimeout(() => ctx.close(), 800);
-  } catch {
-    // ignore — audio is non-essential
-  }
-};
-```
+**Root cause**
 
-Wrapped in `try/catch` because some browsers block audio without a user gesture; the "Done" tap that calls `finishGuide` counts as a gesture, so it will play.
+The `onChange` runs `cleanQuickActionLabel(e.target.value)` on every keystroke. `cleanQuickActionLabel` (in `src/lib/carer-store.tsx` lines 67–84) calls `.trim()`, which strips the trailing space the user just typed. As soon as the user hits space, it disappears, so the next letter sticks to the previous word ("what" + space + "i" → "whati").
 
----
+**Fix**
 
-## 3. iOS-style pop animation on the completion card (V2 only)
+Stop cleaning on every keystroke; clean only when the value is committed.
 
-Your CSS is good — keyframes overshoot to 1.035 then settle at 1.0, exactly the iOS "confirm" feel. Two small notes on the snippet you sent:
+1. Line 199 `onChange`: store the raw value — `setQuestions(questions.map((x, j) => j === i ? e.target.value : x))`. No trimming, no rewriting while typing.
+2. Add `onBlur` to the same input that runs `cleanQuickActionLabel` on the final value, so the label rewrites (e.g. "How do I …" → cleaned form) still happen once the user leaves the field.
+3. Saving already runs `cleanQs = questions.map(cleanQuickActionLabel).filter(Boolean)` at line 98, so persisted data stays normalized.
 
-- `.complete-button` is a misleading class name (it's the card, not a button). I'll rename it to `.ttt-complete-pop` to match the popup's naming.
-- The popup already has an inline `<style>` block (line 624+) where `@keyframes ttt-pulse` lives — I'll add your keyframes there so they stay scoped to this component instead of leaking to global CSS.
+No other call sites change; `cleanDevices` (carer-store.tsx line 86) still normalizes on load.
 
-Inside the existing `<style>{` ... `}</style>` block:
+## Out of scope / not doing
 
-```css
-@keyframes iosConfirmPop {
-  0%   { opacity: 0; transform: scale(0.92); }
-  45%  { opacity: 1; transform: scale(1.035); }
-  70%  {              transform: scale(1.012); }
-  100% { opacity: 1; transform: scale(1); }
-}
-.ttt-complete-pop {
-  animation: iosConfirmPop 450ms cubic-bezier(0.22, 1, 0.36, 1);
-  transform-origin: center;
-  will-change: transform, opacity;
-}
-```
-
-Then on the completion card (line 749), apply the class only in V2 so V1's look is unchanged:
-
-```tsx
-<div
-  className={v2 ? "ttt-complete-pop" : undefined}
-  style={{ background: "#FFFFFF", border: v2 ? "1px solid #E5E5E5" : "2px solid #000000", /* …unchanged… */ }}
->
-  <div style={{ fontSize: 56, lineHeight: 1, color: ACCENT, fontWeight: 900 }}>✓</div>
-  <div /* Well Done! */>Well Done!</div>
-  ...
-</div>
-```
-
-The green check mark stays where it is; the whole card (check + text + button) pops in together as one cohesive iOS-style confirmation.
-
----
-
-## Summary of edits (one file)
-
-`src/components/TalkToTextPopup.tsx`:
-1. Add `playDing()` helper.
-2. In `finishGuide`, after `setWellDone(label)`: call `playDing()` and `playTTS("Well Done! You completed your task")` — both V1 and V2.
-3. Add `@keyframes iosConfirmPop` + `.ttt-complete-pop` to the existing inline `<style>` block.
-4. Add `className={v2 ? "ttt-complete-pop" : undefined}` to the completion card div (V2 only).
-
-No new files, no new deps.
+- Not touching the medication-reminder voice flow or the V2 completion animation.
+- Not changing the `Device` schema or the questions-list UI beyond the typing behavior.
