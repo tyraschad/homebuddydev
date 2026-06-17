@@ -399,7 +399,7 @@ function CarerPortal() {
           </span>
           <button onClick={() => cursor && shiftCursor(view, cursor, setCursor, 1)} style={iconBtn(theme, buttonBorder)}><ChevronRight size={18} /></button>
         </div>
-        <button onClick={() => setPickCategoryOpen(true)} style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <button onClick={() => { setPrefillTime(null); setPickCategoryOpen(true); }} style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 6 }}>
           <Plus size={18} /> Add Reminder / Medication
         </button>
       </section>
