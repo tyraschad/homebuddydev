@@ -1080,6 +1080,7 @@ function ReminderDetailsPopup({
           <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 12 }}>
             <ReminderIcon type={reminder.type} size={24} color={iconColor} />
             <h2
+              data-readable="true"
               style={{
                 margin: 0,
                 fontFamily: v2 ? "Newsreader, serif" : "Inter, sans-serif",
@@ -1101,24 +1102,25 @@ function ReminderDetailsPopup({
           </button>
         </div>
 
-        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: textColor, paddingBottom: 8 }}>
+        <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: textColor, paddingBottom: 8 }}>
           {timeStr}
         </div>
 
         {frequency && (
-          <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
+          <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
             {frequency}
           </div>
         )}
 
         {detailsText && (
-          <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
+          <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
             {detailsText}
           </div>
         )}
 
         {reminder.notes && (
           <div
+            data-readable="true"
             style={{
               fontFamily: "Inter, sans-serif",
               fontSize: 16,
