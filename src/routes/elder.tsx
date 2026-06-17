@@ -285,7 +285,7 @@ function ElderHome() {
               textDecoration: "none",
             }}
           >
-            <span>Settings</span>
+            <span data-readable="true">Settings</span>
             <Settings size={28} strokeWidth={2} color={headerTextColor} />
           </Link>
         </header>
@@ -378,6 +378,7 @@ function ElderHome() {
                 <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
               </div>
               <div
+                data-readable="true"
                 style={{
                   fontFamily: "Inter, sans-serif",
                   fontWeight: 700,
@@ -464,7 +465,7 @@ function ElderHome() {
                           aria-expanded={showCompleted}
                         >
                           {showCompleted ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                          Completed Today ({completedItems.length})
+                          <span data-readable="true">Completed Today ({completedItems.length})</span>
                         </button>
                         {showCompleted && (
                           <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
