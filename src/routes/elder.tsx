@@ -219,7 +219,7 @@ function ElderHome() {
   }
 
   const completedItems = items.filter((i) => i.completed);
-  const upcomingItems = items.filter((i) => !i.completed);
+  const upcomingItems = items.filter((i) => !i.completed).slice(0, 3);
   const [showCompleted, setShowCompleted] = useState(false);
 
   return (
