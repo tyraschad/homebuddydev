@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useRouterState } from "@tanstack/react-router";
 
+export type AppearanceMode = "light" | "dark";
 export type AppearanceScope = "carer" | "elder";
 
 export const lightTheme = {
