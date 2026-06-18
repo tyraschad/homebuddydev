@@ -826,7 +826,12 @@ function ElderHome() {
           </div>
         </div>
 
-        {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
+        {overlay === "chat" && (
+          <TalkToTextPopup
+            initialMessage={pendingMessage || undefined}
+            onClose={() => { setOverlay(null); setPendingMessage(""); }}
+          />
+        )}
         {overlay === "call" && <CallPopup onClose={() => setOverlay(null)} theme={theme} />}
         {openItem && (
           <ReminderDetailsPopup
