@@ -4,6 +4,15 @@ import { transcribe } from "@/lib/talk.functions";
 
 export type VoiceStatus = "idle" | "recording" | "transcribing" | "error";
 
+export type VoiceRecorderOptions = {
+  /** Auto-stop the recording after this many ms of detected silence. Set 0/undefined to disable. */
+  autoStopSilenceMs?: number;
+  /** Minimum recording length before silence detection can fire. Default 800ms. */
+  minRecordingMs?: number;
+  /** Fired when silence detection triggers the stop (before transcription). */
+  onSilence?: () => void;
+};
+
 function pickMime(): string {
   if (typeof window === "undefined" || !("MediaRecorder" in window)) return "audio/webm";
   const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
@@ -13,7 +22,10 @@ function pickMime(): string {
   return "audio/webm";
 }
 
-export function useVoiceRecorder(onTranscript: (text: string) => void) {
+export function useVoiceRecorder(
+  onTranscript: (text: string) => void,
+  options: VoiceRecorderOptions = {}
+) {
   const callTranscribe = useServerFn(transcribe);
   const [status, setStatus] = useState<VoiceStatus>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +34,24 @@ export function useVoiceRecorder(onTranscript: (text: string) => void) {
   const streamRef = useRef<MediaStream | null>(null);
   const mimeRef = useRef<string>("audio/webm");
 
+  // Silence detection refs
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const silenceRafRef = useRef<number | null>(null);
+
+  // Keep latest options in a ref so the start callback identity stays stable
+  const optsRef = useRef(options);
+  optsRef.current = options;
+
   const cleanup = useCallback(() => {
+    if (silenceRafRef.current != null) {
+      cancelAnimationFrame(silenceRafRef.current);
+      silenceRafRef.current = null;
+    }
+    try { analyserRef.current?.disconnect(); } catch {}
+    analyserRef.current = null;
+    try { void audioCtxRef.current?.close(); } catch {}
+    audioCtxRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     recRef.current = null;
@@ -82,6 +111,52 @@ export function useVoiceRecorder(onTranscript: (text: string) => void) {
       recRef.current = rec;
       rec.start();
       setStatus("recording");
+
+      // Silence detection (optional)
+      const { autoStopSilenceMs, minRecordingMs = 800, onSilence } = optsRef.current;
+      if (autoStopSilenceMs && autoStopSilenceMs > 0) {
+        try {
+          const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+          const ctx = new Ctx();
+          audioCtxRef.current = ctx;
+          const source = ctx.createMediaStreamSource(stream);
+          const analyser = ctx.createAnalyser();
+          analyser.fftSize = 2048;
+          analyser.smoothingTimeConstant = 0.4;
+          source.connect(analyser);
+          analyserRef.current = analyser;
+
+          const buf = new Uint8Array(analyser.fftSize);
+          const startedAt = performance.now();
+          let lastSoundAt = startedAt;
+          const SILENCE_RMS = 0.018; // ~ -35 dBFS; conservative for room noise
+
+          const tick = () => {
+            if (!analyserRef.current || !recRef.current || recRef.current.state !== "recording") return;
+            analyser.getByteTimeDomainData(buf);
+            let sumSq = 0;
+            for (let i = 0; i < buf.length; i++) {
+              const v = (buf[i] - 128) / 128;
+              sumSq += v * v;
+            }
+            const rms = Math.sqrt(sumSq / buf.length);
+            const now = performance.now();
+            if (rms > SILENCE_RMS) lastSoundAt = now;
+
+            const sinceStart = now - startedAt;
+            const sinceSound = now - lastSoundAt;
+            if (sinceStart >= minRecordingMs && sinceSound >= autoStopSilenceMs) {
+              onSilence?.();
+              try { recRef.current.stop(); } catch {}
+              return;
+            }
+            silenceRafRef.current = requestAnimationFrame(tick);
+          };
+          silenceRafRef.current = requestAnimationFrame(tick);
+        } catch {
+          // silence detection is non-essential; manual stop still works
+        }
+      }
     } catch (e) {
       cleanup();
       setStatus("error");
