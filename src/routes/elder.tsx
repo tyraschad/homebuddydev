@@ -11,12 +11,17 @@ import {
   Circle,
   ChevronDown,
   ChevronRight,
+  Check,
+  RotateCcw,
+  Square,
+  Loader2,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib/carer-store";
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { GradientBackground } from "@/components/GradientBackground";
 import { speak } from "@/lib/talk.functions";
+import { useVoiceRecorder } from "@/lib/use-voice-recorder";
 import horizontalLogo from "@/assets/homebuddy-horizontal-logo.png.asset.json";
 import whiteLogo from "@/assets/white-logo.svg";
 
@@ -124,6 +129,81 @@ function ElderHome() {
   const { reminders, elder } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
+  const [pendingMessage, setPendingMessage] = useState<string>("");
+
+  // Inline voice capture state for the Ask card (cognitive-accessibility flow):
+  // idle → recording → confirming → (Send opens chat, Redo loops back to recording)
+  type VoiceState = "idle" | "recording" | "confirming";
+  const [voiceState, setVoiceState] = useState<VoiceState>("idle");
+  const [transcript, setTranscript] = useState<string>("");
+
+  // Short chime via WebAudio — no asset import; safe to ignore failures.
+  const playChime = (kind: "start" | "stop") => {
+    try {
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const ctx = new Ctx();
+      const t0 = ctx.currentTime;
+      const freqs = kind === "start" ? [880, 1175] : [1175, 880];
+      freqs.forEach((f, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = f;
+        const t = t0 + i * 0.09;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.14, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.25);
+      });
+      setTimeout(() => { try { void ctx.close(); } catch {} }, 600);
+    } catch {
+      // chime is non-essential
+    }
+  };
+
+  const voiceRecorder = useVoiceRecorder(
+    (text) => {
+      setTranscript(text);
+      setVoiceState("confirming");
+      playChime("stop");
+    },
+    { autoStopSilenceMs: 1800, minRecordingMs: 800 }
+  );
+
+  const startVoiceCapture = async () => {
+    setTranscript("");
+    setVoiceState("recording");
+    playChime("start");
+    await voiceRecorder.start();
+  };
+
+  const stopVoiceCapture = () => {
+    voiceRecorder.stop();
+  };
+
+  const redoVoiceCapture = () => {
+    voiceRecorder.reset();
+    setTranscript("");
+    void startVoiceCapture();
+  };
+
+  const sendVoiceMessage = () => {
+    const msg = transcript.trim();
+    if (!msg) return;
+    setPendingMessage(msg);
+    setVoiceState("idle");
+    setTranscript("");
+    setOverlay("chat");
+  };
+
+  const cancelVoiceCapture = () => {
+    voiceRecorder.reset();
+    setTranscript("");
+    setVoiceState("idle");
+  };
+
 
   useEffect(() => {
     setNow(new Date());
@@ -340,10 +420,8 @@ function ElderHome() {
               </div>
             </div>
 
-            {/* Ask a Question card */}
-            <button
-              type="button"
-              onClick={() => setOverlay("chat")}
+            {/* Ask a Question card — inline voice capture with confirm step */}
+            <div
               style={{
                 background: cardBg,
                 border: cardBorderStyle,
@@ -355,42 +433,213 @@ function ElderHome() {
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 16,
-                cursor: "pointer",
                 minHeight: 340,
                 boxShadow: cardShadow,
+                position: "relative",
               }}
-              aria-label="Tap to ask a question"
             >
-              <div
-                style={{
-                  width: micSize,
-                  height: micSize,
-                  aspectRatio: "1 / 1",
-                  flexShrink: 0,
-                  borderRadius: "50%",
-                  background: micFill,
-                  border: `2px solid ${micBorderColor}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
-              </div>
-              <div
-                data-readable="true"
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                  fontWeight: 700,
-                  fontSize: 26,
-                  color: cardTextBlack,
-                  textAlign: "center",
-                  paddingTop: 16,
-                }}
-              >
-                Tap to Ask a Question
-              </div>
-            </button>
+              <style>{`
+                @keyframes elder-mic-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,59,48,0.55); } 70% { box-shadow: 0 0 0 22px rgba(255,59,48,0); } 100% { box-shadow: 0 0 0 0 rgba(255,59,48,0); } }
+              `}</style>
+
+              {voiceState === "idle" && (
+                <button
+                  type="button"
+                  onClick={() => { void startVoiceCapture(); }}
+                  disabled={voiceRecorder.status === "transcribing"}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 16,
+                    cursor: "pointer",
+                    width: "100%",
+                  }}
+                  aria-label="Tap to ask a question"
+                >
+                  <div
+                    style={{
+                      width: micSize,
+                      height: micSize,
+                      aspectRatio: "1 / 1",
+                      flexShrink: 0,
+                      borderRadius: "50%",
+                      background: micFill,
+                      border: `2px solid ${micBorderColor}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
+                  </div>
+                  <div
+                    data-readable="true"
+                    style={{
+                      fontFamily: "Inter, sans-serif",
+                      fontWeight: 700,
+                      fontSize: 26,
+                      color: cardTextBlack,
+                      textAlign: "center",
+                      paddingTop: 16,
+                    }}
+                  >
+                    {voiceRecorder.status === "transcribing" ? "One moment…" : "Tap to Ask a Question"}
+                  </div>
+                  {voiceRecorder.status === "error" && voiceRecorder.error && (
+                    <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: "#B00020", textAlign: "center" }}>
+                      {voiceRecorder.error}
+                    </div>
+                  )}
+                </button>
+              )}
+
+              {voiceState === "recording" && (
+                <>
+                  <div
+                    style={{
+                      width: micSize,
+                      height: micSize,
+                      aspectRatio: "1 / 1",
+                      flexShrink: 0,
+                      borderRadius: "50%",
+                      background: "#FF3B30",
+                      border: "2px solid #FF3B30",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      animation: "elder-mic-pulse 1.2s infinite",
+                    }}
+                  >
+                    <Mic size={micIconPx} strokeWidth={2.5} color="#FFFFFF" />
+                  </div>
+                  <div
+                    data-readable="true"
+                    style={{
+                      fontFamily: "Inter, sans-serif",
+                      fontWeight: 700,
+                      fontSize: 26,
+                      color: cardTextBlack,
+                      textAlign: "center",
+                    }}
+                  >
+                    Listening…
+                  </div>
+                  <button
+                    type="button"
+                    onClick={stopVoiceCapture}
+                    style={{
+                      width: "100%",
+                      maxWidth: 360,
+                      padding: "18px 24px",
+                      background: "#FF3B30",
+                      color: "#FFFFFF",
+                      border: "none",
+                      borderRadius: 12,
+                      fontFamily: "Inter, sans-serif",
+                      fontWeight: 800,
+                      fontSize: 22,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 10,
+                    }}
+                    aria-label="Stop recording"
+                  >
+                    <Square size={24} strokeWidth={3} fill="#FFFFFF" /> STOP
+                  </button>
+                </>
+              )}
+
+              {voiceState === "confirming" && (
+                <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 14, alignItems: "stretch" }}>
+                  {voiceRecorder.status === "transcribing" ? (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "32px 0" }}>
+                      <Loader2 size={48} color={cardTextBlack} style={{ animation: "spin 1s linear infinite" }} />
+                      <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: cardTextBlack }}>
+                        One moment…
+                      </div>
+                      <style>{`@keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
+                    </div>
+                  ) : (
+                    <>
+                      <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 20, fontWeight: 600, color: mutedText }}>
+                        I heard you say:
+                      </div>
+                      <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 26, fontWeight: 700, color: cardTextBlack, lineHeight: 1.3, minHeight: 60 }}>
+                        “{transcript}”
+                      </div>
+                      <button
+                        type="button"
+                        onClick={sendVoiceMessage}
+                        style={{
+                          width: "100%",
+                          padding: "20px 24px",
+                          background: v2 ? V2_SAGE : V1_PHONE,
+                          color: "#FFFFFF",
+                          border: "none",
+                          borderRadius: 12,
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 800,
+                          fontSize: 26,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 12,
+                        }}
+                        aria-label="Send message"
+                      >
+                        <Check size={28} strokeWidth={3} /> SEND
+                      </button>
+                      <button
+                        type="button"
+                        onClick={redoVoiceCapture}
+                        style={{
+                          width: "100%",
+                          padding: "16px 24px",
+                          background: "transparent",
+                          color: cardTextBlack,
+                          border: `2px solid ${cardTextBlack}`,
+                          borderRadius: 12,
+                          fontFamily: "Inter, sans-serif",
+                          fontWeight: 700,
+                          fontSize: 22,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 10,
+                        }}
+                        aria-label="Redo recording"
+                      >
+                        <RotateCcw size={22} strokeWidth={2.5} /> Redo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelVoiceCapture}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          color: mutedText,
+                          fontFamily: "Inter, sans-serif",
+                          fontSize: 16,
+                          textDecoration: "underline",
+                          cursor: "pointer",
+                          padding: 4,
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* RIGHT COLUMN */}
@@ -577,7 +826,12 @@ function ElderHome() {
           </div>
         </div>
 
-        {overlay === "chat" && <TalkToTextPopup onClose={() => setOverlay(null)} />}
+        {overlay === "chat" && (
+          <TalkToTextPopup
+            initialMessage={pendingMessage || undefined}
+            onClose={() => { setOverlay(null); setPendingMessage(""); }}
+          />
+        )}
         {overlay === "call" && <CallPopup onClose={() => setOverlay(null)} theme={theme} />}
         {openItem && (
           <ReminderDetailsPopup

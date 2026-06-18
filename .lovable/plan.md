@@ -1,52 +1,88 @@
-# Bigger /elder text + remove text-size toggle
+# Simplify the elder voice flow (cognitive-accessibility first)
 
-All changes are presentational and live in two files (plus deleting one unused route file). No business logic touched. Everything applies always (no toggle), per your answer.
+## Goal
 
-## 1. Today's Reminders — much larger
+Reduce the voice flow from **4 taps** (open popup → start → stop → send) to **2 taps with a safety net**:
 
-**File:** `src/routes/elder.tsx`
+**Tap card → speak → (auto-stops on silence) → see what was heard → tap big Send (or Redo)**
 
-- Section heading "Today's Reminders" (line 416): `fontSize: 18` → **28**.
-- Upcoming reminder (the highlighted "next" card, lines 532–537):
-  - Reminder name: `fontSize: 16` → **26**, keep bold.
-  - Time + relative ("9:00 AM — in 2 hours"): `fontSize: 14` → **20**.
-  - Icon (line 531): `size={20}` → **28**.
-- Other upcoming items (lines 562–567):
-  - Name: `fontSize: 16` → **22**.
-  - Time: `fontSize: 14` → **18**.
-  - Icon (line 561): `size={20}` → **24**.
-- "Completed Today (n)" toggle row (lines 461–468) and completed item rows (lines 484, 493–495): bump from 14 → **18**, icon 20 → **22**, so the section stays proportional.
+Designed for cognitively challenged elders: minimize decisions, always confirm before sending, give multi-sensory feedback, never auto-dismiss.
 
-## 2. "Tap to Ask a Question" + mic — larger
+## Scope
 
-**File:** `src/routes/elder.tsx`
+- Touched: `src/routes/elder.tsx` (the "Tap to Ask a Question" card), `src/components/TalkToTextPopup.tsx` (the chat overlay), `src/lib/use-voice-recorder.ts` (add silence detection).
+- Untouched: reminders, phone FAB, layout, carer screens, settings, server functions.
 
-- Mic circle (lines 114–115): `micSize` 150/120 → **200/170**, `micIconPx` 80 → **110**.
-- Label (lines 385–391): `fontSize: 16` → **26**, keep bold.
-- Card `minHeight` (line 359): 280 → **340** so the bigger mic isn't cramped.
+## New flow
 
-## 3. Phone button — larger
+```text
+/elder screen
+  ┌──────────────────────────────────┐
+  │  [pulsing mic card]              │
+  │  Tap to Ask a Question           │   ← tap 1
+  └──────────────────────────────────┘
+            ↓ (starts recording inline, no popup)
+  ┌──────────────────────────────────┐
+  │  ◉ Listening…   [ STOP ]         │   waveform/pulse
+  └──────────────────────────────────┘
+            ↓ (1.8s of silence auto-stops, OR tap STOP)
+  ┌──────────────────────────────────┐
+  │  I heard you say:                │
+  │  "What time are my pills?"       │
+  │                                  │
+  │  [   ✓  SEND   ]   ← tap 2       │
+  │  [   ↻  Redo   ]                 │
+  └──────────────────────────────────┘
+            ↓ (Send) — popup opens with the message already sent
+            ↓ (Redo) — re-records, no popup, no scolding
+```
 
-**File:** `src/routes/elder.tsx`, the floating `.fab-phone` (lines 593–623)
+## Changes
 
-- `width`/`height`: 64 → **88**.
-- `Phone` icon `size`: 36 → **52**.
-- `bottom`/`right`: 24 → **28** (keep clearance from edge).
+### 1. `src/routes/elder.tsx` — recording lives on the card
 
-## 4. Remove the text-size toggle
+- Replace the current "tap to open popup" handler on the Ask card with inline recorder state: `idle → recording → confirming → sending`.
+- `idle`: shows "Tap to Ask a Question" + large mic icon (current visual).
+- `recording`: card swaps to a pulsing ring + "Listening…" + a giant red **Stop** button (still tappable for elders who want manual control). Soft chime on start.
+- `confirming`: card swaps to "I heard you say:" + transcript in 26pt text + two full-width buttons: **Send** (large, primary green) and **Redo** (outline, below). No auto-dismiss, no timer.
+- On **Send**: open `TalkToTextPopup` with the transcript pre-submitted (new `initialMessage` prop) so the elder lands in the chat with the assistant already answering.
+- On **Redo**: discard transcript, return to `recording` immediately.
 
-Reasoning: nothing in the running app links to `/settings/text-size`; `textSize` only drives the clock-card numbers on /elder. Removing it simplifies state and lets the new sizes be the single source of truth.
+### 2. `src/lib/use-voice-recorder.ts` — silence auto-stop
 
-**Delete:** `src/routes/settings.text-size.tsx` (the auto-generated `routeTree.gen.ts` regenerates on next build — we don't hand-edit it).
+- Add an optional `{ autoStopSilenceMs?: number, onSilence?: () => void }` option.
+- Use a `WebAudio AnalyserNode` on the mic stream; track rolling RMS. When RMS stays below threshold for the configured window (default **1800ms**), call `stop()` and fire `onSilence`.
+- Minimum recording length of 800ms before silence detection arms (prevents instant cut-off if the elder pauses before speaking).
+- Keep manual `stop()` working unchanged so existing callers don't break.
 
-**Edit:** `src/lib/settings-store.tsx`
-- Remove the `TextSize` type, `mediumSizes`/`largeSizes`/`Sizes` exports, the `textSize`/`setTextSize` context fields, the related `useState`, the `localStorage` read/write, and drop them from the `value` memo + deps.
+### 3. `src/components/TalkToTextPopup.tsx` — accept a pre-submitted message
 
-**Edit:** `src/routes/elder.tsx`
-- Drop `textSize` from the `useSettings()` destructure (line 98).
-- Replace lines 168–169 with fixed values: `const line1Size = 38;` (was 28/34) and `const line2Size = 60;` (was 44/53) — locking in the "always bigger" date/time on the clock card.
+- Add `initialMessage?: string` prop. When present, on mount: push as user message and immediately call the existing send pipeline (skip the "tap mic, then tap send" path entirely).
+- Keep the popup's own mic for follow-up questions inside the chat — but apply the same auto-stop + confirm pattern (small refactor: extract a `VoiceCapture` component shared by `/elder` card and popup so behavior is identical everywhere).
 
-## Open items / risks
+### 4. Multi-sensory feedback (cognitive accessibility)
 
-- `src/components/TalkToTextPopup.tsx` imports `sizes` from `useSettings` (line 199). It is destructured but I'll confirm it's unused before the build; if used anywhere, I'll inline the previous `mediumSizes` values there so the popup is unaffected.
-- I won't touch the carer/onboarding/settings index routes; this is scoped to /elder presentation + dead-code removal of the text-size route and store fields.
+- **Visual**: pulsing ring around the card during recording; transcript in 26pt; Send button full-width and high-contrast green.
+- **Audible**: short chime on record-start and record-stop (`new Audio()` with a tiny inline data-URI; no asset import needed).
+- **Language**: "I heard you say:" (friendlier than "Transcript"), "Redo" (concrete; not "Cancel"), "Send" (not "Submit").
+- **No timeouts** on the confirm screen.
+
+## Explicitly NOT doing
+
+- No auto-send without confirmation — too risky for cognitively challenged users.
+- No confidence-based conditional confirm — unpredictable behavior is the enemy.
+- No transcript editing (no keyboard surface) — adds a hidden third path.
+- No changes to phone FAB, reminders, or any layout outside the voice card.
+- No removal of the popup — it's still where the chat happens; we just stop forcing elders to tap a second mic to enter it.
+
+## Risks & mitigations
+
+- **Silence threshold misfires in noisy rooms** → ship a conservative 1.8s window + 800ms min length; expose threshold as a constant for easy tuning if real users hit issues.
+- **Existing `useVoiceRecorder` callers** → new options are optional; default behavior unchanged.
+- **Popup auto-submit edge cases** (empty transcript, network error) → if `initialMessage` is empty/whitespace, fall back to current behavior (open popup idle).
+
+## Out of scope (future)
+
+- Per-elder calibration of silence threshold.
+- Optional "always-on" mode for severe motor impairment.
+- Caregiver-controlled toggle to bypass confirm step for high-trust elders.

@@ -195,7 +195,7 @@ function buildScheduleResponse(query: string, reminders: Reminder[]): string {
   return response;
 }
 
-export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
+export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => void; initialMessage?: string }) {
   const { theme, cardBorder, inputBorder, sizes, highContrast } = useSettings();
   const { reminders, elder, bumpDeviceAccess } = useCarer();
   const callSteps = useServerFn(generateSteps);
@@ -596,6 +596,19 @@ export function TalkToTextPopup({ onClose }: { onClose: () => void }) {
     setText(t);
     inputRef.current?.focus();
   });
+
+  // Auto-submit a pre-recorded message (from /elder voice card) exactly once.
+  const initialFiredRef = useRef(false);
+  useEffect(() => {
+    if (initialFiredRef.current) return;
+    const seed = initialMessage?.trim();
+    if (!seed) return;
+    initialFiredRef.current = true;
+    void handleQuery(seed);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessage]);
+
+
 
 
   const advanceGuide = (delta: 1 | -1) => {
