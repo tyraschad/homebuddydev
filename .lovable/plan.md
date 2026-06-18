@@ -1,47 +1,52 @@
-# Plan
+# Bigger /elder text + remove text-size toggle
 
-## 1. Elder V1 & V2 — never invent what to bring to an appointment
+All changes are presentational and live in two files (plus deleting one unused route file). No business logic touched. Everything applies always (no toggle), per your answer.
 
-**Where:** `src/lib/talk.functions.ts`, `reminderChat` server function (the function that powers the elder reminder chat in both V1 and V2).
+## 1. Today's Reminders — much larger
 
-**What's happening today**
+**File:** `src/routes/elder.tsx`
 
-- Lines 143–150 build `reminderFacts` from the reminder's `name`, `type`, `time`, `dose`, `details`, and `notes`.
-- Lines 152–156 (intro prompt) say: *"If notes mention what to bring, include that."*
+- Section heading "Today's Reminders" (line 416): `fontSize: 18` → **28**.
+- Upcoming reminder (the highlighted "next" card, lines 532–537):
+  - Reminder name: `fontSize: 16` → **26**, keep bold.
+  - Time + relative ("9:00 AM — in 2 hours"): `fontSize: 14` → **20**.
+  - Icon (line 531): `size={20}` → **28**.
+- Other upcoming items (lines 562–567):
+  - Name: `fontSize: 16` → **22**.
+  - Time: `fontSize: 14` → **18**.
+  - Icon (line 561): `size={20}` → **24**.
+- "Completed Today (n)" toggle row (lines 461–468) and completed item rows (lines 484, 493–495): bump from 14 → **18**, icon 20 → **22**, so the section stays proportional.
 
-There is no rule telling the model what to do when notes/details are empty — so Gemini fills the gap and makes up items ("bring your ID, insurance card, medication list…").
+## 2. "Tap to Ask a Question" + mic — larger
 
-**Fix**
+**File:** `src/routes/elder.tsx`
 
-Tighten the system prompt so the model is grounded strictly in the reminder fields:
+- Mic circle (lines 114–115): `micSize` 150/120 → **200/170**, `micIconPx` 80 → **110**.
+- Label (lines 385–391): `fontSize: 16` → **26**, keep bold.
+- Card `minHeight` (line 359): 280 → **340** so the bigger mic isn't cramped.
 
-1. In `reminderFacts` (around line 149), if `r.notes` is empty, emit an explicit line like `Notes / what to bring: (none provided)` instead of dropping the field. Same for `details`. This way the model sees the absence as a fact.
-2. Rewrite the `introInstruction` (lines 152–156) and `followupInstruction` (158–161) to add a hard rule:
-   - "Only mention items to bring that appear verbatim in Notes or Details above. If neither field lists anything to bring, do NOT invent items. Instead say something like: 'I don't have a list of what to bring for this — check with your carer or the appointment letter.'"
-   - "Never suggest generic items (ID, insurance card, medication list, water, etc.) unless they appear in the notes."
-3. Apply the same rule to `followupInstruction` so the follow-up steps don't reintroduce invented items.
+## 3. Phone button — larger
 
-No UI changes; this is purely a prompt change and affects both V1 and V2 because both call the same server function.
+**File:** `src/routes/elder.tsx`, the floating `.fab-phone` (lines 593–623)
 
-## 2. /carer Instruction Context — allow spaces in the "What might they ask?" field
+- `width`/`height`: 64 → **88**.
+- `Phone` icon `size`: 36 → **52**.
+- `bottom`/`right`: 24 → **28** (keep clearance from edge).
 
-**Where:** `src/components/instruction-context-form.tsx`, line 199.
+## 4. Remove the text-size toggle
 
-**Root cause**
+Reasoning: nothing in the running app links to `/settings/text-size`; `textSize` only drives the clock-card numbers on /elder. Removing it simplifies state and lets the new sizes be the single source of truth.
 
-The `onChange` runs `cleanQuickActionLabel(e.target.value)` on every keystroke. `cleanQuickActionLabel` (in `src/lib/carer-store.tsx` lines 67–84) calls `.trim()`, which strips the trailing space the user just typed. As soon as the user hits space, it disappears, so the next letter sticks to the previous word ("what" + space + "i" → "whati").
+**Delete:** `src/routes/settings.text-size.tsx` (the auto-generated `routeTree.gen.ts` regenerates on next build — we don't hand-edit it).
 
-**Fix**
+**Edit:** `src/lib/settings-store.tsx`
+- Remove the `TextSize` type, `mediumSizes`/`largeSizes`/`Sizes` exports, the `textSize`/`setTextSize` context fields, the related `useState`, the `localStorage` read/write, and drop them from the `value` memo + deps.
 
-Stop cleaning on every keystroke; clean only when the value is committed.
+**Edit:** `src/routes/elder.tsx`
+- Drop `textSize` from the `useSettings()` destructure (line 98).
+- Replace lines 168–169 with fixed values: `const line1Size = 38;` (was 28/34) and `const line2Size = 60;` (was 44/53) — locking in the "always bigger" date/time on the clock card.
 
-1. Line 199 `onChange`: store the raw value — `setQuestions(questions.map((x, j) => j === i ? e.target.value : x))`. No trimming, no rewriting while typing.
-2. Add `onBlur` to the same input that runs `cleanQuickActionLabel` on the final value, so the label rewrites (e.g. "How do I …" → cleaned form) still happen once the user leaves the field.
-3. Saving already runs `cleanQs = questions.map(cleanQuickActionLabel).filter(Boolean)` at line 98, so persisted data stays normalized.
+## Open items / risks
 
-No other call sites change; `cleanDevices` (carer-store.tsx line 86) still normalizes on load.
-
-## Out of scope / not doing
-
-- Not touching the medication-reminder voice flow or the V2 completion animation.
-- Not changing the `Device` schema or the questions-list UI beyond the typing behavior.
+- `src/components/TalkToTextPopup.tsx` imports `sizes` from `useSettings` (line 199). It is destructured but I'll confirm it's unused before the build; if used anywhere, I'll inline the previous `mediumSizes` values there so the popup is unaffected.
+- I won't touch the carer/onboarding/settings index routes; this is scoped to /elder presentation + dead-code removal of the text-size route and store fields.

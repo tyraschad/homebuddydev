@@ -95,7 +95,7 @@ function buildAnnouncement(name: string, reminderName: string, offsetMin: number
 }
 
 function ElderHome() {
-  const { theme, textSize, announcementsEnabled, highContrast } = useSettings();
+  const { theme, announcementsEnabled, highContrast } = useSettings();
   const v2 = !highContrast;
 
   // Variant tokens
@@ -111,8 +111,8 @@ function ElderHome() {
   const micBorderColor = v2 ? V2_SAGE : V1_FG;
   const micFill = v2 ? V2_WHITE : V1_FG;
   const micIconColor = v2 ? V2_NAVY : V2_WHITE;
-  const micSize = v2 ? 150 : 120;
-  const micIconPx = 80;
+  const micSize = v2 ? 200 : 170;
+  const micIconPx = 110;
   const nextBorderV = v2 ? `2px solid ${V2_SAGE}` : `1px solid ${V1_FG}`;
   const nextBgV = v2 ? V2_SAGE_LIGHT : V2_WHITE;
   const remIconColor = v2 ? V2_NAVY : V1_FG;
@@ -165,8 +165,8 @@ function ElderHome() {
   const timeStr = now ? formatTime(now) : "";
   const greet = now ? greeting(now) : "Hello";
 
-  const line1Size = textSize === "large" ? 34 : 28;
-  const line2Size = textSize === "large" ? 53 : 44;
+  const line1Size = 38;
+  const line2Size = 60;
 
   const items = useMemo(() => {
     const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
@@ -356,7 +356,7 @@ function ElderHome() {
                 justifyContent: "center",
                 gap: 16,
                 cursor: "pointer",
-                minHeight: 280,
+                minHeight: 340,
                 boxShadow: cardShadow,
               }}
               aria-label="Tap to ask a question"
@@ -382,7 +382,7 @@ function ElderHome() {
                 style={{
                   fontFamily: "Inter, sans-serif",
                   fontWeight: 700,
-                  fontSize: 16,
+                  fontSize: 26,
                   color: cardTextBlack,
                   textAlign: "center",
                   paddingTop: 16,
@@ -413,7 +413,7 @@ function ElderHome() {
                 style={{
                   fontFamily: headerFont,
                   fontWeight: 700,
-                  fontSize: 18,
+                  fontSize: 28,
                   color: cardTextBlack,
                   margin: 0,
                   paddingBottom: 12,
@@ -458,13 +458,13 @@ function ElderHome() {
                             alignItems: "center",
                             gap: 4,
                             fontFamily: "Inter, sans-serif",
-                            fontSize: 14,
+                            fontSize: 18,
                             fontWeight: 700,
                             color: mutedText,
                           }}
                           aria-expanded={showCompleted}
                         >
-                          {showCompleted ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          {showCompleted ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                           <span data-readable="true">Completed Today ({completedItems.length})</span>
                         </button>
                         {showCompleted && (
@@ -481,7 +481,7 @@ function ElderHome() {
                                   cursor: "pointer",
                                   padding: "4px 0",
                                   fontFamily: "Inter, sans-serif",
-                                  fontSize: 14,
+                                  fontSize: 18,
                                   color: mutedText,
                                   opacity: 0.6,
                                   textDecoration: "line-through",
@@ -490,7 +490,7 @@ function ElderHome() {
                                   gap: 8,
                                 }}
                               >
-                                <ReminderIcon type={i.reminder.type} size={20} color={mutedText} />
+                                <ReminderIcon type={i.reminder.type} size={22} color={mutedText} />
                                 <span data-readable="true">
                                   {formatTimeStr(i.time)} — {i.reminder.name}
                                 </span>
@@ -528,12 +528,12 @@ function ElderHome() {
                               }}
                             >
                               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
-                                <span data-readable="true" style={{ fontSize: 16, fontWeight: 700 }}>
+                                <ReminderIcon type={i.reminder.type} size={28} color={remIconColor} />
+                                <span data-readable="true" style={{ fontSize: 26, fontWeight: 700 }}>
                                   {i.reminder.name}
                                 </span>
                               </div>
-                              <div data-readable="true" style={{ fontSize: 14, color: mutedText, paddingLeft: 28 }}>
+                              <div data-readable="true" style={{ fontSize: 20, color: mutedText, paddingLeft: 36 }}>
                                 {timeText} — {rel}
                               </div>
                             </button>
@@ -558,12 +558,12 @@ function ElderHome() {
                             }}
                           >
                             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <ReminderIcon type={i.reminder.type} size={20} color={remIconColor} />
-                              <span data-readable="true" style={{ fontSize: 16 }}>
+                              <ReminderIcon type={i.reminder.type} size={24} color={remIconColor} />
+                              <span data-readable="true" style={{ fontSize: 22 }}>
                                 {i.reminder.name}
                               </span>
                             </div>
-                            <div data-readable="true" style={{ fontSize: 14, color: mutedText, paddingLeft: 28 }}>
+                            <div data-readable="true" style={{ fontSize: 18, color: mutedText, paddingLeft: 32 }}>
                               {timeText}
                             </div>
                           </button>
@@ -597,10 +597,10 @@ function ElderHome() {
           aria-label="Make a call"
           style={{
             position: "fixed",
-            bottom: 24,
-            right: 24,
-            width: 64,
-            height: 64,
+            bottom: 28,
+            right: 28,
+            width: 88,
+            height: 88,
             borderRadius: "50%",
             background: fabBg,
             border: "none",
@@ -619,7 +619,7 @@ function ElderHome() {
             e.currentTarget.style.transform = "scale(1)";
           }}
         >
-          <Phone size={36} strokeWidth={2} color={fabIconColor} />
+          <Phone size={52} strokeWidth={2} color={fabIconColor} />
         </button>
         <style>{`
         @media (max-width: 720px) {
