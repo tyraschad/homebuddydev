@@ -56,11 +56,9 @@ type Ctx = {
   setCarerAppearance: (m: AppearanceMode) => void;
   setElderAppearance: (m: AppearanceMode) => void;
 
-  textSize: TextSize;
   highContrast: boolean;
   announcementsEnabled: boolean;
   textReader: boolean;
-  setTextSize: (s: TextSize) => void;
   setHighContrast: (v: boolean) => void;
   setAnnouncementsEnabled: (v: boolean) => void;
   setTextReader: (v: boolean) => void;
@@ -84,7 +82,6 @@ function scopeFromPath(pathname: string): AppearanceScope {
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [carerAppearance, setCarerState] = useState<AppearanceMode>("light");
   const [elderAppearance, setElderState] = useState<AppearanceMode>("light");
-  const [textSize, setTextSizeState] = useState<TextSize>("medium");
   const [highContrast, setHighContrastState] = useState<boolean>(true);
   const [announcementsEnabled, setAnnouncementsEnabledState] = useState<boolean>(true);
   const [textReader, setTextReaderState] = useState<boolean>(false);
@@ -100,8 +97,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       if (e === "light" || e === "dark") setElderState(e);
       const c = localStorage.getItem("carerAppearanceMode");
       if (c === "light" || c === "dark") setCarerState(c);
-      const t = localStorage.getItem("textSize");
-      if (t === "medium" || t === "large") setTextSizeState(t);
       const h = localStorage.getItem("highContrast");
       if (h === "true" || h === "false") setHighContrastState(h === "true");
       const an = localStorage.getItem("announcementsEnabled");
@@ -127,10 +122,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     else setElderAppearance(m);
   };
 
-  const setTextSize = (s: TextSize) => {
-    setTextSizeState(s);
-    try { localStorage.setItem("textSize", s); } catch {}
-  };
   const setHighContrast = (v: boolean) => {
     setHighContrastState(v);
     try { localStorage.setItem("highContrast", String(v)); } catch {}
@@ -146,7 +137,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const appearance: AppearanceMode = scope === "carer" ? carerAppearance : elderAppearance;
   const theme = appearance === "dark" ? darkTheme : lightTheme;
-  const sizes = textSize === "large" ? largeSizes : mediumSizes;
+  const sizes = mediumSizes;
 
   const hcStrongColor = appearance === "dark" ? "#E8E8E8" : "#1A1A2E";
   const cardBorder = highContrast ? `2.5px solid ${hcStrongColor}` : `1.5px solid ${theme.border}`;
@@ -161,11 +152,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     elderAppearance,
     setCarerAppearance,
     setElderAppearance,
-    textSize,
     highContrast,
     announcementsEnabled,
     textReader,
-    setTextSize,
     setHighContrast,
     setAnnouncementsEnabled,
     setTextReader,
@@ -175,7 +164,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     buttonBorder,
     inputBorder,
     hcStrongColor,
-  }), [appearance, scope, carerAppearance, elderAppearance, textSize, highContrast, announcementsEnabled, textReader, theme, sizes, cardBorder, buttonBorder, inputBorder, hcStrongColor]);
+  }), [appearance, scope, carerAppearance, elderAppearance, highContrast, announcementsEnabled, textReader, theme, sizes, cardBorder, buttonBorder, inputBorder, hcStrongColor]);
 
   return (
     <SettingsContext.Provider value={value}>
