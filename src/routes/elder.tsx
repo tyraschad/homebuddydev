@@ -22,11 +22,6 @@ import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { GradientBackground } from "@/components/GradientBackground";
 import { speak } from "@/lib/talk.functions";
 import { useVoiceRecorder } from "@/lib/use-voice-recorder";
-import { useSettings } from "@/lib/settings-store";
-import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib/carer-store";
-import { TalkToTextPopup } from "@/components/TalkToTextPopup";
-import { GradientBackground } from "@/components/GradientBackground";
-import { speak } from "@/lib/talk.functions";
 import horizontalLogo from "@/assets/homebuddy-horizontal-logo.png.asset.json";
 import whiteLogo from "@/assets/white-logo.svg";
 
