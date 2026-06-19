@@ -879,6 +879,31 @@ function CallPopup({
   );
 }
 
+function CallButton({ phone, name, urgent }: { phone: string; name: string; urgent?: boolean }) {
+  const [hover, setHover] = useState(false);
+  const bg = urgent ? "#C0392B" : "#519D46";
+  const bgHover = urgent ? "#A0321F" : "#3F8035";
+  return (
+    <a
+      href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+      aria-label={`Call ${name}`}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: "inline-flex", alignItems: "center", gap: 8,
+        background: hover ? bgHover : bg, color: "#FFFFFF",
+        padding: "10px 16px", borderRadius: 8, textDecoration: "none",
+        fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 14,
+        minHeight: 40, boxSizing: "border-box",
+        transition: "background 0.15s",
+      }}
+    >
+      <Phone size={16} strokeWidth={2} color="#FFFFFF" />
+      Call
+    </a>
+  );
+}
+
 function ContactRow({
   name,
   phone,
@@ -890,40 +915,23 @@ function ContactRow({
   theme: { text: string; muted: string };
   separator: string;
 }) {
-  const [hover, setHover] = useState(false);
   return (
-    <a
-      href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+    <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        padding: 12,
-        borderBottom: `1px solid ${separator}`,
-        textDecoration: "none",
-        color: "inherit",
-        cursor: "pointer",
-        transition: "background 0.15s",
-        background: hover ? "#FFFFFF" : "transparent",
+        display: "flex", alignItems: "center", gap: 12,
+        padding: 12, borderBottom: `1px solid ${separator}`,
       }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
     >
-      <div
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontSize: 16,
-          fontWeight: 700,
-          color: hover ? "#000000" : theme.text,
-        }}
-      >
-        {name}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>
+          {name}
+        </div>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>
+          {phone}
+        </div>
       </div>
-      <div
-        style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: hover ? "#000000" : theme.muted, marginTop: 2 }}
-      >
-        {phone}
-      </div>
-    </a>
+      <CallButton phone={phone} name={name} />
+    </div>
   );
 }
 
@@ -931,35 +939,23 @@ function EmergencyRow({ name, phone }: { name: string; phone: string }) {
   const textColor = "#000000";
   const phoneColor = "#4A4A4A";
   const separator = "#E5E5E5";
-  const [hover, setHover] = useState(false);
   return (
-    <a
-      href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
+    <div
       style={{
-        display: "flex",
-        flexDirection: "column",
-        padding: 12,
-        borderBottom: `1px solid ${separator}`,
-        textDecoration: "none",
-        color: "inherit",
-        cursor: "pointer",
-        transition: "background 0.15s",
-        background: hover ? "#FFFFFF" : "transparent",
+        display: "flex", alignItems: "center", gap: 12,
+        padding: 12, borderBottom: `1px solid ${separator}`,
       }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
     >
-      <div
-        style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: hover ? "#000000" : textColor }}
-      >
-        {name}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: textColor }}>
+          {name}
+        </div>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: phoneColor, marginTop: 2 }}>
+          {phone}
+        </div>
       </div>
-      <div
-        style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: hover ? "#000000" : phoneColor, marginTop: 2 }}
-      >
-        {phone}
-      </div>
-    </a>
+      <CallButton phone={phone} name={name} urgent />
+    </div>
   );
 }
 
