@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   ArrowLeft, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, X,
-  Edit, Trash2, Settings as SettingsIcon,
+  Edit, Trash2, Settings as SettingsIcon, Info as InfoIcon,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import {
@@ -15,7 +15,7 @@ import {
   ModalShell as Modal, CategoryPicker, NumberStepper, ReminderForm,
 } from "@/components/reminder-form";
 import { DeviceListEditor } from "@/components/instruction-context-form";
-import { PortalTour, hasCompletedTour, type TourStep } from "@/components/portal-tour";
+import { PortalTour, hasCompletedTour, clearTour, type TourStep } from "@/components/portal-tour";
 
 
 
@@ -132,6 +132,7 @@ function CarerPortal() {
   const icRef = useRef<HTMLElement | null>(null);
   const scheduleRef = useRef<HTMLElement | null>(null);
   const calendarRef = useRef<HTMLElement | null>(null);
+  const infoBtnRef = useRef<HTMLButtonElement | null>(null);
   const todayBtnRef = useRef<HTMLButtonElement | null>(null);
   const calendarScrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -203,12 +204,12 @@ function CarerPortal() {
   const handleGoToday = () => setCursor(new Date());
 
   const tourSteps: TourStep[] = [
-    { ref: headerRef, title: "Welcome to the Carer Portal", body: "Manage reminders, contacts, and settings for your loved one from here." },
-    { ref: profileRef, title: "Elder Profile", body: `View and edit ${elder.name}'s health conditions, notes, and phone contacts.` },
-    { ref: icRef, title: "Instruction Context", body: "Add devices from their home so HomeBuddy can give personalized help." },
-    { ref: scheduleRef, title: "Schedule controls", body: "Create reminders for medication, appointments, and activities — switch between day, week, month, and list." },
-    { ref: calendarRef, title: "Calendar", body: "All reminders are shown here. Tap any reminder to view or edit it." },
-    
+    { ref: headerRef, title: "Welcome to the Carer Portal", body: "This is where you manage everything for your loved one. Let's take a quick look around." },
+    { ref: profileRef, title: "Elder Profile", body: `View and edit ${elder.name}'s health conditions, notes, and phone contacts. Tap "+ Add phone contact" to get started.` },
+    { ref: icRef, title: "Instruction Context", body: "Add devices like TVs, thermostats, and remotes here so HomeBuddy can give step-by-step help." },
+    { ref: scheduleRef, title: "Schedule controls", body: "Add reminders for medication, appointments, or daily routines — switch between day, week, month, and list." },
+    { ref: calendarRef, title: "Calendar", body: "All reminders appear here. Tap one to view or edit it." },
+    { ref: infoBtnRef, title: "Restart the tutorial anytime", body: "Tap this Info button whenever you want to run through this tutorial again." },
   ];
 
   return (
@@ -230,6 +231,19 @@ function CarerPortal() {
           </div>
         </div>
         <div style={{ justifySelf: "end", display: "flex", gap: 8 }}>
+          <button
+            ref={infoBtnRef}
+            type="button"
+            onClick={() => { clearTour(); setTourOpen(true); }}
+            aria-label="Restart tutorial"
+            title="Restart tutorial"
+            style={{
+              ...btnSecondary, padding: "10px 12px",
+              display: "inline-flex", alignItems: "center", gap: 6,
+            }}
+          >
+            <InfoIcon size={18} />
+          </button>
           <Link to="/settings" aria-label="Settings" title="Settings" style={{
             ...btnSecondary, padding: "10px 12px",
             display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
