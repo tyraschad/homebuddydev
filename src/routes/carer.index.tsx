@@ -295,7 +295,11 @@ function CarerPortal() {
 
             <SubSection label="Phone contacts" onEdit={() => setEditTarget("contacts")}>
               {elder.contacts.length === 0 ? (
-                <EmptyLine text="No contacts added" />
+                <EmptyCTA
+                  text={`Add phone contacts so ${elder.name} can reach the people who matter.`}
+                  buttonText="+ Add phone contact"
+                  onClick={() => setEditTarget("contacts")}
+                />
               ) : (
                 <div style={{ display: "grid", gap: 6 }}>
                   {elder.contacts.map((c) => (
