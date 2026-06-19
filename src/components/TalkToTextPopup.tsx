@@ -863,6 +863,10 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
             </div>
           )}
         </div>
+          );
+        })()}
+
+
 
         {/* Sticky bottom: mic box + transcript/input box, then quick actions */}
         <div style={{
