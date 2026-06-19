@@ -666,8 +666,13 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
   const sendDisabled = sending || !text.trim();
 
   return (
-    <div onClick={onClose} role="dialog" aria-modal="true"
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 2000, boxSizing: "border-box" }}>
+    <div
+      onClick={inline ? undefined : onClose}
+      role={inline ? undefined : "dialog"}
+      aria-modal={inline ? undefined : true}
+      style={inline
+        ? { width: "100%", height: "100%", display: "flex", flexDirection: "column", boxSizing: "border-box" }
+        : { position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 2000, boxSizing: "border-box" }}>
       <style>{`
         @keyframes ttt-pulse { 0% { box-shadow: 0 0 0 0 rgba(107,162,74,0.5); } 70% { box-shadow: 0 0 0 14px rgba(107,162,74,0); } 100% { box-shadow: 0 0 0 0 rgba(107,162,74,0); } }
         @keyframes ttt-big-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); } 70% { box-shadow: 0 0 0 18px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
@@ -681,16 +686,19 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
       `}</style>
 
       <div onClick={(e) => e.stopPropagation()}
-        style={{
-          position: "relative",
-          background: v2 ? "#FFFFFF" : "#909090",
-          border: v2 ? `2px solid ${GREEN_DARK}` : "2px solid #000000",
-          borderRadius: v2 ? 16 : 8,
-          width: "95%", maxWidth: 820, height: "92vh", maxHeight: 800,
-          color: theme.text, boxSizing: "border-box",
-          display: "flex", flexDirection: "column", overflow: "hidden",
-          boxShadow: v2 ? "0 8px 16px rgba(0,0,0,0.2)" : "none",
-        }}>
+        style={inline
+          ? { position: "relative", background: "transparent", border: "none", borderRadius: 0, width: "100%", height: "100%", color: theme.text, boxSizing: "border-box", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "none" }
+          : {
+            position: "relative",
+            background: v2 ? "#FFFFFF" : "#909090",
+            border: v2 ? `2px solid ${GREEN_DARK}` : "2px solid #000000",
+            borderRadius: v2 ? 16 : 8,
+            width: "95%", maxWidth: 820, height: "92vh", maxHeight: 800,
+            color: theme.text, boxSizing: "border-box",
+            display: "flex", flexDirection: "column", overflow: "hidden",
+            boxShadow: v2 ? "0 8px 16px rgba(0,0,0,0.2)" : "none",
+          }}>
+
 
         {/* Header */}
         <div style={{
