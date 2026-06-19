@@ -566,6 +566,23 @@ function HowCard({ icon, title, body, appearance, card, text, muted }: {
   );
 }
 
+function StepNode({ icon, title, body, text, muted }: {
+  icon: ReactNode; title: string; body: string; text: string; muted: string;
+}) {
+  return (
+    <li className="hb-stepper-item">
+      <div style={{
+        width: 48, height: 48, borderRadius: "50%", background: "#2F8F4E",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        boxShadow: "0 0 0 4px #fff",
+      }}>{icon}</div>
+      <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, color: text, marginTop: 12, marginBottom: 4 }}>
+        {title}
+      </div>
+      <div style={{ fontSize: 13, color: muted, lineHeight: 1.4 }}>{body}</div>
+    </li>
+  );
+
 function PhotoField({ label, photo, onPhoto, theme, cardBorder, buttonBorder }: {
   label: string; photo?: string; onPhoto: (p: string) => void;
   theme: { bg: string; muted: string; text: string }; cardBorder: string; buttonBorder: string;
