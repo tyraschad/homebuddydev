@@ -150,28 +150,38 @@ function Onboarding() {
     background: theme.card, border: cardBorder, borderRadius: 8, padding: 16,
   };
 
-  // ---- Header (back + progress) ----
+  // ---- Header (back + progress; status display, not clickable) ----
   const renderHeader = () => {
     if (data.step === 1) return null;
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
-        <button
-          type="button"
-          onClick={() => goto(data.step - 1)}
-          style={{ ...btnSecondary, display: "inline-flex", alignItems: "center", gap: 8, height: 40 }}
-        >
-          <ArrowLeft size={18} /> Back
-        </button>
-        <div style={{ flex: 1, marginLeft: 16, marginRight: 16 }}>
-          <div style={{ height: 6, background: appearance === "dark" ? "#3A3A4E" : "#E8E8E8", borderRadius: 3, overflow: "hidden" }}>
-            <div style={{
-              width: `${((data.step - 1) / (TOTAL - 1)) * 100}%`, height: "100%", background: GREEN,
-              transition: "width 200ms ease",
-            }} />
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+          <button
+            type="button"
+            onClick={() => goto(data.step - 1)}
+            style={{ ...btnSecondary, display: "inline-flex", alignItems: "center", gap: 8, height: 40 }}
+          >
+            <ArrowLeft size={18} /> Back
+          </button>
+          <div style={{ ...small, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            Progress
+          </div>
+          <div style={{ ...small, fontWeight: 700, minWidth: 56, textAlign: "right" }}>
+            {data.step - 1} of {TOTAL - 1}
           </div>
         </div>
-        <div style={{ ...small, fontWeight: 700, minWidth: 56, textAlign: "right" }}>
-          {data.step - 1} of {TOTAL - 1}
+        <div
+          role="progressbar"
+          aria-valuemin={1}
+          aria-valuemax={TOTAL - 1}
+          aria-valuenow={data.step - 1}
+          aria-label="Onboarding progress"
+          style={{ height: 6, background: appearance === "dark" ? "#3A3A4E" : "#E8E8E8", borderRadius: 3, overflow: "hidden", cursor: "default" }}
+        >
+          <div style={{
+            width: `${((data.step - 1) / (TOTAL - 1)) * 100}%`, height: "100%", background: GREEN,
+            transition: "width 200ms ease",
+          }} />
         </div>
       </div>
     );
@@ -221,7 +231,7 @@ function Onboarding() {
 
   if (!hydrated) return <main style={page} />;
 
-  const gradientOverlay = <GradientBackground opacity={0.12} style={{ zIndex: 2 }} />;
+  const gradientOverlay = <GradientBackground opacity={0.132} style={{ zIndex: 2 }} />;
 
   if (resumePrompt) {
     return (
@@ -280,15 +290,16 @@ function Onboarding() {
               <p style={muted}>
                 Setup takes just a couple of minutes. You can edit anything later.
               </p>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: 16, marginTop: 24,
-              }}>
-                <HowCard icon={<User size={28} color={GREEN} />} title="About you" body="Tell us who you are and who you're caring for." appearance={appearance} card={card} text={theme.text} muted={theme.muted} />
-                <HowCard icon={<HeartPulse size={28} color={GREEN} />} title="Their needs" body="Pick the conditions that apply." appearance={appearance} card={card} text={theme.text} muted={theme.muted} />
-                <HowCard icon={<CheckCircle2 size={28} color={GREEN} />} title="Review & launch" body="Confirm the setup and we'll personalise the app." appearance={appearance} card={card} text={theme.text} muted={theme.muted} />
-              </div>
+              <ol
+                className="hb-stepper"
+                role="list"
+                aria-label="Setup steps overview"
+                style={{ listStyle: "none" }}
+              >
+                <StepNode icon={<User size={22} color="#fff" />} title="About you" body="Tell us who you are and who you're caring for." text={theme.text} muted={theme.muted} />
+                <StepNode icon={<HeartPulse size={22} color="#fff" />} title="Their needs" body="Pick the conditions that apply." text={theme.text} muted={theme.muted} />
+                <StepNode icon={<CheckCircle2 size={22} color="#fff" />} title="Review & launch" body="Confirm the setup and we'll personalise the app." text={theme.text} muted={theme.muted} />
+              </ol>
               <p style={{ ...small, fontStyle: "italic", marginTop: 16 }}>
                 Don't worry — you can change any of this later.
               </p>
@@ -357,11 +368,7 @@ function Onboarding() {
                 Choosing these conditions will help us adjust settings according to specific needs. Select all conditions that apply to {elderName}.
               </p>
               <p style={small}>Pick at least one</p>
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-                gap: 12, marginTop: 16,
-              }}>
+              <div className="hb-needs-grid">
                 {ALL_CONDITIONS.map((c) => {
                   const selected = data.conditions.includes(c);
                   return (
