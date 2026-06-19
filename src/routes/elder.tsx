@@ -16,11 +16,11 @@ import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { GradientBackground } from "@/components/GradientBackground";
 import { speak } from "@/lib/talk.functions";
-import whiteLogo from "@/assets/white-logo.svg";
+import whiteLogo from "@/assets/text-logo-white.png.asset.json";
 
 
 // V1 Elder palette (WCAG): #8F8F8F bg, #000000 text/mic, #6CA24E phone
-const V1_BG = "#8F8F8F";
+const V1_BG = "#519D46";
 const V1_FG = "#000000";
 const V1_PHONE = "#6CA24E";
 const V1_CARD_BORDER = "1px solid #000000";
@@ -249,7 +249,7 @@ function ElderHome() {
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <img
-              src={whiteLogo}
+              src={whiteLogo.url}
               alt="HomeBuddy"
               style={{ display: "block", height: 32, width: "auto" }}
             />
