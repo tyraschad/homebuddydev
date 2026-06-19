@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
 import {
   ArrowLeft, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, X,
-  Edit, Trash2, Settings as SettingsIcon,
+  Edit, Trash2, Settings as SettingsIcon, Info as InfoIcon,
 } from "lucide-react";
 import { useSettings } from "@/lib/settings-store";
 import {
@@ -15,7 +15,7 @@ import {
   ModalShell as Modal, CategoryPicker, NumberStepper, ReminderForm,
 } from "@/components/reminder-form";
 import { DeviceListEditor } from "@/components/instruction-context-form";
-import { PortalTour, hasCompletedTour, type TourStep } from "@/components/portal-tour";
+import { PortalTour, hasCompletedTour, clearTour, type TourStep } from "@/components/portal-tour";
 
 
 
@@ -132,6 +132,7 @@ function CarerPortal() {
   const icRef = useRef<HTMLElement | null>(null);
   const scheduleRef = useRef<HTMLElement | null>(null);
   const calendarRef = useRef<HTMLElement | null>(null);
+  const infoBtnRef = useRef<HTMLButtonElement | null>(null);
   const todayBtnRef = useRef<HTMLButtonElement | null>(null);
   const calendarScrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -203,12 +204,12 @@ function CarerPortal() {
   const handleGoToday = () => setCursor(new Date());
 
   const tourSteps: TourStep[] = [
-    { ref: headerRef, title: "Welcome to the Carer Portal", body: "Manage reminders, contacts, and settings for your loved one from here." },
-    { ref: profileRef, title: "Elder Profile", body: `View and edit ${elder.name}'s health conditions, notes, and phone contacts.` },
-    { ref: icRef, title: "Instruction Context", body: "Add devices from their home so HomeBuddy can give personalized help." },
-    { ref: scheduleRef, title: "Schedule controls", body: "Create reminders for medication, appointments, and activities — switch between day, week, month, and list." },
-    { ref: calendarRef, title: "Calendar", body: "All reminders are shown here. Tap any reminder to view or edit it." },
-    
+    { ref: headerRef, title: "Welcome to the Carer Portal", body: "This is where you manage everything for your loved one. Let's take a quick look around." },
+    { ref: profileRef, title: "Elder Profile", body: `View and edit ${elder.name}'s health conditions, notes, and phone contacts. Tap "+ Add phone contact" to get started.` },
+    { ref: icRef, title: "Instruction Context", body: "Add devices like TVs, thermostats, and remotes here so HomeBuddy can give step-by-step help." },
+    { ref: scheduleRef, title: "Schedule controls", body: "Add reminders for medication, appointments, or daily routines — switch between day, week, month, and list." },
+    { ref: calendarRef, title: "Calendar", body: "All reminders appear here. Tap one to view or edit it." },
+    { ref: infoBtnRef, title: "Restart the tutorial anytime", body: "Tap this Info button whenever you want to run through this tutorial again." },
   ];
 
   return (
@@ -230,6 +231,19 @@ function CarerPortal() {
           </div>
         </div>
         <div style={{ justifySelf: "end", display: "flex", gap: 8 }}>
+          <button
+            ref={infoBtnRef}
+            type="button"
+            onClick={() => { clearTour(); setTourOpen(true); }}
+            aria-label="Restart tutorial"
+            title="Restart tutorial"
+            style={{
+              ...btnSecondary, padding: "10px 12px",
+              display: "inline-flex", alignItems: "center", gap: 6,
+            }}
+          >
+            <InfoIcon size={18} />
+          </button>
           <Link to="/settings" aria-label="Settings" title="Settings" style={{
             ...btnSecondary, padding: "10px 12px",
             display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none",
@@ -281,7 +295,11 @@ function CarerPortal() {
 
             <SubSection label="Phone contacts" onEdit={() => setEditTarget("contacts")}>
               {elder.contacts.length === 0 ? (
-                <EmptyLine text="No contacts added" />
+                <EmptyCTA
+                  text={`Add phone contacts so ${elder.name} can reach the people who matter.`}
+                  buttonText="+ Add phone contact"
+                  onClick={() => setEditTarget("contacts")}
+                />
               ) : (
                 <div style={{ display: "grid", gap: 6 }}>
                   {elder.contacts.map((c) => (
@@ -328,9 +346,11 @@ function CarerPortal() {
         {icOpen && (
           <div style={{ marginTop: 16 }}>
             {elder.devices.length === 0 ? (
-              <div style={{ textAlign: "center", color: theme.muted, fontSize: 14, padding: 16 }}>
-                No devices added
-              </div>
+              <EmptyCTA
+                text={`Photograph the devices in ${elder.name}'s home so HomeBuddy can give step-by-step help.`}
+                buttonText="+ Add a device"
+                onClick={() => setEditTarget("devices")}
+              />
             ) : (
               <div style={{ display: "grid", gap: 8 }}>
                 {elder.devices.map((d) => {
@@ -416,6 +436,15 @@ function CarerPortal() {
 
       {/* CALENDAR */}
       <section ref={calendarRef} style={{ ...whiteCard, position: "relative" }}>
+        {reminders.length === 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <EmptyCTA
+              text={`No reminders yet. Add medications, appointments, or daily routines for ${elder.name}.`}
+              buttonText="+ Add reminder / medication"
+              onClick={() => { setPrefillTime(null); setPickCategoryOpen(true); }}
+            />
+          </div>
+        )}
         <div ref={calendarScrollRef} style={{ maxHeight: 600, overflowY: "auto", overflowX: "hidden" }}>
           {cursor && view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={(time) => { setPrefillTime(time ?? null); setPickCategoryOpen(true); }} theme={theme} appearance={appearance} gridLine={gridLine} />}
           {cursor && view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
@@ -567,6 +596,30 @@ function SubSection({ label, onEdit, children }: { label: string; onEdit: () => 
 function EmptyLine({ text }: { text: string }) {
   const { theme } = useSettings();
   return <span style={{ color: theme.muted, fontStyle: "italic" }}>{text}</span>;
+}
+
+function EmptyCTA({ text, buttonText, onClick }: { text: string; buttonText: string; onClick: () => void }) {
+  return (
+    <div style={{
+      background: "#F0F0F0", border: "1px solid #D0D0D0", borderRadius: 8,
+      padding: 20, textAlign: "center",
+      display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
+    }}>
+      <div style={{ fontSize: 14, color: "#000000", maxWidth: 420 }}>{text}</div>
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          background: GREEN, color: "#fff", border: "none",
+          padding: "10px 18px", borderRadius: 8,
+          fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
+          cursor: "pointer",
+        }}
+      >
+        {buttonText}
+      </button>
+    </div>
+  );
 }
 
 
