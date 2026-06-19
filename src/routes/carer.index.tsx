@@ -436,6 +436,15 @@ function CarerPortal() {
 
       {/* CALENDAR */}
       <section ref={calendarRef} style={{ ...whiteCard, position: "relative" }}>
+        {reminders.length === 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <EmptyCTA
+              text={`No reminders yet. Add medications, appointments, or daily routines for ${elder.name}.`}
+              buttonText="+ Add reminder / medication"
+              onClick={() => { setPrefillTime(null); setPickCategoryOpen(true); }}
+            />
+          </div>
+        )}
         <div ref={calendarScrollRef} style={{ maxHeight: 600, overflowY: "auto", overflowX: "hidden" }}>
           {cursor && view === "day" && <DayView date={cursor} reminders={reminders} onOpen={setViewing} onAdd={(time) => { setPrefillTime(time ?? null); setPickCategoryOpen(true); }} theme={theme} appearance={appearance} gridLine={gridLine} />}
           {cursor && view === "week" && <WeekView date={cursor} reminders={reminders} onOpen={setViewing} theme={theme} appearance={appearance} gridLine={gridLine} />}
@@ -587,6 +596,30 @@ function SubSection({ label, onEdit, children }: { label: string; onEdit: () => 
 function EmptyLine({ text }: { text: string }) {
   const { theme } = useSettings();
   return <span style={{ color: theme.muted, fontStyle: "italic" }}>{text}</span>;
+}
+
+function EmptyCTA({ text, buttonText, onClick }: { text: string; buttonText: string; onClick: () => void }) {
+  return (
+    <div style={{
+      background: "#F0F0F0", border: "1px solid #D0D0D0", borderRadius: 8,
+      padding: 20, textAlign: "center",
+      display: "flex", flexDirection: "column", alignItems: "center", gap: 12,
+    }}>
+      <div style={{ fontSize: 14, color: "#000000", maxWidth: 420 }}>{text}</div>
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          background: GREEN, color: "#fff", border: "none",
+          padding: "10px 18px", borderRadius: 8,
+          fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
+          cursor: "pointer",
+        }}
+      >
+        {buttonText}
+      </button>
+    </div>
+  );
 }
 
 
