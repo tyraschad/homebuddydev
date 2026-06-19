@@ -1,104 +1,105 @@
-# /elder layout + inline 2-tap voice flow
+## Onboarding restructure + Welcome animation
 
-Applies to both V1 (high-contrast) and V2 (sage) variants — they share the same JSX in `src/routes/elder.tsx`, so a single restructure covers both.
+### Flow (6 steps, down from 10)
 
-## 1. Layout restructure
-
-Current grid (2 columns, equal width):
-
-```text
-LEFT                 RIGHT
-[ Clock         ]   [ Today's Reminders   ]
-[ Ask Question  ]   [   (full height)     ]
-[   (mic card)  ]   [                     ]
+```
+1. Welcome             (icon → animated "homebuddy" wordmark)
+2. How HomeBuddy Works (3 icon-in-circle cards, reflects new short flow)
+3. About you + loved one (combined, side-by-side)
+4. Needs Assessment    (4-across square tiles, icon-on-top)
+5. Review + suggested ecosystem (combined; editable + settings toggles)
+6. (cut — folded into 5)
 ```
 
-New grid — clock moves to top of right column unchanged, mic card spans full left-column height, reminders shorten to fit below the clock:
+Removed: Reminders, Instruction Context, Phone Numbers, standalone Summary. Carer can add those from the portal later (see Portal section).
 
-```text
-LEFT                 RIGHT
-[                ]   [ Clock (unchanged:   ]
-[ Ask Question   ]   [  same size, padding,]
-[ (mic + chat)   ]   [  fonts as today)    ]
-[ full height    ]   [---------------------]
-[                ]   [ Today's Reminders   ]
-[                ]   [ (remaining height)  ]
-```
+---
 
-Implementation: keep the existing `display: grid; gridTemplateColumns: 1fr 1fr` shell. Swap the contents of the two columns:
-- **Left column**: single Ask card, `flex: 1`, fills full available height.
-- **Right column**: clock card on top (**no changes** — same padding 24, same `line1Size: 38`, same `line2Size: 60`, same content), then Today's Reminders card with `flex: 1` below it, gap 16. Reminders card naturally shortens to absorb the clock's height.
-- Mobile breakpoint (`@media max-width 720px`) already collapses to single column — natural stack order becomes Ask card, then clock, then reminders.
+### Step 1 — Welcome: signature write-on animation
 
-No changes to clock card sizing, clock content, reminder logic, phone FAB, settings link, header greeting.
+Replace the `HomeIcon` circle with the uploaded `Vector.png` wordmark, animating in Apple-signature style. The CSS you provided works — porting it to React with these changes:
 
-## 2. Inline 2-tap voice + chat (replaces popup)
+- **Asset handling**: upload `Vector.png` via `lovable-assets create --file /mnt/user-uploads/Vector.png --filename homebuddy-wordmark.png > src/assets/homebuddy-wordmark.png.asset.json`, then `import wordmark from "@/assets/homebuddy-wordmark.png.asset.json"` and use `wordmark.url`. (Not dropped in `/public` — keeps the repo clean.)
+- **Duration**: 1.35s → **1.8s** (slower, more deliberate signature feel). All three keyframe animations bumped together so the ink head and settle stay synced with the clip-path reveal.
+- **Easing**: keep `cubic-bezier(.16, 1, .3, 1)` (the "ease-out-expo-ish" curve — what Apple uses for hero motion).
+- **Implementation**: new component `<HomebuddyWordmark />` in `src/components/homebuddy-wordmark.tsx`. Returns the wrap/img markup plus a scoped `<style>` block with the three `@keyframes` (keyframes can't live in inline `style={}`). Class names prefixed `homebuddy-` to avoid global collisions.
+- **Accessibility**: wrap respects `@media (prefers-reduced-motion: reduce)` — animation skipped, logo shown final state immediately.
+- **Layout swap in `src/routes/onboarding.tsx` step 1**: drop the 96px circle + `<HomeIcon>`, render `<HomebuddyWordmark />` in its place. Keep the "Custom care for elders at home" tagline and "Set up a personalised care ecosystem…" copy unchanged. "Get started" button unchanged.
+- **`HomeIcon` import** removed from onboarding.tsx (no other usage there).
 
-Per your answers: **pure 2-tap, send instantly on stop**, **live transcript above mic**, **no quick actions yet**, **conversation stays until next question**.
+The three keyframes (`homebuddy-write-on`, `homebuddy-ink-head`, `homebuddy-settle`) and all CSS values are copied verbatim from your snippet, only the `1.35s` durations swapped to `1.8s`.
 
-New states for the Ask card (replaces `idle | recording | confirming`):
+---
 
-```text
-idle          → big mic, label "Tap to Ask a Question"
-recording     → live interim transcript ABOVE mic (large), pulsing red mic,
-                label below: "Tap to stop and send"
-sending       → spinner + "One moment…" while transcription/LLM run
-conversation  → chat transcript ABOVE mic (scrollable),
-                idle mic BELOW with label "Tap to ask another question"
-```
+### Step 2 — How HomeBuddy Works
+Three horizontal cards, each: icon-in-circle (56px, light grey bg, green icon) + short title + one-line subtitle. No bullet lists.
+- `User` → "About you" / "Tell us who you are and who you're caring for."
+- `HeartPulse` → "Their needs" / "Pick the conditions that apply."
+- `Check` → "Review & launch" / "Confirm the setup and we'll personalise the app."
 
-Single tap behavior:
-- **idle → recording**: `startVoiceCapture()` (existing).
-- **recording → sending**: `stopVoiceCapture()`, then on transcript callback skip the confirm step and immediately push the message into the chat pipeline.
-- **sending → conversation**: assistant reply streams in above the mic.
-- **conversation → recording**: tap mic again; new question appends to the same transcript (no auto-clear, per your answer).
+### Step 3 — Combined About page
+Two-column grid (`gridTemplateColumns: 1fr 1fr`, gap 24, stacks to 1 col under ~640px).
+- Left: H2 "Fill out information about you", field "Your name (carer)*".
+- Right: H2 "About the person you're caring for", PhotoField, "Their name*", "Notes (optional)" textarea.
+- Next enabled when both names non-empty. Photo + notes optional.
 
-### Live transcript during recording
+### Step 4 — Needs Assessment
+- Subtitle: "Choosing these conditions will help us adjust settings according to specific needs. Select all conditions that apply to {elderName}."
+- Grid: `repeat(4, 1fr)`, gap 12, tiles `aspectRatio: 1`, flex column centered, icon top (28px), label below (13px, centered). Selected = green border + green tint + check badge top-right. Requires ≥1.
 
-The current `useVoiceRecorder` only returns a final transcript on stop. Two options for "live" text:
-- **A. True interim results** via Web Speech API (`SpeechRecognition`) running in parallel with the recorder. Works in Chrome/Edge/Safari; gives word-by-word feedback. Adds ~40 lines and a graceful-degrade path.
-- **B. Animated "Listening…" placeholder** only — no interim words, just a calm animated indicator until the final transcript lands at stop.
+### Step 5 — Combined Review + Ecosystem
+- H1: "{elderName}'s HomeBuddy"
+- **Profile summary card** with inline "Edit" toggle: photo, name, notes, condition chips → expands to inline form (same fields as step 3 right column + condition picker as chip toggles) → saves back into `data`.
+- **Suggested ecosystem** section: existing `suggestRecommendations(conditions)` cards.
+- **Adjusted settings** section: existing 3 ToggleRows.
+- Footer: "View your portal" (primary) and "View the screen {elderName} will see" (secondary). Both call existing `handleFinish()`.
 
-Recommend **A** with fallback to **B**: try `webkitSpeechRecognition`; if unavailable or it errors, show the animated "Listening…" text. Interim text renders in 28pt in a min-height 80px region directly above the mic so layout doesn't jump.
+### Header / progress
+`TOTAL` 10 → 6. Progress math unchanged.
 
-### Inline chat panel (replaces `TalkToTextPopup`)
+### Data shape
+`OnbData` keeps `reminders`, `devices`, `contacts`, `emergencyVisible` fields (unused by UI) so `handleFinish()` doesn't change and resumed v2 localStorage still parses. On hydrate, clamp `step` to ≤ `TOTAL` (drops users mid-flow onto the new Review page with data intact).
 
-Lift the chat state into `elder.tsx`:
-- `messages: { role: 'user' | 'assistant'; content: string }[]`
-- `chatStatus: 'idle' | 'sending' | 'streaming'`
-- `sendMessage(text)` calls the same server function `TalkToTextPopup` uses today (extract its `handleQuery` logic into a shared hook `useElderChat` in `src/lib/use-elder-chat.ts`).
+---
 
-Render above the mic when `messages.length > 0`:
-- Scrollable area, `flex: 1`, newest at bottom, auto-scrolls.
-- User bubbles: right-aligned, sage (V2) / black border (V1) background.
-- Assistant bubbles: left-aligned, no background (per chat-ui-composition guidance), 22pt body text for readability.
-- No avatars, no timestamps, no copy/retry — keep it elder-simple.
+## Portal updates (`src/routes/carer.index.tsx`)
 
-Mic and label sit at the **bottom** of the card once conversation starts, slightly smaller (`micSize` 200 → 140) to leave room for chat. In pure idle (no messages yet), mic stays centered and full-size as today.
+### Inline empty states
+- **Profile → Phone Contacts**: when contacts empty → centered prompt + green "+ Add phone contact" button (opens existing editor).
+- **Instruction Context**: when `elder.devices` empty → prompt + "+ Add a device" (existing `DeviceListEditor` add flow).
+- **Calendar/Schedule**: when `reminders` empty → callout above calendar + "+ Add reminder/medication" (existing reminder picker).
 
-### Files
+Each: light grey panel, centred text, primary green button. Disappears the moment the user adds anything (driven off store state).
 
-- **`src/routes/elder.tsx`**
-  - Restructure the grid columns (left = Ask card full height; right = clock unchanged on top, reminders below).
-  - Replace `voiceState` enum + confirm UI with `idle | recording | sending | conversation`.
-  - Add `messages` state + `useElderChat` hook.
-  - Remove the `overlay === "chat"` branch and the `TalkToTextPopup` render. Keep `overlay === "call"` (CallPopup) and `ReminderDetailsPopup` untouched.
-  - Remove now-unused imports (`Check`, `RotateCcw`, `Square`, `TalkToTextPopup`).
-- **`src/lib/use-elder-chat.ts`** (new) — extract the send/stream logic currently in `TalkToTextPopup.tsx` so the inline panel and the popup share one implementation. Returns `{ messages, status, send, reset }`.
-- **`src/lib/use-voice-recorder.ts`** — add optional `onInterim?: (text: string) => void` callback wired to `webkitSpeechRecognition`. No-op when unsupported. Existing API and callers unchanged.
-- **`src/components/TalkToTextPopup.tsx`** — refactor internals to consume `useElderChat` so behavior stays identical for any other consumer.
+### Info button beside Settings
+- Add `Info` (lucide) button to the LEFT of Settings in the header. Same secondary style. `aria-label="Restart tutorial"`. onClick → `clearTour()` + `setTourOpen(true)`. New `infoRef` for the tour.
 
-### Explicitly NOT doing
+### Tour content
+1. Welcome (headerRef)
+2. Elder Profile (profileRef) — points at "+ Add phone contact"
+3. Instruction Context (icRef) — encourages "+ Add a device"
+4. Schedule (scheduleRef) — encourages "+ Add reminder/medication"
+5. Calendar (calendarRef)
+6. **NEW** Info button (infoRef) — "Tap this Info button anytime to restart this tutorial."
 
-- No confirm/Redo step (you chose pure 2-tap).
-- No quick action buttons (skip for now).
-- No auto-clear of conversation.
-- No changes to clock card (size, padding, font sizes all preserved).
-- No changes to phone FAB, reminders logic, settings, announcements scheduler.
-- No keyboard input — voice only on `/elder`.
+Auto-shows on first portal visit via existing `hasCompletedTour()` — no change there.
 
-### Risks / tradeoffs
+---
 
-- **Misheard transcripts go straight to the assistant.** Explicit tradeoff of pure 2-tap; mitigated by live interim text letting the elder mentally cross-check before stopping.
-- **`webkitSpeechRecognition` unavailable in Firefox** and some embedded browsers — fallback is the "Listening…" indicator, no functionality lost.
-- **Conversation can grow unbounded** since it stays until a new question. Acceptable for a single-elder home screen; chat scroll handles it. Can cap to last N turns later if needed.
+## Files changed
+
+1. **`src/components/homebuddy-wordmark.tsx`** (new) — animated wordmark component with scoped keyframes.
+2. **`src/assets/homebuddy-wordmark.png.asset.json`** (new) — CDN pointer for Vector.png.
+3. **`src/routes/onboarding.tsx`** — large refactor: replace step 1 icon with `<HomebuddyWordmark />`; drop steps 7/8/9; rewrite steps 2, 3+4 → 3, 5 → 4, 6+10 → 5; `TOTAL = 6`; remove unused `RemindersPage` / `DevicesPage` / `PhoneNumbersPage` helpers and unused imports (`HomeIcon`, reminder/device imports).
+4. **`src/routes/carer.index.tsx`** — `infoRef`, Info button, empty-state blocks in three sections, extended `tourSteps`.
+5. **`src/components/portal-tour.tsx`** — no changes (already exports `clearTour`).
+
+## Not doing
+- No backend changes — still localStorage.
+- No animation on other onboarding steps (only the welcome wordmark).
+- Not auto-opening add dialogs from tour steps — buttons just become visible.
+
+## Risks
+- Users with in-progress v2 onboarding past step 6 → clamped to step 6 with their data intact.
+- Inline profile editing on Review page is dense → collapsed behind "Edit" button by default.
+- `clip-path` write-on is well-supported in evergreen browsers; reduced-motion users see the final wordmark immediately.
