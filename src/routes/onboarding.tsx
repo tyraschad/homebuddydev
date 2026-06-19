@@ -582,6 +582,8 @@ function StepNode({ icon, title, body, text, muted }: {
       <div style={{ fontSize: 13, color: muted, lineHeight: 1.4 }}>{body}</div>
     </li>
   );
+}
+
 
 function PhotoField({ label, photo, onPhoto, theme, cardBorder, buttonBorder }: {
   label: string; photo?: string; onPhoto: (p: string) => void;
