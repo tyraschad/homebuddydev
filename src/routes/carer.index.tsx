@@ -16,6 +16,7 @@ import {
 } from "@/components/reminder-form";
 import { DeviceListEditor } from "@/components/instruction-context-form";
 import { PortalTour, hasCompletedTour, clearTour, type TourStep } from "@/components/portal-tour";
+import darkGreenLogo from "@/assets/text-logo-dark-green.png.asset.json";
 
 
 
@@ -222,11 +223,12 @@ function CarerPortal() {
             <ArrowLeft size={18} /> View Elder Screen
           </Link>
         </div>
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+          <img src={darkGreenLogo.url} alt="HomeBuddy" style={{ height: 28, width: "auto" }} />
           <h1 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 26, color: theme.text }}>
             {elder.name}'s Care Plan
           </h1>
-          <div style={{ fontSize: 14, color: theme.muted, marginTop: 4 }}>
+          <div style={{ fontSize: 14, color: theme.muted }}>
             {headerDate}
           </div>
         </div>
@@ -310,6 +312,24 @@ function CarerPortal() {
                   ))}
                 </div>
               )}
+
+              {/* Pre-added emergency contacts (read-only, always shown) */}
+              <div style={{ marginTop: 16, paddingTop: 12, borderTop: `1px solid ${theme.muted}33` }}>
+                <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: theme.muted, marginBottom: 8 }}>
+                  Emergency
+                </div>
+                <div style={{ display: "grid", gap: 6 }}>
+                  {[
+                    { name: "Emergency Services", phone: "911" },
+                    { name: "Poison Control", phone: "1-800-222-1222" },
+                  ].map((c) => (
+                    <div key={c.phone} style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
+                      <span style={{ fontWeight: 700 }}>{c.name}</span>
+                      <span style={{ color: theme.muted }}>{c.phone}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </SubSection>
           </div>
         )}

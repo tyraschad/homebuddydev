@@ -143,3 +143,66 @@
     color: var(--color-foreground);
   }
 }
+
+/* Onboarding: Needs Assessment responsive grid */
+.hb-needs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+@media (max-width: 767px) {
+  .hb-needs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Onboarding: How-it-works stepper with connecting line */
+.hb-stepper {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 0 24px;
+}
+.hb-stepper::before {
+  content: "";
+  position: absolute;
+  top: 24px;
+  left: 48px;
+  right: 48px;
+  height: 1px;
+  background: #2F8F4E;
+  z-index: 0;
+}
+.hb-stepper-item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+  max-width: 200px;
+}
+@media (max-width: 639px) {
+  .hb-stepper {
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+    gap: 12px;
+  }
+  .hb-stepper::before {
+    top: 24px;
+    bottom: 24px;
+    left: 50%;
+    right: auto;
+    width: 1px;
+    height: auto;
+  }
+  .hb-stepper-item {
+    max-width: 100%;
+  }
+}
