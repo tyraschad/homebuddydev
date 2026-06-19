@@ -129,80 +129,8 @@ function ElderHome() {
   const { reminders, elder } = useCarer();
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
-  const [pendingMessage, setPendingMessage] = useState<string>("");
 
-  // Inline voice capture state for the Ask card (cognitive-accessibility flow):
-  // idle → recording → confirming → (Send opens chat, Redo loops back to recording)
-  type VoiceState = "idle" | "recording" | "confirming";
-  const [voiceState, setVoiceState] = useState<VoiceState>("idle");
-  const [transcript, setTranscript] = useState<string>("");
 
-  // Short chime via WebAudio — no asset import; safe to ignore failures.
-  const playChime = (kind: "start" | "stop") => {
-    try {
-      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const ctx = new Ctx();
-      const t0 = ctx.currentTime;
-      const freqs = kind === "start" ? [880, 1175] : [1175, 880];
-      freqs.forEach((f, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = f;
-        const t = t0 + i * 0.09;
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.14, t + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.25);
-      });
-      setTimeout(() => { try { void ctx.close(); } catch {} }, 600);
-    } catch {
-      // chime is non-essential
-    }
-  };
-
-  const voiceRecorder = useVoiceRecorder(
-    (text) => {
-      setTranscript(text);
-      setVoiceState("confirming");
-      playChime("stop");
-    },
-    { autoStopSilenceMs: 1800, minRecordingMs: 800 }
-  );
-
-  const startVoiceCapture = async () => {
-    setTranscript("");
-    setVoiceState("recording");
-    playChime("start");
-    await voiceRecorder.start();
-  };
-
-  const stopVoiceCapture = () => {
-    voiceRecorder.stop();
-  };
-
-  const redoVoiceCapture = () => {
-    voiceRecorder.reset();
-    setTranscript("");
-    void startVoiceCapture();
-  };
-
-  const sendVoiceMessage = () => {
-    const msg = transcript.trim();
-    if (!msg) return;
-    setPendingMessage(msg);
-    setVoiceState("idle");
-    setTranscript("");
-    setOverlay("chat");
-  };
-
-  const cancelVoiceCapture = () => {
-    voiceRecorder.reset();
-    setTranscript("");
-    setVoiceState("idle");
-  };
 
 
   useEffect(() => {
