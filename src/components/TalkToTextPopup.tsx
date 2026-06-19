@@ -700,27 +700,32 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
           }}>
 
 
-        {/* Header */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "14px 20px",
-          borderBottom: v2 ? "1px solid #E5E5E5" : "1px solid #444444",
-          background: v2 ? "#FFFFFF" : "#565656",
-          flexShrink: 0,
-        }}>
-          <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, color: v2 ? TEAL : "#FFFFFF" }}>Chat</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button type="button" onClick={() => { if (speaking) stopTTS(); setVoiceOn((v) => !v); }}
-              title={voiceOn ? "Voice on" : "Voice off"}
-              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}>
-              {voiceOn ? <Volume2 size={20} color={v2 ? TEAL : "#FFFFFF"} /> : <VolumeX size={20} color={v2 ? TEAL : "#FFFFFF"} />}
-            </button>
-            <button type="button" onClick={onClose} aria-label="Close"
-              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, display: "flex", alignItems: "center" }}>
-              <X size={28} strokeWidth={2} color={v2 ? "#000000" : "#FFFFFF"} />
-            </button>
+        {/* Header — hidden in inline mode */}
+        {!inline && (
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "14px 20px",
+            borderBottom: v2 ? "1px solid #E5E5E5" : "1px solid #444444",
+            background: v2 ? "#FFFFFF" : "#565656",
+            flexShrink: 0,
+          }}>
+            <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, color: v2 ? TEAL : "#FFFFFF" }}>Chat</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button type="button" onClick={() => { if (speaking) stopTTS(); setVoiceOn((v) => !v); }}
+                title={voiceOn ? "Voice on" : "Voice off"}
+                style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}>
+                {voiceOn ? <Volume2 size={20} color={v2 ? TEAL : "#FFFFFF"} /> : <VolumeX size={20} color={v2 ? TEAL : "#FFFFFF"} />}
+              </button>
+              {onClose && (
+                <button type="button" onClick={onClose} aria-label="Close"
+                  style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, display: "flex", alignItems: "center" }}>
+                  <X size={28} strokeWidth={2} color={v2 ? "#000000" : "#FFFFFF"} />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
 
         {/* Body — scrollable: greeting + chat history / instructions / well done */}
         <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
