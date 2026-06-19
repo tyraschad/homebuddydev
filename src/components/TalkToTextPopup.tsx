@@ -888,6 +888,50 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
               ))}
             </div>
           )}
+          {inline ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: "8px 0" }}>
+              <button type="button"
+                onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing" && !sending) void recorder.start(); }}
+                disabled={sending || recorder.status === "transcribing"}
+                aria-label={recorder.status === "recording" ? "Tap to stop and send" : "Tap to ask a question"}
+                style={{
+                  background: "transparent", border: "none", padding: 0,
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 14,
+                  cursor: sending || recorder.status === "transcribing" ? "not-allowed" : "pointer",
+                  width: "100%",
+                }}>
+                <div style={{
+                  width: 200, height: 200, aspectRatio: "1 / 1", flexShrink: 0,
+                  borderRadius: "50%",
+                  background: recorder.status === "recording" ? "#FF3B30" : (v2 ? "#FFFFFF" : "#FFFFFF"),
+                  border: recorder.status === "recording" ? "2px solid #FF3B30" : `2px solid ${v2 ? ACCENT : "#000000"}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  animation: recorder.status === "recording" ? "ttt-big-pulse 1.2s infinite" : undefined,
+                  transition: "background 0.2s, border 0.2s",
+                }}>
+                  {recorder.status === "transcribing"
+                    ? <Loader2 size={100} color={v2 ? TEAL : "#000000"} style={{ animation: "spin 1s linear infinite" }} />
+                    : <Mic size={110} color={recorder.status === "recording" ? "#FFFFFF" : (v2 ? TEAL : "#000000")} strokeWidth={2} />}
+                </div>
+                <div data-readable="true" style={{
+                  fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 26,
+                  color: recorder.status === "recording" ? "#FF3B30" : (v2 ? TEAL : "#000000"),
+                  textAlign: "center",
+                }}>
+                  {recorder.status === "recording" ? "Tap to stop and send"
+                    : recorder.status === "transcribing" ? "One moment…"
+                    : sending ? "Thinking…"
+                    : messages.some((m) => m.role === "user") ? "Tap to ask another question"
+                    : "Tap to Ask a Question"}
+                </div>
+                {recorder.status === "error" && recorder.error && (
+                  <div data-readable="true" style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#B00020", textAlign: "center" }}>
+                    {recorder.error}
+                  </div>
+                )}
+              </button>
+            </div>
+          ) : (
           <div style={{ display: "flex", gap: 12, height: 180 }}>
             <button type="button"
               onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
@@ -963,6 +1007,8 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
 
             </div>
           </div>
+          )}
+
 
           {suggestions.length > 0 && (
             <div style={{ display: "flex", gap: 12 }}>
