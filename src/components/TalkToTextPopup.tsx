@@ -1053,6 +1053,8 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
             </div>
           )}
         </div>
+          );
+        })()}
       </div>
     </div>
   );
