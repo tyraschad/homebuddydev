@@ -107,11 +107,6 @@ function ElderHome() {
   const cardTextBlack = cardText;
   const headerTextColor = v2 ? V2_WHITE : V1_FG;
   const headerTextShadow = "none";
-  const micBorderColor = v2 ? V2_SAGE : V1_FG;
-  const micFill = v2 ? V2_WHITE : V1_FG;
-  const micIconColor = v2 ? V2_NAVY : V2_WHITE;
-  const micSize = v2 ? 200 : 170;
-  const micIconPx = 110;
   const nextBorderV = v2 ? `2px solid ${V2_SAGE}` : `1px solid ${V1_FG}`;
   const nextBgV = v2 ? V2_SAGE_LIGHT : V2_WHITE;
   const remIconColor = v2 ? V2_NAVY : V1_FG;
