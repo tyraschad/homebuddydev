@@ -403,8 +403,59 @@ function ElderHome() {
 
           {/* RIGHT COLUMN — Clock on top (unchanged), Reminders below */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
-
+            {/* Clock card (unchanged) */}
             <div
+              style={{
+                background: cardBg,
+                border: cardBorderStyle,
+                borderRadius: cardRadius,
+                padding: 24,
+                textAlign: "center",
+                boxShadow: cardShadow,
+              }}
+            >
+              <div
+                data-readable="true"
+                style={{
+                  fontFamily: headerFont,
+                  fontWeight: 700,
+                  fontSize: line1Size,
+                  color: cardText,
+                  lineHeight: 1.3,
+                  marginBottom: 8,
+                }}
+              >
+                {dateDayStr}
+              </div>
+              <div
+                data-readable="true"
+                style={{
+                  fontFamily: headerFont,
+                  fontWeight: 700,
+                  fontSize: line2Size,
+                  color: cardText,
+                  lineHeight: 1.2,
+                }}
+              >
+                {timeStr}
+              </div>
+            </div>
+
+            {/* Today's Reminders card */}
+            <div
+              style={{
+                background: cardBg,
+                border: cardBorderStyle,
+                borderRadius: cardRadius,
+                padding: 16,
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                minHeight: 0,
+                boxShadow: cardShadow,
+              }}
+            >
+
               style={{
                 background: cardBg,
                 border: cardBorderStyle,
