@@ -869,12 +869,19 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
 
 
         {/* Sticky bottom: mic box + transcript/input box, then quick actions */}
+        {(() => {
+          const hasContent = messages.length > 0 || !!guide || !!wellDone || sending;
+          const centerWhenEmpty = inline && !hasContent;
+          return (
         <div style={{
           flexShrink: 0, padding: inline ? 0 : 16,
           borderTop: inline ? "none" : (v2 ? "1px solid #E5E5E5" : "1px solid #444444"),
           background: inline ? "transparent" : (v2 ? "#FFFFFF" : "#565656"),
           display: "flex", flexDirection: "column", gap: 12,
+          flex: centerWhenEmpty ? 1 : undefined,
+          justifyContent: centerWhenEmpty ? "center" : undefined,
         }}>
+
 
           {clarifyCtx?.quickReplies && clarifyCtx.quickReplies.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
