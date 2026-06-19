@@ -455,19 +455,6 @@ function ElderHome() {
                 boxShadow: cardShadow,
               }}
             >
-
-              style={{
-                background: cardBg,
-                border: cardBorderStyle,
-                borderRadius: cardRadius,
-                padding: 16,
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                minHeight: 0,
-                boxShadow: cardShadow,
-              }}
-            >
               <h2
                 data-readable="true"
                 style={{
