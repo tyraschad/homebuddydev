@@ -862,11 +862,12 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
 
         {/* Sticky bottom: mic box + transcript/input box, then quick actions */}
         <div style={{
-          flexShrink: 0, padding: 16,
-          borderTop: v2 ? "1px solid #E5E5E5" : "1px solid #444444",
-          background: v2 ? "#FFFFFF" : "#565656",
+          flexShrink: 0, padding: inline ? 0 : 16,
+          borderTop: inline ? "none" : (v2 ? "1px solid #E5E5E5" : "1px solid #444444"),
+          background: inline ? "transparent" : (v2 ? "#FFFFFF" : "#565656"),
           display: "flex", flexDirection: "column", gap: 12,
         }}>
+
           {clarifyCtx?.quickReplies && clarifyCtx.quickReplies.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {clarifyCtx.quickReplies.map((chip) => (
