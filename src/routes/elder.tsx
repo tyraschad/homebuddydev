@@ -377,50 +377,12 @@ function ElderHome() {
             gridTemplateColumns: "1fr 1fr",
             gap: 16,
             alignItems: "stretch",
+            minHeight: 0,
           }}
           className="elder-grid"
         >
-          {/* LEFT COLUMN */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
-            {/* Clock card */}
-            <div
-              style={{
-                background: cardBg,
-                border: cardBorderStyle,
-                borderRadius: cardRadius,
-                padding: 24,
-                textAlign: "center",
-                boxShadow: cardShadow,
-              }}
-            >
-              <div
-                data-readable="true"
-                style={{
-                  fontFamily: headerFont,
-                  fontWeight: 700,
-                  fontSize: line1Size,
-                  color: cardText,
-                  lineHeight: 1.3,
-                  marginBottom: 8,
-                }}
-              >
-                {dateDayStr}
-              </div>
-              <div
-                data-readable="true"
-                style={{
-                  fontFamily: headerFont,
-                  fontWeight: 700,
-                  fontSize: line2Size,
-                  color: cardText,
-                  lineHeight: 1.2,
-                }}
-              >
-                {timeStr}
-              </div>
-            </div>
-
-            {/* Ask a Question card — inline voice capture with confirm step */}
+          {/* LEFT COLUMN — Ask a Question (full height, inline chat) */}
+          <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
             <div
               style={{
                 background: cardBg,
@@ -430,220 +392,18 @@ function ElderHome() {
                 flex: 1,
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 16,
-                minHeight: 340,
+                minHeight: 0,
                 boxShadow: cardShadow,
-                position: "relative",
+                overflow: "hidden",
               }}
             >
-              <style>{`
-                @keyframes elder-mic-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,59,48,0.55); } 70% { box-shadow: 0 0 0 22px rgba(255,59,48,0); } 100% { box-shadow: 0 0 0 0 rgba(255,59,48,0); } }
-              `}</style>
-
-              {voiceState === "idle" && (
-                <button
-                  type="button"
-                  onClick={() => { void startVoiceCapture(); }}
-                  disabled={voiceRecorder.status === "transcribing"}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    padding: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 16,
-                    cursor: "pointer",
-                    width: "100%",
-                  }}
-                  aria-label="Tap to ask a question"
-                >
-                  <div
-                    style={{
-                      width: micSize,
-                      height: micSize,
-                      aspectRatio: "1 / 1",
-                      flexShrink: 0,
-                      borderRadius: "50%",
-                      background: micFill,
-                      border: `2px solid ${micBorderColor}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Mic size={micIconPx} strokeWidth={2} color={micIconColor} />
-                  </div>
-                  <div
-                    data-readable="true"
-                    style={{
-                      fontFamily: "Inter, sans-serif",
-                      fontWeight: 700,
-                      fontSize: 26,
-                      color: cardTextBlack,
-                      textAlign: "center",
-                      paddingTop: 16,
-                    }}
-                  >
-                    {voiceRecorder.status === "transcribing" ? "One moment…" : "Tap to Ask a Question"}
-                  </div>
-                  {voiceRecorder.status === "error" && voiceRecorder.error && (
-                    <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: "#B00020", textAlign: "center" }}>
-                      {voiceRecorder.error}
-                    </div>
-                  )}
-                </button>
-              )}
-
-              {voiceState === "recording" && (
-                <>
-                  <div
-                    style={{
-                      width: micSize,
-                      height: micSize,
-                      aspectRatio: "1 / 1",
-                      flexShrink: 0,
-                      borderRadius: "50%",
-                      background: "#FF3B30",
-                      border: "2px solid #FF3B30",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      animation: "elder-mic-pulse 1.2s infinite",
-                    }}
-                  >
-                    <Mic size={micIconPx} strokeWidth={2.5} color="#FFFFFF" />
-                  </div>
-                  <div
-                    data-readable="true"
-                    style={{
-                      fontFamily: "Inter, sans-serif",
-                      fontWeight: 700,
-                      fontSize: 26,
-                      color: cardTextBlack,
-                      textAlign: "center",
-                    }}
-                  >
-                    Listening…
-                  </div>
-                  <button
-                    type="button"
-                    onClick={stopVoiceCapture}
-                    style={{
-                      width: "100%",
-                      maxWidth: 360,
-                      padding: "18px 24px",
-                      background: "#FF3B30",
-                      color: "#FFFFFF",
-                      border: "none",
-                      borderRadius: 12,
-                      fontFamily: "Inter, sans-serif",
-                      fontWeight: 800,
-                      fontSize: 22,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 10,
-                    }}
-                    aria-label="Stop recording"
-                  >
-                    <Square size={24} strokeWidth={3} fill="#FFFFFF" /> STOP
-                  </button>
-                </>
-              )}
-
-              {voiceState === "confirming" && (
-                <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 14, alignItems: "stretch" }}>
-                  {voiceRecorder.status === "transcribing" ? (
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "32px 0" }}>
-                      <Loader2 size={48} color={cardTextBlack} style={{ animation: "spin 1s linear infinite" }} />
-                      <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 22, fontWeight: 700, color: cardTextBlack }}>
-                        One moment…
-                      </div>
-                      <style>{`@keyframes spin { from { transform: rotate(0) } to { transform: rotate(360deg) } }`}</style>
-                    </div>
-                  ) : (
-                    <>
-                      <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 20, fontWeight: 600, color: mutedText }}>
-                        I heard you say:
-                      </div>
-                      <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 26, fontWeight: 700, color: cardTextBlack, lineHeight: 1.3, minHeight: 60 }}>
-                        “{transcript}”
-                      </div>
-                      <button
-                        type="button"
-                        onClick={sendVoiceMessage}
-                        style={{
-                          width: "100%",
-                          padding: "20px 24px",
-                          background: v2 ? V2_SAGE : V1_PHONE,
-                          color: "#FFFFFF",
-                          border: "none",
-                          borderRadius: 12,
-                          fontFamily: "Inter, sans-serif",
-                          fontWeight: 800,
-                          fontSize: 26,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 12,
-                        }}
-                        aria-label="Send message"
-                      >
-                        <Check size={28} strokeWidth={3} /> SEND
-                      </button>
-                      <button
-                        type="button"
-                        onClick={redoVoiceCapture}
-                        style={{
-                          width: "100%",
-                          padding: "16px 24px",
-                          background: "transparent",
-                          color: cardTextBlack,
-                          border: `2px solid ${cardTextBlack}`,
-                          borderRadius: 12,
-                          fontFamily: "Inter, sans-serif",
-                          fontWeight: 700,
-                          fontSize: 22,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 10,
-                        }}
-                        aria-label="Redo recording"
-                      >
-                        <RotateCcw size={22} strokeWidth={2.5} /> Redo
-                      </button>
-                      <button
-                        type="button"
-                        onClick={cancelVoiceCapture}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          color: mutedText,
-                          fontFamily: "Inter, sans-serif",
-                          fontSize: 16,
-                          textDecoration: "underline",
-                          cursor: "pointer",
-                          padding: 4,
-                        }}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
+              <TalkToTextPopup inline />
             </div>
           </div>
 
-          {/* RIGHT COLUMN */}
-          <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+          {/* RIGHT COLUMN — Clock on top (unchanged), Reminders below */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, minWidth: 0 }}>
+
             <div
               style={{
                 background: cardBg,
