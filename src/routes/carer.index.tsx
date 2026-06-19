@@ -346,9 +346,11 @@ function CarerPortal() {
         {icOpen && (
           <div style={{ marginTop: 16 }}>
             {elder.devices.length === 0 ? (
-              <div style={{ textAlign: "center", color: theme.muted, fontSize: 14, padding: 16 }}>
-                No devices added
-              </div>
+              <EmptyCTA
+                text={`Photograph the devices in ${elder.name}'s home so HomeBuddy can give step-by-step help.`}
+                buttonText="+ Add a device"
+                onClick={() => setEditTarget("devices")}
+              />
             ) : (
               <div style={{ display: "grid", gap: 8 }}>
                 {elder.devices.map((d) => {
