@@ -592,10 +592,15 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
     void handleQuery(q);
   };
 
-  // Voice recorder writes transcript into the input field
+  // Voice recorder: inline mode auto-submits (2-tap flow); popup mode fills the input box.
   const recorder = useVoiceRecorder((t) => {
-    setText(t);
-    inputRef.current?.focus();
+    const trimmed = t.trim();
+    if (inline) {
+      if (trimmed) void handleQuery(trimmed);
+    } else {
+      setText(t);
+      inputRef.current?.focus();
+    }
   });
 
   // Auto-submit a pre-recorded message (from /elder voice card) exactly once.
