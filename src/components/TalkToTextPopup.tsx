@@ -729,7 +729,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
 
         {/* Body — scrollable: greeting + chat history / instructions / well done */}
         <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
-          {!messages.some((m) => m.role === "user") && !guide && !wellDone && (
+          {!inline && !messages.some((m) => m.role === "user") && !guide && !wellDone && (
             v2 ? (
               <div style={{ position: "relative", background: ACCENT, borderRadius: 16, padding: "12px 16px", marginLeft: 14, alignSelf: "flex-start", maxWidth: "60%" }}>
                 <span style={{ position: "absolute", left: -10, top: 16, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: `12px solid ${ACCENT}` }} />
