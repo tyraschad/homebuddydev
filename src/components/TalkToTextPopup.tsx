@@ -240,6 +240,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
   }, []);
 
   useEffect(() => {
+    if (!onClose) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
