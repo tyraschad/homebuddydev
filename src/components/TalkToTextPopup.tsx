@@ -195,7 +195,7 @@ function buildScheduleResponse(query: string, reminders: Reminder[]): string {
   return response;
 }
 
-export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => void; initialMessage?: string }) {
+export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { onClose?: () => void; initialMessage?: string; inline?: boolean }) {
   const { theme, cardBorder, inputBorder, sizes, highContrast } = useSettings();
   const { reminders, elder, bumpDeviceAccess } = useCarer();
   const callSteps = useServerFn(generateSteps);
