@@ -727,8 +727,12 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
         )}
 
 
-        {/* Body — scrollable: greeting + chat history / instructions / well done */}
-        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
+        {/* Body — scrollable: greeting + chat history / instructions / well done. In inline mode, collapse when empty so the mic stays centered. */}
+        {(() => {
+          const hasContent = messages.length > 0 || !!guide || !!wellDone || sending;
+          if (inline && !hasContent) return null;
+          return (
+        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: inline ? "0 0 16px 0" : "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
           {!inline && !messages.some((m) => m.role === "user") && !guide && !wellDone && (
             v2 ? (
               <div style={{ position: "relative", background: ACCENT, borderRadius: 16, padding: "12px 16px", marginLeft: 14, alignSelf: "flex-start", maxWidth: "60%" }}>
