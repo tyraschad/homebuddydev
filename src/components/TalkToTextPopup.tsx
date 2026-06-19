@@ -195,7 +195,7 @@ function buildScheduleResponse(query: string, reminders: Reminder[]): string {
   return response;
 }
 
-export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => void; initialMessage?: string }) {
+export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { onClose?: () => void; initialMessage?: string; inline?: boolean }) {
   const { theme, cardBorder, inputBorder, sizes, highContrast } = useSettings();
   const { reminders, elder, bumpDeviceAccess } = useCarer();
   const callSteps = useServerFn(generateSteps);
@@ -240,6 +240,7 @@ export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => vo
   }, []);
 
   useEffect(() => {
+    if (!onClose) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -591,10 +592,15 @@ export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => vo
     void handleQuery(q);
   };
 
-  // Voice recorder writes transcript into the input field
+  // Voice recorder: inline mode auto-submits (2-tap flow); popup mode fills the input box.
   const recorder = useVoiceRecorder((t) => {
-    setText(t);
-    inputRef.current?.focus();
+    const trimmed = t.trim();
+    if (inline) {
+      if (trimmed) void handleQuery(trimmed);
+    } else {
+      setText(t);
+      inputRef.current?.focus();
+    }
   });
 
   // Auto-submit a pre-recorded message (from /elder voice card) exactly once.
@@ -660,8 +666,13 @@ export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => vo
   const sendDisabled = sending || !text.trim();
 
   return (
-    <div onClick={onClose} role="dialog" aria-modal="true"
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 2000, boxSizing: "border-box" }}>
+    <div
+      onClick={inline ? undefined : onClose}
+      role={inline ? undefined : "dialog"}
+      aria-modal={inline ? undefined : true}
+      style={inline
+        ? { width: "100%", height: "100%", display: "flex", flexDirection: "column", boxSizing: "border-box" }
+        : { position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 2000, boxSizing: "border-box" }}>
       <style>{`
         @keyframes ttt-pulse { 0% { box-shadow: 0 0 0 0 rgba(107,162,74,0.5); } 70% { box-shadow: 0 0 0 14px rgba(107,162,74,0); } 100% { box-shadow: 0 0 0 0 rgba(107,162,74,0); } }
         @keyframes ttt-big-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); } 70% { box-shadow: 0 0 0 18px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
@@ -675,42 +686,54 @@ export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => vo
       `}</style>
 
       <div onClick={(e) => e.stopPropagation()}
-        style={{
-          position: "relative",
-          background: v2 ? "#FFFFFF" : "#909090",
-          border: v2 ? `2px solid ${GREEN_DARK}` : "2px solid #000000",
-          borderRadius: v2 ? 16 : 8,
-          width: "95%", maxWidth: 820, height: "92vh", maxHeight: 800,
-          color: theme.text, boxSizing: "border-box",
-          display: "flex", flexDirection: "column", overflow: "hidden",
-          boxShadow: v2 ? "0 8px 16px rgba(0,0,0,0.2)" : "none",
-        }}>
+        style={inline
+          ? { position: "relative", background: "transparent", border: "none", borderRadius: 0, width: "100%", height: "100%", color: theme.text, boxSizing: "border-box", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "none" }
+          : {
+            position: "relative",
+            background: v2 ? "#FFFFFF" : "#909090",
+            border: v2 ? `2px solid ${GREEN_DARK}` : "2px solid #000000",
+            borderRadius: v2 ? 16 : 8,
+            width: "95%", maxWidth: 820, height: "92vh", maxHeight: 800,
+            color: theme.text, boxSizing: "border-box",
+            display: "flex", flexDirection: "column", overflow: "hidden",
+            boxShadow: v2 ? "0 8px 16px rgba(0,0,0,0.2)" : "none",
+          }}>
 
-        {/* Header */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "14px 20px",
-          borderBottom: v2 ? "1px solid #E5E5E5" : "1px solid #444444",
-          background: v2 ? "#FFFFFF" : "#565656",
-          flexShrink: 0,
-        }}>
-          <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, color: v2 ? TEAL : "#FFFFFF" }}>Chat</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button type="button" onClick={() => { if (speaking) stopTTS(); setVoiceOn((v) => !v); }}
-              title={voiceOn ? "Voice on" : "Voice off"}
-              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}>
-              {voiceOn ? <Volume2 size={20} color={v2 ? TEAL : "#FFFFFF"} /> : <VolumeX size={20} color={v2 ? TEAL : "#FFFFFF"} />}
-            </button>
-            <button type="button" onClick={onClose} aria-label="Close"
-              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, display: "flex", alignItems: "center" }}>
-              <X size={28} strokeWidth={2} color={v2 ? "#000000" : "#FFFFFF"} />
-            </button>
+
+        {/* Header — hidden in inline mode */}
+        {!inline && (
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "14px 20px",
+            borderBottom: v2 ? "1px solid #E5E5E5" : "1px solid #444444",
+            background: v2 ? "#FFFFFF" : "#565656",
+            flexShrink: 0,
+          }}>
+            <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, color: v2 ? TEAL : "#FFFFFF" }}>Chat</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button type="button" onClick={() => { if (speaking) stopTTS(); setVoiceOn((v) => !v); }}
+                title={voiceOn ? "Voice on" : "Voice off"}
+                style={{ background: "transparent", border: "none", cursor: "pointer", padding: 6, display: "flex", alignItems: "center" }}>
+                {voiceOn ? <Volume2 size={20} color={v2 ? TEAL : "#FFFFFF"} /> : <VolumeX size={20} color={v2 ? TEAL : "#FFFFFF"} />}
+              </button>
+              {onClose && (
+                <button type="button" onClick={onClose} aria-label="Close"
+                  style={{ background: "transparent", border: "none", cursor: "pointer", padding: 4, display: "flex", alignItems: "center" }}>
+                  <X size={28} strokeWidth={2} color={v2 ? "#000000" : "#FFFFFF"} />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Body — scrollable: greeting + chat history / instructions / well done */}
-        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
-          {!messages.some((m) => m.role === "user") && !guide && !wellDone && (
+
+        {/* Body — scrollable: greeting + chat history / instructions / well done. In inline mode, collapse when empty so the mic stays centered. */}
+        {(() => {
+          const hasContent = messages.length > 0 || !!guide || !!wellDone || sending;
+          if (inline && !hasContent) return null;
+          return (
+        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: inline ? "0 0 16px 0" : "16px", display: "flex", flexDirection: "column", gap: 12, minHeight: 0 }}>
+          {!inline && !messages.some((m) => m.role === "user") && !guide && !wellDone && (
             v2 ? (
               <div style={{ position: "relative", background: ACCENT, borderRadius: 16, padding: "12px 16px", marginLeft: 14, alignSelf: "flex-start", maxWidth: "60%" }}>
                 <span style={{ position: "absolute", left: -10, top: 16, width: 0, height: 0, borderTop: "8px solid transparent", borderBottom: "8px solid transparent", borderRight: `12px solid ${ACCENT}` }} />
@@ -840,14 +863,26 @@ export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => vo
             </div>
           )}
         </div>
+          );
+        })()}
+
+
 
         {/* Sticky bottom: mic box + transcript/input box, then quick actions */}
+        {(() => {
+          const hasContent = messages.length > 0 || !!guide || !!wellDone || sending;
+          const centerWhenEmpty = inline && !hasContent;
+          return (
         <div style={{
-          flexShrink: 0, padding: 16,
-          borderTop: v2 ? "1px solid #E5E5E5" : "1px solid #444444",
-          background: v2 ? "#FFFFFF" : "#565656",
+          flexShrink: 0, padding: inline ? 0 : 16,
+          borderTop: inline ? "none" : (v2 ? "1px solid #E5E5E5" : "1px solid #444444"),
+          background: inline ? "transparent" : (v2 ? "#FFFFFF" : "#565656"),
           display: "flex", flexDirection: "column", gap: 12,
+          flex: centerWhenEmpty ? 1 : undefined,
+          justifyContent: centerWhenEmpty ? "center" : undefined,
         }}>
+
+
           {clarifyCtx?.quickReplies && clarifyCtx.quickReplies.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {clarifyCtx.quickReplies.map((chip) => (
@@ -869,6 +904,50 @@ export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => vo
               ))}
             </div>
           )}
+          {inline ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: "8px 0" }}>
+              <button type="button"
+                onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing" && !sending) void recorder.start(); }}
+                disabled={sending || recorder.status === "transcribing"}
+                aria-label={recorder.status === "recording" ? "Tap to stop and send" : "Tap to ask a question"}
+                style={{
+                  background: "transparent", border: "none", padding: 0,
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 14,
+                  cursor: sending || recorder.status === "transcribing" ? "not-allowed" : "pointer",
+                  width: "100%",
+                }}>
+                <div style={{
+                  width: 200, height: 200, aspectRatio: "1 / 1", flexShrink: 0,
+                  borderRadius: "50%",
+                  background: recorder.status === "recording" ? "#FF3B30" : (v2 ? "#FFFFFF" : "#FFFFFF"),
+                  border: recorder.status === "recording" ? "2px solid #FF3B30" : `2px solid ${v2 ? ACCENT : "#000000"}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  animation: recorder.status === "recording" ? "ttt-big-pulse 1.2s infinite" : undefined,
+                  transition: "background 0.2s, border 0.2s",
+                }}>
+                  {recorder.status === "transcribing"
+                    ? <Loader2 size={100} color={v2 ? TEAL : "#000000"} style={{ animation: "spin 1s linear infinite" }} />
+                    : <Mic size={110} color={recorder.status === "recording" ? "#FFFFFF" : (v2 ? TEAL : "#000000")} strokeWidth={2} />}
+                </div>
+                <div data-readable="true" style={{
+                  fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 26,
+                  color: recorder.status === "recording" ? "#FF3B30" : (v2 ? TEAL : "#000000"),
+                  textAlign: "center",
+                }}>
+                  {recorder.status === "recording" ? "Tap to stop and send"
+                    : recorder.status === "transcribing" ? "One moment…"
+                    : sending ? "Thinking…"
+                    : messages.some((m) => m.role === "user") ? "Tap to ask another question"
+                    : "Tap to Ask a Question"}
+                </div>
+                {recorder.status === "error" && recorder.error && (
+                  <div data-readable="true" style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#B00020", textAlign: "center" }}>
+                    {recorder.error}
+                  </div>
+                )}
+              </button>
+            </div>
+          ) : (
           <div style={{ display: "flex", gap: 12, height: 180 }}>
             <button type="button"
               onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
@@ -944,8 +1023,10 @@ export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => vo
 
             </div>
           </div>
+          )}
 
-          {suggestions.length > 0 && (
+
+          {!inline && suggestions.length > 0 && (
             <div style={{ display: "flex", gap: 12 }}>
               {suggestions.slice(0, 3).map((s) => (
                 <button key={s.label} type="button" onClick={() => handleSuggestion(s)} disabled={sending}
@@ -972,6 +1053,8 @@ export function TalkToTextPopup({ onClose, initialMessage }: { onClose: () => vo
             </div>
           )}
         </div>
+          );
+        })()}
       </div>
     </div>
   );
