@@ -1,46 +1,54 @@
-# Small edits — onboarding / carer / elder polish
+# Elder chat: scroll, auto-expire, green outlines
 
-## 1. Pre-add Emergency contacts in `/carer`
+All changes are in `src/components/TalkToTextPopup.tsx` (the inline chat rendered inside both `/elder` V1 and V2 left column).
 
-`src/routes/carer.index.tsx` Phone Contacts card (~line 305): after `elder.contacts.map(...)`, render an **"Emergency"** subheading + two static read-only rows (911, 1-800-222-1222). No edit/delete. Hardcoded in component — not written to carer store.
+## 1. Scroll when chat fills the box (V1 + V2)
 
-## 2. Onboarding stepper — remove boxes, add connecting line
+The scroll container already exists (`scrollRef` div at line 735 with `overflowY: "auto"`, `flex: 1`, `minHeight: 0`), and its parent in `src/routes/elder.tsx` (lines 303–318) already has `overflow: "hidden"` + `flex: 1` + `minHeight: 0`. In practice this should already scroll, but the inline wrapper renders a header/suggestions/input section above the scroll area that may push content. I will:
 
-"How HomeBuddy Works" (lines 277–296): replace `<HowCard>` boxes with circle-icon + title + 1-line body, joined by a 1px green horizontal line. Mobile (<640px): vertical stack with vertical connector. No card backgrounds.
+- Audit the inline render tree and make sure the scroll div is the only `flex: 1` child of the card with `minHeight: 0`, and that header/suggestions/input rows use `flexShrink: 0`.
+- Verify in the preview at the current viewport that adding ~10 messages produces a scrollbar instead of expanding the card.
 
-## 3. Needs Assessment — even 4×2 grid + responsive
+No structural rewrite — just confirming/locking the existing layout.
 
-Lines 360–364: change grid to `repeat(4, 1fr)` ≥768px, `repeat(2, 1fr)` below. Add media-query class in `styles.css`.
+## 2. Auto-expire chat messages after 5 minutes (V1 + V2)
 
-## 5. Background animation +10% opacity
+- Extend `ChatMsg` with `createdAt: number` (epoch ms). Set it everywhere a message is pushed: `pushUser`, `streamAssistant` (the assistant placeholder), and any other `setMessages([..., { role, content }])` site (lines ~282, ~406, plus any additional push sites I find on a full pass).
+- Add a `useEffect` that runs a `setInterval` every 30s and filters `messages` to keep only those with `Date.now() - createdAt < 5 * 60 * 1000`. Clears interval on unmount.
+- Also prune inside the existing `nowTick` 60s interval to avoid a second timer if cleaner.
+- Active streaming message: do not prune while `streaming === true`, even if older than 5 min (avoids cutting an in-flight response).
+- Guide/wellDone/clarify state is separate and not pruned — only the freeform chat bubbles disappear.
 
-`onboarding.tsx` line 224: `opacity={0.12}` → `0.132`.
+## 3. Bubble styling
 
-## 6. `/elder` V1 — green background + white wordmark
+Three palette changes in the `messages.map` render block (lines 837–859):
 
-- Upload `TextLogoWhite.png` → `src/assets/text-logo-white.png.asset.json`.
-- V1 branch of `elder.tsx` (line 224, `!v2` path): page bg `#519D46`; in both V1 & V2 render white wordmark centered at top (180px wide).
+**V2 user bubble** (currently beige `#F0EDE5` bg + teal text):
+- Background: `#6BA24A` (ACCENT green)
+- Text: `#FFFFFF`
+- Border: `1px solid #A8D08A` (light green outline)
 
-## 7. Persistent dark-green wordmark in `/carer`
+**V2 AI bubble** (currently `#F0F0F0` bg + teal text):
+- Keep bg + text unchanged
+- Add `border: 1px solid #A8D08A` (light green outline)
 
-- Upload `TextLogoDarkGreen.png` → `src/assets/text-logo-dark-green.png.asset.json`.
-- In `carer.index.tsx` sticky header, render wordmark (~160px) **above** the elder's name on every portal view.
+**V1 (high-contrast) AI bubble** (currently no border):
+- Add `border: 2px solid #6BA24A` (green outline) — matches V1's heavier 2px stroke style used elsewhere
+- V1 user bubble: unchanged (keeps existing 2px black border on `#CBE894`)
 
-## 8. Call buttons next to each phone number in CallPopup (V1 + V2 `/elder`)
+Implementation: replace the inline `border: userBorder` with a computed `border` per role+variant, and set `background`/`color` from the same conditional.
 
-The floating phone button opens the shared `CallPopup` in `src/routes/elder.tsx` (~line 754), used by both V1 and V2. Update `ContactRow` and `EmergencyRow` (lines 882–965):
+## 4. Verification
 
-- Convert from a single `<a href="tel:">` block to a flex row: **left** = name + number (text only, no longer a link), **right** = green pill **"Call"** button with `<Phone>` icon (lucide-react) that wraps the `<a href="tel:...">`.
-- Button: green `#519D46` bg, white text, ~40px tall, rounded 8px, `aria-label="Call {name}"`. Hover darkens slightly.
-- Keeps the same `tel:` dial behavior, just scoped to the button so the whole row no longer acts as one big link (clearer affordance, matches user expectation).
-- Emergency rows get the same treatment (red-tinted variant optional — default to same green for consistency unless you'd prefer red for emergencies).
+- Open `/elder` (V1 via high-contrast toggle) and `/elder` V2 in preview.
+- Send several messages, confirm scroll appears once content overflows.
+- Confirm bubble colors/outlines match spec in both variants.
+- Wait (or temporarily shorten the TTL for a manual test) and confirm old messages drop out.
 
-## Files touched
+## Files changed
 
-- **new:** `src/assets/text-logo-white.png.asset.json`, `src/assets/text-logo-dark-green.png.asset.json`
-- **edit:** `src/routes/onboarding.tsx` (2–5), `src/routes/carer.index.tsx` (1, 7), `src/routes/elder.tsx` (6, 8), `src/styles.css` (3)
+- `src/components/TalkToTextPopup.tsx` (only file touched)
 
-## Open questions
+## Open question
 
-- **Q3 mobile:** OK with 2 columns on phones for Needs Assessment? (8 tiles → 4 rows of 2)
-- **Q8 emergency:** Same green Call button for 911 / Poison Control, or red to signal urgency?
+For V2, "light green outline" — I'm planning `#A8D08A` (a soft tint of the ACCENT `#6BA24A`). Want a specific hex instead?
