@@ -300,7 +300,7 @@ function ElderHome() {
           className="elder-grid"
         >
           {/* LEFT COLUMN — Ask a Question (full height, inline chat) */}
-          <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0, height: "100%" }}>
             <div
               style={{
                 background: cardBg,
