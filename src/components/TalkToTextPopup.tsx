@@ -282,7 +282,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
   const streamAssistant = (full: string) => {
     const words = full.split(/(\s+)/); // keep whitespace
     let i = 0;
-    setMessages((m) => [...m, { role: "assistant", content: "", streaming: true }]);
+    setMessages((m) => [...m, { role: "assistant", content: "", streaming: true, createdAt: Date.now() }]);
     const tick = () => {
       i += 2; // word + following whitespace
       const partial = words.slice(0, i).join("");
