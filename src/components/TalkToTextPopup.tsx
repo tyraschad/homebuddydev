@@ -847,23 +847,32 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
           )}
 
           {!guide && !wellDone && messages.map((m, i) => {
-            const userBg = v2 ? BEIGE : "#CBE894";
-            const userColor = v2 ? TEAL : "#000000";
-            const userBorder = !v2 && m.role === "user" ? "2px solid #000000" : undefined;
+            const LIGHT_GREEN = "#A8D08A";
+            const isUser = m.role === "user";
+            // V2: user = white text on accent green w/ light green outline; AI = unchanged bg + light green outline
+            // V1: user = unchanged (black text on #CBE894 w/ 2px black border); AI = 2px green outline
+            const userBg = v2 ? ACCENT : "#CBE894";
+            const userColor = v2 ? "#FFFFFF" : "#000000";
+            let border: string | undefined;
+            if (isUser) {
+              border = v2 ? `1px solid ${LIGHT_GREEN}` : "2px solid #000000";
+            } else {
+              border = v2 ? `1px solid ${LIGHT_GREEN}` : `2px solid ${ACCENT}`;
+            }
             return (
-              <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
+              <div key={i} style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start" }}>
                 <div style={{
                   maxWidth: "85%",
-                  background: m.role === "user" ? userBg : aiBubbleBg,
-                  color: m.role === "user" ? userColor : aiBubbleText,
-                  border: userBorder,
+                  background: isUser ? userBg : aiBubbleBg,
+                  color: isUser ? userColor : aiBubbleText,
+                  border,
                   borderRadius: 12, padding: "10px 14px",
                   fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, lineHeight: 1.5,
                   whiteSpace: "pre-wrap", wordBreak: "break-word",
                 }}>
                   {m.content}
                   {m.streaming && (
-                    <span style={{ display: "inline-block", width: 2, height: "1em", background: m.role === "user" ? userColor : aiBubbleText, marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
+                    <span style={{ display: "inline-block", width: 2, height: "1em", background: isUser ? userColor : aiBubbleText, marginLeft: 2, verticalAlign: "text-bottom", animation: "ttt-cursor 1s infinite" }} />
                   )}
                 </div>
               </div>
