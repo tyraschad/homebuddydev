@@ -938,7 +938,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
                   width: "100%",
                 }}>
                 <div style={{
-                  width: 200, height: 200, aspectRatio: "1 / 1", flexShrink: 0,
+                  width: 150, height: 150, aspectRatio: "1 / 1", flexShrink: 0,
                   borderRadius: "50%",
                   background: recorder.status === "recording" ? "#FF3B30" : (v2 ? "#FFFFFF" : "#FFFFFF"),
                   border: recorder.status === "recording" ? "2px solid #FF3B30" : `2px solid ${v2 ? ACCENT : "#000000"}`,
@@ -947,8 +947,8 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
                   transition: "background 0.2s, border 0.2s",
                 }}>
                   {recorder.status === "transcribing"
-                    ? <Loader2 size={100} color={v2 ? TEAL : "#000000"} style={{ animation: "spin 1s linear infinite" }} />
-                    : <Mic size={110} color={recorder.status === "recording" ? "#FFFFFF" : (v2 ? TEAL : "#000000")} strokeWidth={2} />}
+                    ? <Loader2 size={75} color={v2 ? TEAL : "#000000"} style={{ animation: "spin 1s linear infinite" }} />
+                    : <Mic size={82} color={recorder.status === "recording" ? "#FFFFFF" : (v2 ? TEAL : "#000000")} strokeWidth={2} />}
                 </div>
                 <div data-readable="true" style={{
                   fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 26,
