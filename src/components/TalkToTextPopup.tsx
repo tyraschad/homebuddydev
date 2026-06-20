@@ -10,7 +10,10 @@ type ChatMsg = {
   role: "user" | "assistant";
   content: string;
   streaming?: boolean; // when true, render with blinking cursor
+  createdAt: number;
 };
+
+const MESSAGE_TTL_MS = 5 * 60 * 1000;
 
 type Guide = {
   label: string;
