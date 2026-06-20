@@ -1,54 +1,31 @@
-# Elder chat: scroll, auto-expire, green outlines
+# Fix: chat scrolls inside its card, page does not grow
 
-All changes are in `src/components/TalkToTextPopup.tsx` (the inline chat rendered inside both `/elder` V1 and V2 left column).
+## Root cause
 
-## 1. Scroll when chat fills the box (V1 + V2)
+`src/routes/elder.tsx` line 228 sets `<main>` to `minHeight: "100vh"` (no `height` cap and no `overflow: hidden`). When chat messages accumulate, the chat card grows, the grid row grows, `<main>` grows past the viewport, and the page itself scrolls instead of the inner `scrollRef` div in `TalkToTextPopup`.
 
-The scroll container already exists (`scrollRef` div at line 735 with `overflowY: "auto"`, `flex: 1`, `minHeight: 0`), and its parent in `src/routes/elder.tsx` (lines 303–318) already has `overflow: "hidden"` + `flex: 1` + `minHeight: 0`. In practice this should already scroll, but the inline wrapper renders a header/suggestions/input section above the scroll area that may push content. I will:
+The inner scroll container (`overflowY: auto`, `flex: 1`, `minHeight: 0`) is correct — it just never gets a bounded parent height to scroll against.
 
-- Audit the inline render tree and make sure the scroll div is the only `flex: 1` child of the card with `minHeight: 0`, and that header/suggestions/input rows use `flexShrink: 0`.
-- Verify in the preview at the current viewport that adding ~10 messages produces a scrollbar instead of expanding the card.
+## Change
 
-No structural rewrite — just confirming/locking the existing layout.
+In `src/routes/elder.tsx`, update the `<main>` style:
 
-## 2. Auto-expire chat messages after 5 minutes (V1 + V2)
+- `minHeight: "100vh"` → `height: "100vh"`
+- add `overflow: "hidden"`
+- keep everything else as-is
 
-- Extend `ChatMsg` with `createdAt: number` (epoch ms). Set it everywhere a message is pushed: `pushUser`, `streamAssistant` (the assistant placeholder), and any other `setMessages([..., { role, content }])` site (lines ~282, ~406, plus any additional push sites I find on a full pass).
-- Add a `useEffect` that runs a `setInterval` every 30s and filters `messages` to keep only those with `Date.now() - createdAt < 5 * 60 * 1000`. Clears interval on unmount.
-- Also prune inside the existing `nowTick` 60s interval to avoid a second timer if cleaner.
-- Active streaming message: do not prune while `streaming === true`, even if older than 5 min (avoids cutting an in-flight response).
-- Guide/wellDone/clarify state is separate and not pruned — only the freeform chat bubbles disappear.
+That bounds the layout to the viewport, so the `flex: 1` grid row gets a fixed available height, the chat card stops growing, and the existing `overflowY: "auto"` on `scrollRef` takes over.
 
-## 3. Bubble styling
+## Verify
 
-Three palette changes in the `messages.map` render block (lines 837–859):
-
-**V2 user bubble** (currently beige `#F0EDE5` bg + teal text):
-- Background: `#6BA24A` (ACCENT green)
-- Text: `#FFFFFF`
-- Border: `1px solid #A8D08A` (light green outline)
-
-**V2 AI bubble** (currently `#F0F0F0` bg + teal text):
-- Keep bg + text unchanged
-- Add `border: 1px solid #A8D08A` (light green outline)
-
-**V1 (high-contrast) AI bubble** (currently no border):
-- Add `border: 2px solid #6BA24A` (green outline) — matches V1's heavier 2px stroke style used elsewhere
-- V1 user bubble: unchanged (keeps existing 2px black border on `#CBE894`)
-
-Implementation: replace the inline `border: userBorder` with a computed `border` per role+variant, and set `background`/`color` from the same conditional.
-
-## 4. Verification
-
-- Open `/elder` (V1 via high-contrast toggle) and `/elder` V2 in preview.
-- Send several messages, confirm scroll appears once content overflows.
-- Confirm bubble colors/outlines match spec in both variants.
-- Wait (or temporarily shorten the TTL for a manual test) and confirm old messages drop out.
+- Open `/elder` (V1 and V2). Send ~15 messages.
+- The chat card stays the same height; messages scroll inside it.
+- The whole page does not gain a scrollbar; header + right column stay in place.
 
 ## Files changed
 
-- `src/components/TalkToTextPopup.tsx` (only file touched)
+- `src/routes/elder.tsx` (single style block on `<main>`)
 
-## Open question
+## Question
 
-For V2, "light green outline" — I'm planning `#A8D08A` (a soft tint of the ACCENT `#6BA24A`). Want a specific hex instead?
+Confirm: locking `<main>` to exactly `100vh` with `overflow: hidden` is OK? On very small screens this means content below the fold gets clipped instead of page-scrolling. Given `/elder` is designed as a single-screen kiosk-style view, I think this is the intended behavior — confirm or say "allow page scroll on small screens" and I'll use a media-query fallback instead.

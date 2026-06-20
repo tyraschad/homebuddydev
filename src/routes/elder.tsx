@@ -225,7 +225,7 @@ function ElderHome() {
       <main
         style={{
           width: "100%",
-          minHeight: "100vh",
+          height: "100vh",
           background: pageBg,
           padding: 16,
           display: "flex",
@@ -235,6 +235,7 @@ function ElderHome() {
           lineHeight: 1.5,
           position: "relative",
           zIndex: 1,
+          overflow: "hidden",
         }}
       >
         <header
