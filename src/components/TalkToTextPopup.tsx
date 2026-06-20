@@ -242,6 +242,15 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
     return () => clearInterval(id);
   }, []);
 
+  // Auto-expire chat messages after 5 minutes (keep streaming ones alive)
+  useEffect(() => {
+    const id = setInterval(() => {
+      const cutoff = Date.now() - MESSAGE_TTL_MS;
+      setMessages((m) => m.filter((msg) => msg.streaming || msg.createdAt > cutoff));
+    }, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
   useEffect(() => {
     if (!onClose) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
