@@ -950,17 +950,24 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
                     ? <Loader2 size={75} color={v2 ? TEAL : "#000000"} style={{ animation: "spin 1s linear infinite" }} />
                     : <Mic size={82} color={recorder.status === "recording" ? "#FFFFFF" : (v2 ? TEAL : "#000000")} strokeWidth={2} />}
                 </div>
-                <div data-readable="true" style={{
-                  fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 26,
-                  color: recorder.status === "recording" ? "#FF3B30" : (v2 ? TEAL : "#000000"),
-                  textAlign: "center",
-                }}>
-                  {recorder.status === "recording" ? "Tap to stop and send"
+                {(() => {
+                  const hasAsked = messages.some((m) => m.role === "user");
+                  const label = recorder.status === "recording" ? "Tap to stop and send"
                     : recorder.status === "transcribing" ? "One moment…"
                     : sending ? "Thinking…"
-                    : messages.some((m) => m.role === "user") ? "Tap to ask another question"
-                    : "Tap to Ask a Question"}
-                </div>
+                    : hasAsked ? null
+                    : "Tap to Ask a Question";
+                  if (!label) return null;
+                  return (
+                    <div data-readable="true" style={{
+                      fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 26,
+                      color: recorder.status === "recording" ? "#FF3B30" : (v2 ? TEAL : "#000000"),
+                      textAlign: "center",
+                    }}>
+                      {label}
+                    </div>
+                  );
+                })()}
                 {recorder.status === "error" && recorder.error && (
                   <div data-readable="true" style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 16, color: "#B00020", textAlign: "center" }}>
                     {recorder.error}
