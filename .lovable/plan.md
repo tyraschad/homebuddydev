@@ -1,13 +1,12 @@
-## Plan: Shrink the mic button 25% in /elder inline chat
+## Plan
 
-**What**
-- Reduce the inline mic button circle from 200×200 px to 150×150 px (25% smaller).
-- Scale the Mic icon inside proportionally (~110 px → ~82 px).
-- Keep all existing colors, animations, and behaviour intact.
+In the `/elder` route's inline chat (TalkToTextPopup component), conditionally render the mic button label:
 
-**Where**
-- `src/components/TalkToTextPopup.tsx` — lines ~940-951 (the inline `inline` branch mic circle and icon).
+- **Current behavior:** After the first user question, the mic button still shows "Tap to ask another question" text below it.
+- **Desired behavior:** Once at least one user message exists in the chat, hide that label text entirely. Only the mic button itself remains visible.
 
-**Expected result**
-- The mic button takes up less vertical space, giving the scrolling chat area more room.
-- Button remains centred and fully interactive.
+### Implementation
+
+Edit `src/components/TalkToTextPopup.tsx` around line 961 where the label text is rendered inside the inline mic button area. Wrap the text label in a conditional so it only renders when `messages` has zero user messages.
+
+No other behavior changes — the mic button still works identically, just without the helper text after the first interaction.
