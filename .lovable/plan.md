@@ -1,12 +1,13 @@
-## Plan
+## Plan: Fix instruction-panel buttons in /elder chat
 
-In the `/elder` route's inline chat (TalkToTextPopup component), conditionally render the mic button label:
+### What to change
+1. **Back button** — In `src/components/TalkToTextPopup.tsx` line 802, remove the "Back" label so only the `ChevronLeft` icon remains.
+2. **Button-row containment** — On the same instruction panel, add `flexWrap: "wrap"` to the button container (line 795) so the Next/Done button never overflows the panel boundaries, even at narrow chat widths.
 
-- **Current behavior:** After the first user question, the mic button still shows "Tap to ask another question" text below it.
-- **Desired behavior:** Once at least one user message exists in the chat, hide that label text entirely. Only the mic button itself remains visible.
+### Why
+The inline chat card in the Elder view is roughly half the viewport width. With both "Back" text and "Next" text present, the two buttons together exceed the available width of the 60 % text column inside the instruction panel, causing overflow. Removing the back label and enabling wrap keeps everything inside the panel.
 
-### Implementation
+### Files
+- `src/components/TalkToTextPopup.tsx` (one small edit around lines 795–802)
 
-Edit `src/components/TalkToTextPopup.tsx` around line 961 where the label text is rendered inside the inline mic button area. Wrap the text label in a conditional so it only renders when `messages` has zero user messages.
-
-No other behavior changes — the mic button still works identically, just without the helper text after the first interaction.
+No other UI or behavior changes.

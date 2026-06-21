@@ -792,14 +792,15 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
                       {guide.steps[guide.index]}
                     </div>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
                     <button type="button" onClick={() => advanceGuide(-1)} disabled={guide.index === 0}
-                      style={{ height: 44, padding: "0 20px", borderRadius: v2 ? 12 : 8, border: "none",
+                      aria-label="Back"
+                      style={{ height: 44, width: 44, padding: 0, borderRadius: v2 ? 12 : 8, border: "none",
                         background: "#E5E5E5", color: v2 ? TEAL : "#000000", cursor: guide.index === 0 ? "not-allowed" : "pointer",
                         opacity: guide.index === 0 ? 0.5 : 1,
                         fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
-                        display: "inline-flex", alignItems: "center", gap: 6 }}>
-                      <ChevronLeft size={18} /> Back
+                        display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                      <ChevronLeft size={18} />
                     </button>
                     {guide.index < guide.steps.length - 1 ? (
                       <button type="button" onClick={() => advanceGuide(1)}
