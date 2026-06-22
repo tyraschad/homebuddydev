@@ -18,7 +18,6 @@ import { GradientBackground } from "@/components/GradientBackground";
 import { speak } from "@/lib/talk.functions";
 import whiteLogo from "@/assets/text-logo-white.png.asset.json";
 
-
 // V1 Elder palette (WCAG): #8F8F8F bg, #000000 text/mic, #6CA24E phone
 const V1_BG = "#519D46";
 const V1_FG = "#000000";
@@ -119,9 +118,6 @@ function ElderHome() {
   const [now, setNow] = useState<Date | null>(null);
   const [overlay, setOverlay] = useState<Overlay>(null);
 
-
-
-
   useEffect(() => {
     setNow(new Date());
     const t = setInterval(() => setNow(new Date()), 1000 * 20);
@@ -191,9 +187,7 @@ function ElderHome() {
   }, [reminders, now]);
 
   const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
-  const nextKey =
-    items.find((i) => i.minutes > nowMin)?.key ??
-    items.find((i) => !i.completed)?.key;
+  const nextKey = items.find((i) => i.minutes > nowMin)?.key ?? items.find((i) => !i.completed)?.key;
   const [openItemKey, setOpenItemKey] = useState<string | null>(null);
   const openItem = items.find((i) => i.key === openItemKey) ?? null;
 
@@ -249,11 +243,7 @@ function ElderHome() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <img
-              src={whiteLogo.url}
-              alt="HomeBuddy"
-              style={{ display: "block", height: 32, width: "auto" }}
-            />
+            <img src={whiteLogo.url} alt="HomeBuddy" style={{ display: "block", height: 32, width: "auto" }} />
             <h1
               data-readable="true"
               style={{
@@ -799,7 +789,7 @@ function CallPopup({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: theme.card,
+          background: #ffffff,
           border: cardBorder,
           borderRadius: 8,
           padding: 24,
@@ -891,11 +881,19 @@ function CallButton({ phone, name, urgent }: { phone: string; name: string; urge
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
-        display: "inline-flex", alignItems: "center", gap: 8,
-        background: hover ? bgHover : bg, color: "#FFFFFF",
-        padding: "10px 16px", borderRadius: 8, textDecoration: "none",
-        fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 14,
-        minHeight: 40, boxSizing: "border-box",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        background: hover ? bgHover : bg,
+        color: "#FFFFFF",
+        padding: "10px 16px",
+        borderRadius: 8,
+        textDecoration: "none",
+        fontFamily: "Inter, sans-serif",
+        fontWeight: 700,
+        fontSize: 14,
+        minHeight: 40,
+        boxSizing: "border-box",
         transition: "background 0.15s",
       }}
     >
@@ -919,17 +917,16 @@ function ContactRow({
   return (
     <div
       style={{
-        display: "flex", alignItems: "center", gap: 12,
-        padding: 12, borderBottom: `1px solid ${separator}`,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: 12,
+        borderBottom: `1px solid ${separator}`,
       }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>
-          {name}
-        </div>
-        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>
-          {phone}
-        </div>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: theme.text }}>{name}</div>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: theme.muted, marginTop: 2 }}>{phone}</div>
       </div>
       <CallButton phone={phone} name={name} />
     </div>
@@ -943,17 +940,16 @@ function EmergencyRow({ name, phone }: { name: string; phone: string }) {
   return (
     <div
       style={{
-        display: "flex", alignItems: "center", gap: 12,
-        padding: 12, borderBottom: `1px solid ${separator}`,
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: 12,
+        borderBottom: `1px solid ${separator}`,
       }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: textColor }}>
-          {name}
-        </div>
-        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: phoneColor, marginTop: 2 }}>
-          {phone}
-        </div>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 700, color: textColor }}>{name}</div>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 14, color: phoneColor, marginTop: 2 }}>{phone}</div>
       </div>
       <CallButton phone={phone} name={name} urgent />
     </div>
@@ -1062,18 +1058,27 @@ function ReminderDetailsPopup({
           </button>
         </div>
 
-        <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: textColor, paddingBottom: 8 }}>
+        <div
+          data-readable="true"
+          style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: textColor, paddingBottom: 8 }}
+        >
           {timeStr}
         </div>
 
         {frequency && (
-          <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
+          <div
+            data-readable="true"
+            style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}
+          >
             {frequency}
           </div>
         )}
 
         {detailsText && (
-          <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
+          <div
+            data-readable="true"
+            style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}
+          >
             {detailsText}
           </div>
         )}
