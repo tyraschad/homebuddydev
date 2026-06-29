@@ -945,7 +945,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
                   background: recorder.status === "recording" ? "#FF3B30" : (v2 ? "#FFFFFF" : "#FFFFFF"),
                   border: recorder.status === "recording" ? "2px solid #FF3B30" : `2px solid ${v2 ? ACCENT : "#000000"}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  animation: recorder.status === "recording" ? "ttt-big-pulse 1.2s infinite" : undefined,
+                  animation: recorder.status === "recording" ? "ttt-big-pulse 1.2s infinite" : (v2 && recorder.status === "idle" && !sending ? "ttt-idle-pulse 2s ease-out infinite" : undefined),
                   transition: "background 0.2s, border 0.2s",
                 }}>
                   {recorder.status === "transcribing"
