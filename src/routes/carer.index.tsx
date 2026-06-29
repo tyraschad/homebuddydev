@@ -300,6 +300,25 @@ function CarerPortal() {
               {elder.notes ? <div>{elder.notes}</div> : <EmptyLine text="No notes added" />}
             </SubSection>
 
+          </div>
+        )}
+      </section>
+
+      {/* CONTACTS CARD */}
+      <section ref={contactsRef} style={whiteCard}>
+        <button
+          type="button"
+          onClick={() => setContactsOpen((v) => !v)}
+          style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, width: "100%" }}
+        >
+          <div style={{ flex: 1, fontWeight: 700, fontSize: 20, fontFamily: "Georgia, serif", color: theme.text }}>
+            Contacts
+          </div>
+          {contactsOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
+        </button>
+
+        {contactsOpen && (
+          <div style={{ marginTop: 16, display: "grid", gap: 16 }}>
             <SubSection label="Phone contacts" onEdit={() => setEditTarget("contacts")}>
               {elder.contacts.length === 0 ? (
                 <EmptyCTA
@@ -339,6 +358,7 @@ function CarerPortal() {
           </div>
         )}
       </section>
+
 
       {/* INSTRUCTION CONTEXT CARD */}
       <section ref={icRef} style={whiteCard}>
