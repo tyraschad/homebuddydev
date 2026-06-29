@@ -128,6 +128,8 @@ function CarerPortal() {
   const [dayPopup, setDayPopup] = useState<Date | null>(null);
   const [editTarget, setEditTarget] = useState<"conditions" | "notes" | "contacts" | "devices" | null>(null);
   const [savedToast, setSavedToast] = useState(false);
+  const [savedToastMsg, setSavedToastMsg] = useState("Saved");
+
   const [tourOpen, setTourOpen] = useState(false);
 
   const headerRef = useRef<HTMLElement | null>(null);
