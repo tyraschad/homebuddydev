@@ -664,8 +664,9 @@ function CarerPortal() {
           background: GREEN, color: "#fff", padding: "10px 18px", borderRadius: 8,
           fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
           zIndex: 100,
-        }}>Saved</div>
+        }}>{savedToastMsg}</div>
       )}
+
 
       {tourOpen && <PortalTour steps={tourSteps} onClose={() => setTourOpen(false)} />}
 
