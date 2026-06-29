@@ -9,7 +9,7 @@ export const Route = createFileRoute("/settings/")({
   head: () => ({ meta: [{ title: "Settings" }] }),
 });
 
-const PAGE_BG = "#8F8F8F";
+const PAGE_BG = "#25483A";
 const WHITE = "#FFFFFF";
 const BLACK = "#000000";
 const GREEN = "#6BA24A";
@@ -63,13 +63,13 @@ function SettingsPage() {
             border: "none",
             padding: 0,
             cursor: "pointer",
-            color: BLACK,
+            color: WHITE,
             fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
             fontSize: 16,
           }}
         >
-          <ArrowLeft size={24} strokeWidth={2.5} color={BLACK} />
+          <ArrowLeft size={24} strokeWidth={2.5} color={WHITE} />
           <span data-readable="true">Back to elder screen</span>
         </button>
 
@@ -80,7 +80,7 @@ function SettingsPage() {
             fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
             fontSize: 28,
-            color: BLACK,
+            color: WHITE,
             textAlign: "center",
           }}
         >
