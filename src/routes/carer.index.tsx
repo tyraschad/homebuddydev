@@ -139,6 +139,7 @@ function CarerPortal() {
   const infoBtnRef = useRef<HTMLButtonElement | null>(null);
   const todayBtnRef = useRef<HTMLButtonElement | null>(null);
   const calendarScrollRef = useRef<HTMLDivElement | null>(null);
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (view !== "day" && view !== "week") return;
