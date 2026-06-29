@@ -592,6 +592,8 @@ function CarerPortal() {
         textarea { min-height: 80px; resize: vertical; }
       `}</style>
     </main>
+    <GradientBackground opacity={0.132} style={{ zIndex: 2 }} />
+    </>
   );
 }
 
