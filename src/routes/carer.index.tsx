@@ -17,6 +17,7 @@ import {
 import { DeviceListEditor } from "@/components/instruction-context-form";
 import { PortalTour, hasCompletedTour, clearTour, type TourStep } from "@/components/portal-tour";
 import darkGreenLogo from "@/assets/text-logo-dark-green.png.asset.json";
+import { GradientBackground } from "@/components/GradientBackground";
 
 
 
@@ -214,6 +215,7 @@ function CarerPortal() {
   ];
 
   return (
+    <>
     <main style={{ minHeight: "100vh", background: theme.bg, color: theme.text,
       fontFamily: "Verdana, sans-serif", lineHeight: 1.5 }}>
       {/* HEADER */}
@@ -590,6 +592,8 @@ function CarerPortal() {
         textarea { min-height: 80px; resize: vertical; }
       `}</style>
     </main>
+    <GradientBackground opacity={0.132} style={{ zIndex: 2 }} />
+    </>
   );
 }
 
