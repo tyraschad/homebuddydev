@@ -63,13 +63,13 @@ function SettingsPage() {
             border: "none",
             padding: 0,
             cursor: "pointer",
-            color: BLACK,
+            color: WHITE,
             fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
             fontSize: 16,
           }}
         >
-          <ArrowLeft size={24} strokeWidth={2.5} color={BLACK} />
+          <ArrowLeft size={24} strokeWidth={2.5} color={WHITE} />
           <span data-readable="true">Back to elder screen</span>
         </button>
 
