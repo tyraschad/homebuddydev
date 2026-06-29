@@ -132,6 +132,7 @@ function CarerPortal() {
 
   const headerRef = useRef<HTMLElement | null>(null);
   const profileRef = useRef<HTMLElement | null>(null);
+  const contactsRef = useRef<HTMLElement | null>(null);
   const icRef = useRef<HTMLElement | null>(null);
   const scheduleRef = useRef<HTMLElement | null>(null);
   const calendarRef = useRef<HTMLElement | null>(null);
