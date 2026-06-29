@@ -41,6 +41,10 @@ export function DeviceListEditor({
   const fileRef = useRef<HTMLInputElement>(null);
   const identifyFn = useServerFn(identifyDevice);
 
+  const dirty = !!(photo || brand.trim() || deviceType.trim() || name.trim() || questions.some((q) => q.trim()) || editingId);
+  useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
+
+
   const inputStyle: CSSProperties = {
     width: "100%", boxSizing: "border-box", padding: "10px 12px",
     border: inputBorder, borderRadius: 6, background: theme.card, color: theme.text,
