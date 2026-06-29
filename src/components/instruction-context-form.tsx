@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Camera, Trash2, X, Edit, RefreshCw, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useSettings } from "@/lib/settings-store";
@@ -21,11 +21,14 @@ export function DeviceListEditor({
   devices,
   onChange,
   elderName = "your loved one",
+  onDirtyChange,
 }: {
   devices: Device[];
   onChange: (devices: Device[]) => void;
   elderName?: string;
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
+
   const { theme, cardBorder, buttonBorder, inputBorder } = useSettings();
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const [analyzing, setAnalyzing] = useState(false);
@@ -37,6 +40,10 @@ export function DeviceListEditor({
   const [editingId, setEditingId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const identifyFn = useServerFn(identifyDevice);
+
+  const dirty = !!(photo || brand.trim() || deviceType.trim() || name.trim() || questions.some((q) => q.trim()) || editingId);
+  useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
+
 
   const inputStyle: CSSProperties = {
     width: "100%", boxSizing: "border-box", padding: "10px 12px",

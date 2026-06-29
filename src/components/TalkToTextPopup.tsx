@@ -928,17 +928,18 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
             </div>
           )}
           {inline ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, padding: "8px 0" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, padding: "8px 0" }}>
               <button type="button"
                 onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing" && !sending) void recorder.start(); }}
                 disabled={sending || recorder.status === "transcribing"}
                 aria-label={recorder.status === "recording" ? "Tap to stop and send" : "Tap to ask a question"}
                 style={{
                   background: "transparent", border: "none", padding: 0,
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: 14,
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 22,
                   cursor: sending || recorder.status === "transcribing" ? "not-allowed" : "pointer",
                   width: "100%",
                 }}>
+
                 <div style={{
                   width: 150, height: 150, aspectRatio: "1 / 1", flexShrink: 0,
                   borderRadius: "50%",

@@ -128,6 +128,8 @@ function CarerPortal() {
   const [dayPopup, setDayPopup] = useState<Date | null>(null);
   const [editTarget, setEditTarget] = useState<"conditions" | "notes" | "contacts" | "devices" | null>(null);
   const [savedToast, setSavedToast] = useState(false);
+  const [savedToastMsg, setSavedToastMsg] = useState("Saved");
+
   const [tourOpen, setTourOpen] = useState(false);
 
   const headerRef = useRef<HTMLElement | null>(null);
@@ -634,12 +636,20 @@ function CarerPortal() {
           elder={elder}
           onClose={() => setEditTarget(null)}
           onSave={(next) => {
+            let msg = "Saved";
+            if (editTarget === "contacts") {
+              if (next.contacts.length > elder.contacts.length) msg = "Contact added";
+              else if (next.contacts.length < elder.contacts.length) msg = "Contact removed";
+              else msg = "Contact updated";
+            }
             setElder(next);
             setEditTarget(null);
+            setSavedToastMsg(msg);
             setSavedToast(true);
             setTimeout(() => setSavedToast(false), 2000);
           }}
         />
+
       )}
 
       <div style={{ display: "flex", justifyContent: "center", padding: "24px 16px 40px" }}>
@@ -654,8 +664,9 @@ function CarerPortal() {
           background: GREEN, color: "#fff", padding: "10px 18px", borderRadius: 8,
           fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
           zIndex: 100,
-        }}>Saved</div>
+        }}>{savedToastMsg}</div>
       )}
+
 
       {tourOpen && <PortalTour steps={tourSteps} onClose={() => setTourOpen(false)} />}
 
@@ -1168,6 +1179,10 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
   const [draft, setDraft] = useState<ElderProfile>(elder);
   const [newCondition, setNewCondition] = useState("");
   const [contactErr, setContactErr] = useState<string>("");
+  const [deviceDraftDirty, setDeviceDraftDirty] = useState(false);
+  const [deviceBlockMsg, setDeviceBlockMsg] = useState("");
+  useEffect(() => { if (!deviceDraftDirty) setDeviceBlockMsg(""); }, [deviceDraftDirty]);
+
 
   const labelStyle: CSSProperties = {
     fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
@@ -1288,22 +1303,45 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
             devices={draft.devices}
             onChange={(devices) => setDraft({ ...draft, devices })}
             elderName={draft.name}
+            onDirtyChange={setDeviceDraftDirty}
           />
         )}
       </div>
 
       <div style={{ display: "grid", gap: 8, marginTop: 20 }}>
-        <button type="button" onClick={onSubmit} style={{
-          background: GREEN, color: "#fff", border: "none",
-          height: 44, borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
-          fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
-        }}>Save changes</button>
+        {(() => {
+          const blocked = target === "devices" && deviceDraftDirty;
+          return (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  if (blocked) {
+                    setDeviceBlockMsg("Finish the device above first — add at least one question, then tap Save device to lock it in.");
+                    return;
+                  }
+                  onSubmit();
+                }}
+                aria-disabled={blocked}
+                style={{
+                  background: blocked ? "#9CC2A9" : GREEN, color: "#fff", border: "none",
+                  height: 44, borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
+                  fontWeight: 700, fontSize: 16, cursor: blocked ? "not-allowed" : "pointer", width: "100%",
+                }}
+              >Save changes</button>
+              {blocked && deviceBlockMsg && (
+                <div style={{ color: RED, fontSize: 13, textAlign: "center" }}>{deviceBlockMsg}</div>
+              )}
+            </>
+          );
+        })()}
         <button type="button" onClick={onClose} style={{
           background: "transparent", color: theme.text, border: buttonBorder,
           height: 44, borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
           fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
         }}>Cancel</button>
       </div>
+
     </Modal>
   );
 }
