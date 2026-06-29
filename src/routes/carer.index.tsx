@@ -209,7 +209,8 @@ function CarerPortal() {
 
   const tourSteps: TourStep[] = [
     { ref: headerRef, title: "Welcome to the Carer Portal", body: "This is where you manage everything for your loved one. Let's take a quick look around." },
-    { ref: profileRef, title: "Elder Profile", body: `View and edit ${elder.name}'s health conditions, notes, and phone contacts. Tap "+ Add phone contact" to get started.` },
+    { ref: profileRef, title: "Elder Profile", body: `View and edit ${elder.name}'s health conditions and notes.` },
+    { ref: contactsRef, title: "Contacts", body: `Add phone contacts so ${elder.name} can reach the people who matter. 911 and Poison Control are always available.` },
     { ref: icRef, title: "Instruction Context", body: "Add devices like TVs, thermostats, and remotes here so HomeBuddy can give step-by-step help." },
     { ref: scheduleRef, title: "Schedule controls", body: "Add reminders for medication, appointments, or daily routines — switch between day, week, month, and list." },
     { ref: calendarRef, title: "Calendar", body: "All reminders appear here. Tap one to view or edit it." },
