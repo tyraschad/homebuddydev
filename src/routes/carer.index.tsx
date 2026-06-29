@@ -229,13 +229,7 @@ function CarerPortal() {
           </Link>
         </div>
         <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-          <img src={darkGreenLogo.url} alt="HomeBuddy" style={{ height: 28, width: "auto" }} />
-          <h1 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 26, color: theme.text }}>
-            {elder.name}'s Care Plan
-          </h1>
-          <div style={{ fontSize: 14, color: theme.muted }}>
-            {headerDate}
-          </div>
+          <img src={darkGreenLogo.url} alt="HomeBuddy" style={{ height: 48, width: "auto" }} />
         </div>
         <div style={{ justifySelf: "end", display: "flex", gap: 8 }}>
           <button
