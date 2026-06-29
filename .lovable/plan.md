@@ -1,49 +1,53 @@
-## Goal
-Split the single "Elder Profile" white card on `/carer` into two separate white cards so info groups read clearly:
 
-1. **Card 1 – Elder:** avatar/name/age header + Health conditions + Notes
-2. **Card 2 – Contacts:** Phone contacts + pre-added Emergency (911 / Poison Control)
+## 1. `/settings` background → `#25483A`
+**File:** `src/routes/settings.index.tsx`
+- Line 13: `PAGE_BG = "#8F8F8F"` → `"#25483A"`.
+- Flip header text on the dark bg to white: back-button label + chevron color, and the `<h1>Settings</h1>` color → `WHITE`.
+- White setting cards (and their black text) stay unchanged — they read fine on the dark green.
 
-All other sections (Instruction Context, Schedule controls, Calendar) stay exactly as they are.
+## 2. `/elder` V2 — green pulsing halo around mic when idle
+**File:** `src/components/TalkToTextPopup.tsx`
+- In the existing `<style>` block (near `ttt-big-pulse`), add:
+  ```css
+  @keyframes ttt-idle-pulse {
+    0%   { box-shadow: 0 0 0 0   rgba(81,157,70,0.55); }
+    70%  { box-shadow: 0 0 0 24px rgba(81,157,70,0); }
+    100% { box-shadow: 0 0 0 0   rgba(81,157,70,0); }
+  }
+  ```
+- Lines 941–949 (mic circle): when `v2 && recorder.status === "idle" && !sending`, set
+  `animation: "ttt-idle-pulse 2s ease-out infinite"`. Recording keeps `ttt-big-pulse` (red). V1 unaffected.
 
-## What I found
-`src/routes/carer.index.tsx` currently puts conditions, notes, phone contacts, AND emergency inside ONE `<section style={whiteCard}>` (lines 260–338), gated by `profileOpen`. `whiteCard` (line 196) is already `background: "#FFFFFF"` — so the "white background" requirement is satisfied by reusing `whiteCard` for the new section.
+## 3. `/carer` — photo upload on Elder Profile card
+**File:** `src/routes/carer.index.tsx` (avatar circle, lines 270–274)
+- Add `const photoInputRef = useRef<HTMLInputElement>(null);`.
+- Wrap the avatar circle in its own clickable element (instead of being inside the toggle button). Restructure the profile-card header into a flex row: avatar (own click → opens file picker, `e.stopPropagation`), then a toggle button containing the name/age + chevron.
+- Add a small camera-icon badge on the avatar bottom-right so the upload affordance is visible.
+- Hidden `<input type="file" accept="image/*">` reuses the same `FileReader` + `<canvas>` resize-to-1024 + `toDataURL("image/jpeg", 0.8)` flow from `onboarding.tsx` (lines 612–636), then `setElder({ ...elder, avatar: dataUrl })`.
 
-## Changes (single file: `src/routes/carer.index.tsx`)
+## 4. `/carer` — header restructure + larger logo
+**File:** `src/routes/carer.index.tsx` (header, lines 225–261)
+- Header keeps three columns: Back-button (left), **enlarged logo** center, Info + Settings (right).
+- Logo: `height: 28` → `48` (`src/assets/text-logo-dark-green.png`).
+- Remove the `<h1>{elder.name}'s Care Plan</h1>` and `{headerDate}` from inside `<header>`.
+- The `<header>` already has `borderBottom: cardBorder` — that's our divider.
+- Immediately below the header insert:
+  ```tsx
+  <div style={{ textAlign:"center", padding:"16px", background:panelBg }}>
+    <h1 style={{ margin:0, fontFamily:"Georgia, serif", fontWeight:700, fontSize:26, color:theme.text }}>
+      {elder.name}'s Care Plan
+    </h1>
+    <div style={{ fontSize:14, color:theme.muted, marginTop:4 }}>{headerDate}</div>
+  </div>
+  ```
 
-**1. Add a new collapsible state (near line 121 where `profileOpen` is declared):**
-```tsx
-const [contactsOpen, setContactsOpen] = useState(true);
-```
-
-**2. Add a ref for the tour (near `profileRef`):**
-```tsx
-const contactsRef = useRef<HTMLElement>(null);
-```
-
-**3. Lines 260–338 — split the one `<section>` into two:**
-
-- **Card 1** keeps the avatar/name header + `Health conditions` SubSection + `Notes` SubSection. Remove the Phone contacts SubSection from this card.
-- **Card 2** (new `<section ref={contactsRef} style={whiteCard}>`): a header button styled like the elder header but with a "Contacts" title (and chevron toggle bound to `contactsOpen`), then the existing `Phone contacts` SubSection block + Emergency sub-block — moved verbatim from lines 300–335.
-
-**4. Update the tour step copy (line 210):** change Elder Profile body to mention only conditions + notes, and add a new tour step right after it pointing at `contactsRef`:
-```tsx
-{ ref: contactsRef, title: "Contacts", body: "Add phone contacts so " + elder.name + " can reach the people who matter. 911 and Poison Control are always available." },
-```
-
-No styling, color, or behavior changes beyond the split. Both cards use the existing `whiteCard` style (white #FFFFFF, 1px #D0D0D0 border, 8px radius, subtle shadow) so they sit cleanly on the green gradient.
-
-## Question
-The new Contacts card needs a header to toggle open/closed. Two options — which do you prefer?
-- **A. Simple text header:** "Contacts" title + chevron, no icon. Compact.
-- **B. Icon + title:** small phone icon in a circle (matching the elder avatar circle style) + "Contacts" + chevron. Visually consistent with Card 1.
-
-If you don't reply, I'll go with **A (simple)** since contacts don't have an avatar.
+## Defaults I'm taking unless you say otherwise
+- Settings header text → white on `#25483A`.
+- Mic halo → soft expanding ring, sage `#519D46`, 2s loop, idle state only.
+- Carer logo bumped to `48px` height (was `28`).
 
 ## Verification
-- `/carer` shows two stacked white cards where the Elder Profile card used to be.
-- Card 1 collapses/expands conditions + notes independently.
-- Card 2 collapses/expands phone contacts + emergency independently.
-- Emergency 911 / Poison Control still render read-only inside Card 2.
-- Tour walks through both cards in order.
-- Instruction Context, Schedule, and Calendar are visually unchanged.
+- `/settings`: dark green page, readable white header, white cards intact.
+- `/elder` V2: idle mic shows a slow green ring; recording still shows red pulse; V1 unchanged.
+- `/carer`: tapping the avatar opens a file picker; selected photo persists across reloads via `setElder`.
+- `/carer`: header shows only logo + nav buttons above the divider; "Albert's Care Plan" + date sit centered below the divider.
