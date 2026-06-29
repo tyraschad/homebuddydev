@@ -21,11 +21,14 @@ export function DeviceListEditor({
   devices,
   onChange,
   elderName = "your loved one",
+  onDirtyChange,
 }: {
   devices: Device[];
   onChange: (devices: Device[]) => void;
   elderName?: string;
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
+
   const { theme, cardBorder, buttonBorder, inputBorder } = useSettings();
   const [photo, setPhoto] = useState<string | undefined>(undefined);
   const [analyzing, setAnalyzing] = useState(false);
