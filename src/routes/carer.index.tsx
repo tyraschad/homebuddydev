@@ -636,12 +636,20 @@ function CarerPortal() {
           elder={elder}
           onClose={() => setEditTarget(null)}
           onSave={(next) => {
+            let msg = "Saved";
+            if (editTarget === "contacts") {
+              if (next.contacts.length > elder.contacts.length) msg = "Contact added";
+              else if (next.contacts.length < elder.contacts.length) msg = "Contact removed";
+              else msg = "Contact updated";
+            }
             setElder(next);
             setEditTarget(null);
+            setSavedToastMsg(msg);
             setSavedToast(true);
             setTimeout(() => setSavedToast(false), 2000);
           }}
         />
+
       )}
 
       <div style={{ display: "flex", justifyContent: "center", padding: "24px 16px 40px" }}>
