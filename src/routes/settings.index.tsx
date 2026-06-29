@@ -80,7 +80,7 @@ function SettingsPage() {
             fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
             fontSize: 28,
-            color: BLACK,
+            color: WHITE,
             textAlign: "center",
           }}
         >
