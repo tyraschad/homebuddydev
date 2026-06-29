@@ -215,6 +215,7 @@ function CarerPortal() {
   ];
 
   return (
+    <>
     <main style={{ minHeight: "100vh", background: theme.bg, color: theme.text,
       fontFamily: "Verdana, sans-serif", lineHeight: 1.5 }}>
       {/* HEADER */}
