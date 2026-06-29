@@ -1179,6 +1179,10 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
   const [draft, setDraft] = useState<ElderProfile>(elder);
   const [newCondition, setNewCondition] = useState("");
   const [contactErr, setContactErr] = useState<string>("");
+  const [deviceDraftDirty, setDeviceDraftDirty] = useState(false);
+  const [deviceBlockMsg, setDeviceBlockMsg] = useState("");
+  useEffect(() => { if (!deviceDraftDirty) setDeviceBlockMsg(""); }, [deviceDraftDirty]);
+
 
   const labelStyle: CSSProperties = {
     fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
