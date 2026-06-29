@@ -1303,22 +1303,45 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
             devices={draft.devices}
             onChange={(devices) => setDraft({ ...draft, devices })}
             elderName={draft.name}
+            onDirtyChange={setDeviceDraftDirty}
           />
         )}
       </div>
 
       <div style={{ display: "grid", gap: 8, marginTop: 20 }}>
-        <button type="button" onClick={onSubmit} style={{
-          background: GREEN, color: "#fff", border: "none",
-          height: 44, borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
-          fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
-        }}>Save changes</button>
+        {(() => {
+          const blocked = target === "devices" && deviceDraftDirty;
+          return (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  if (blocked) {
+                    setDeviceBlockMsg("Finish the device above first — add at least one question, then tap Save device to lock it in.");
+                    return;
+                  }
+                  onSubmit();
+                }}
+                aria-disabled={blocked}
+                style={{
+                  background: blocked ? "#9CC2A9" : GREEN, color: "#fff", border: "none",
+                  height: 44, borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
+                  fontWeight: 700, fontSize: 16, cursor: blocked ? "not-allowed" : "pointer", width: "100%",
+                }}
+              >Save changes</button>
+              {blocked && deviceBlockMsg && (
+                <div style={{ color: RED, fontSize: 13, textAlign: "center" }}>{deviceBlockMsg}</div>
+              )}
+            </>
+          );
+        })()}
         <button type="button" onClick={onClose} style={{
           background: "transparent", color: theme.text, border: buttonBorder,
           height: 44, borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
           fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
         }}>Cancel</button>
       </div>
+
     </Modal>
   );
 }
