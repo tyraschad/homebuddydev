@@ -254,24 +254,81 @@ function CarerPortal() {
         </div>
       </header>
 
+      {/* Care Plan title block (moved out of header, sits below the divider) */}
+      <div style={{ textAlign: "center", padding: "16px", background: panelBg }}>
+        <h1 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 26, color: theme.text }}>
+          {elder.name}'s Care Plan
+        </h1>
+        <div style={{ fontSize: 14, color: theme.muted, marginTop: 4 }}>{headerDate}</div>
+      </div>
+
       {/* ELDER PROFILE CARD with expandable sub-sections */}
       <section ref={profileRef} style={whiteCard}>
-        <button
-          type="button"
-          onClick={() => setProfileOpen((v) => !v)}
-          style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, width: "100%" }}
-        >
-          <div style={{ width: 60, height: 60, borderRadius: "50%", background: theme.bg, border: buttonBorder,
-            display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Georgia, serif",
-            fontWeight: 700, fontSize: 24, color: theme.text, flexShrink: 0, overflow: "hidden" }}>
-            {elder.avatar ? <img src={elder.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (elder.name.charAt(0) || "?")}
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Georgia, serif", color: theme.text }}>{elder.name || "Elder"}</div>
-            <div style={{ fontSize: 14, color: theme.muted }}>{ageFromDob(elder.dob)}</div>
-          </div>
-          {profileOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, width: "100%" }}>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); photoInputRef.current?.click(); }}
+            aria-label="Change photo"
+            title="Change photo"
+            style={{ all: "unset", position: "relative", cursor: "pointer", flexShrink: 0 }}
+          >
+            <div style={{ width: 60, height: 60, borderRadius: "50%", background: theme.bg, border: buttonBorder,
+              display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Georgia, serif",
+              fontWeight: 700, fontSize: 24, color: theme.text, overflow: "hidden" }}>
+              {elder.avatar ? <img src={elder.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (elder.name.charAt(0) || "?")}
+            </div>
+            <span aria-hidden style={{
+              position: "absolute", right: -2, bottom: -2, width: 22, height: 22, borderRadius: "50%",
+              background: GREEN, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+              border: "2px solid #fff", fontSize: 12, lineHeight: 1,
+            }}>
+              <Edit size={11} />
+            </span>
+          </button>
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const f = e.target.files?.[0]; if (!f) return;
+              const reader = new FileReader();
+              reader.onload = () => {
+                const src = String(reader.result);
+                const img = new Image();
+                img.onload = () => {
+                  const MAX = 1024;
+                  const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+                  const w = Math.round(img.width * scale);
+                  const h = Math.round(img.height * scale);
+                  const canvas = document.createElement("canvas");
+                  canvas.width = w; canvas.height = h;
+                  const ctx = canvas.getContext("2d");
+                  if (!ctx) { setElder({ ...elder, avatar: src }); return; }
+                  ctx.drawImage(img, 0, 0, w, h);
+                  try { setElder({ ...elder, avatar: canvas.toDataURL("image/jpeg", 0.8) }); }
+                  catch { setElder({ ...elder, avatar: src }); }
+                };
+                img.onerror = () => setElder({ ...elder, avatar: src });
+                img.src = src;
+              };
+              reader.readAsDataURL(f);
+              e.target.value = "";
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setProfileOpen((v) => !v)}
+            style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, flex: 1 }}
+          >
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Georgia, serif", color: theme.text }}>{elder.name || "Elder"}</div>
+              <div style={{ fontSize: 14, color: theme.muted }}>{ageFromDob(elder.dob)}</div>
+            </div>
+            {profileOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
+          </button>
+        </div>
+
 
         {profileOpen && (
           <div style={{ marginTop: 16, display: "grid", gap: 16 }}>
