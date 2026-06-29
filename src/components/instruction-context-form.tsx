@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Camera, Trash2, X, Edit, RefreshCw, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useSettings } from "@/lib/settings-store";
