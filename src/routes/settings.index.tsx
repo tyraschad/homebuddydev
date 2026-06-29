@@ -9,7 +9,7 @@ export const Route = createFileRoute("/settings/")({
   head: () => ({ meta: [{ title: "Settings" }] }),
 });
 
-const PAGE_BG = "#8F8F8F";
+const PAGE_BG = "#25483A";
 const WHITE = "#FFFFFF";
 const BLACK = "#000000";
 const GREEN = "#6BA24A";
