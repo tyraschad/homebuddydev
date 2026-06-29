@@ -17,6 +17,7 @@ import {
 import { DeviceListEditor } from "@/components/instruction-context-form";
 import { PortalTour, hasCompletedTour, clearTour, type TourStep } from "@/components/portal-tour";
 import darkGreenLogo from "@/assets/text-logo-dark-green.png.asset.json";
+import { GradientBackground } from "@/components/GradientBackground";
 
 
 
