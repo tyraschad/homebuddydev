@@ -1213,8 +1213,18 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
     setDraft({ ...draft, contacts: draft.contacts.filter((c) => c.id !== id) });
 
   const onSubmit = () => {
-    if (target === "contacts" && draft.contacts.some((c) => !c.name.trim() || !c.phone.trim())) {
-      setContactErr("Please fill in both name and phone for each contact");
+    if (target === "contacts") {
+      if (draft.contacts.some((c) => !c.name.trim() || !c.phone.trim())) {
+        setContactErr("Please fill in both name and phone for each contact");
+        return;
+      }
+      const bad = draft.contacts.find((c) => c.phone.replace(/\D/g, "").length < 7);
+      if (bad) {
+        setContactErr(`"${bad.phone}" doesn't look like a valid phone number (need at least 7 digits)`);
+        return;
+      }
+      setContactErr("");
+      setConfirmContacts(true);
       return;
     }
     onSave(draft);
