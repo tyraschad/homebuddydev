@@ -131,14 +131,14 @@ function Onboarding() {
   const muted: CSSProperties = { fontSize: 14, color: theme.muted, lineHeight: 1.5 };
   const small: CSSProperties = { fontSize: 12, color: theme.muted };
   const btnPrimary = (disabled = false): CSSProperties => ({
-    background: disabled ? "#9CC2A9" : GREEN, color: "#fff", border: "none",
+    background: disabled ? "#C9C4BC" : GREEN, color: "#fff", border: "none",
     height: 48, padding: "0 24px", borderRadius: 8,
     fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
-    cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.7 : 1,
+    cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.9 : 1,
   });
   const btnSecondary: CSSProperties = {
-    background: "transparent", color: theme.text, border: buttonBorder,
-    height: 44, padding: "0 20px", borderRadius: 8,
+    background: "#FFFFFF", color: theme.text, border: "1px solid #E0DBD0",
+    height: 44, padding: "0 20px", borderRadius: 999,
     fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
   };
   const inputStyle: CSSProperties = {
@@ -147,7 +147,7 @@ function Onboarding() {
     fontFamily: "Inter, system-ui, sans-serif", fontSize: 14,
   };
   const card: CSSProperties = {
-    background: theme.card, border: cardBorder, borderRadius: 8, padding: 16,
+    background: theme.card, border: cardBorder, borderRadius: 12, padding: 16,
   };
 
   // ---- Header (back + progress; status display, not clickable) ----
@@ -176,7 +176,7 @@ function Onboarding() {
           aria-valuemax={TOTAL - 1}
           aria-valuenow={data.step - 1}
           aria-label="Onboarding progress"
-          style={{ height: 6, background: appearance === "dark" ? "#3A3A4E" : "#E8E8E8", borderRadius: 3, overflow: "hidden", cursor: "default" }}
+          style={{ height: 8, background: "#E5DFD0", borderRadius: 4, overflow: "hidden", cursor: "default" }}
         >
           <div style={{
             width: `${((data.step - 1) / (TOTAL - 1)) * 100}%`, height: "100%", background: GREEN,
@@ -277,9 +277,14 @@ function Onboarding() {
               <p style={{ ...muted, maxWidth: 420, marginTop: 16 }}>
                 Set up a personalised care ecosystem for your loved one in just a few minutes.
               </p>
-              <button type="button" onClick={() => goto(2)} style={{ ...btnPrimary(), marginTop: 32, minWidth: 200 }}>
-                Get started
-              </button>
+              <div style={{ width: "100%", maxWidth: 420, marginTop: 32 }}>
+                <p style={{ ...small, fontFamily: "Newsreader, serif", fontStyle: "italic", fontSize: 14, marginBottom: 12 }}>
+                  Don't worry — you can change any of this later.
+                </p>
+                <button type="button" onClick={() => goto(2)} style={{ ...btnPrimary(), width: "100%" }}>
+                  Get started
+                </button>
+              </div>
             </div>
           )}
 
@@ -380,10 +385,10 @@ function Onboarding() {
                         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                         gap: 8, padding: 12, borderRadius: 8,
                         aspectRatio: "1 / 1",
-                        background: selected ? (appearance === "dark" ? "#166534" : "#E8F5E9") : theme.card,
+                        background: selected ? "#CBE894" : theme.card,
                         border: selected ? `2px solid ${GREEN}` : cardBorder,
                         color: theme.text, cursor: "pointer", textAlign: "center",
-                        fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, fontWeight: 600,
+                        fontFamily: "Inter, system-ui, sans-serif", fontSize: 14, fontWeight: 600,
                         position: "relative", boxSizing: "border-box",
                       }}>
                       <div>{CONDITION_ICONS[c]}</div>
@@ -424,13 +429,13 @@ function Onboarding() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
                   <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 0 }}>
                     <div style={{
-                      width: 60, height: 60, borderRadius: "50%", border: cardBorder, overflow: "hidden",
+                      width: 72, height: 72, borderRadius: "50%", border: cardBorder, overflow: "hidden",
                       background: theme.bg, display: "flex", alignItems: "center", justifyContent: "center",
                       flexShrink: 0,
                     }}>
                       {data.elderPhoto
                         ? <img src={data.elderPhoto} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        : <Camera size={20} color={theme.muted} />}
+                        : <Camera size={24} color={theme.muted} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: 20, color: theme.text, fontFamily: "Newsreader, serif" }}>
@@ -449,7 +454,7 @@ function Onboarding() {
                   <button
                     type="button"
                     onClick={() => setEditingProfile((v) => !v)}
-                    style={{ ...btnSecondary, height: 36, padding: "0 12px", display: "inline-flex", alignItems: "center", gap: 6 }}
+                    style={{ ...btnSecondary, height: 36, padding: "0 14px", borderRadius: 999, display: "inline-flex", alignItems: "center", gap: 6 }}
                   >
                     <Edit size={14} /> {editingProfile ? "Done" : "Edit"}
                   </button>
@@ -572,7 +577,7 @@ function StepNode({ icon, title, body, text, muted }: {
   return (
     <li className="hb-stepper-item">
       <div style={{
-        width: 48, height: 48, borderRadius: "50%", background: "#519D46",
+        width: 40, height: 40, borderRadius: "50%", background: "#519D46",
         display: "flex", alignItems: "center", justifyContent: "center",
         boxShadow: "0 0 0 4px #fff",
       }}>{icon}</div>
@@ -660,7 +665,7 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
       aria-pressed={value}
       style={{
         width: 50, height: 28, borderRadius: 14, border: "none", padding: 0,
-        background: value ? GREEN : "#888", position: "relative", cursor: "pointer",
+        background: value ? GREEN : "#BBBBB0", position: "relative", cursor: "pointer",
         transition: "background 200ms ease", flexShrink: 0,
       }}>
       <span style={{
