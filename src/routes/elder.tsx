@@ -548,6 +548,7 @@ function ElderHome() {
             onClose={() => setOpenItemKey(null)}
             reminder={openItem.reminder}
             time={openItem.time}
+            times={openItem.reminder.times}
             relative={formatRelative(openItem.minutes)}
             frequency={frequencyLabel(openItem.reminder)}
           />
