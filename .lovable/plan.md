@@ -1,68 +1,50 @@
-## Confirmed
+## Scope
 
-1. Short names as proposed ✓
-2. Location: `continuity/design-refs/` ✓
-3. Audit all 6 screens (1–5 onboarding + Carer Portal) ✓
-4. Report only, no code fixes ✓
+Rebuild visuals for all 6 pinned references — onboarding 1–5 (`src/routes/onboarding.tsx`) and Carer Portal (`src/routes/carer.index.tsx`) — against `continuity/design-refs/screens/`. Plus swap two logos from PNG to SVG. Audit (`continuity/onboarding-audit.md`) is the checklist.
 
-## What I'll do on Implement
+## Confirmed decisions
 
-### 1. Upload 15 images as CDN pointers
+- Background: **keep as-is** (no cream repaint).
+- Dark mode branches inside onboarding: **drop**.
+- Fonts: swap family to **Newsreader** for headings, **Inter** for body/buttons — **preserve existing weights** (no weight changes).
 
-Run `lovable-assets create --file /mnt/user-uploads/<name>.png --filename <slug>.png` for each of the 15 uploads, writing the pointer JSON to:
+## Asset swaps (do first)
 
-```
-continuity/design-refs/screens/
-  01-onboarding-entry.png.asset.json
-  02-onboarding-how-it-works.png.asset.json
-  03-onboarding-data.png.asset.json
-  04-onboarding-needs.png.asset.json
-  05-onboarding-review.png.asset.json
-  06-carer-portal.png.asset.json
+1. `lovable-assets create --file /mnt/user-uploads/text-logo-white.svg` → write to `src/assets/text-logo-white.svg.asset.json`; delete `src/assets/text-logo-white.png.asset.json`.
+2. `lovable-assets create --file /mnt/user-uploads/text-logo-dark.svg` → write to `src/assets/text-logo-dark.svg.asset.json`; delete `src/assets/text-logo-dark-green.png.asset.json`.
+3. Grep `src/` for the old pointer names and update imports to the new `.svg.asset.json` files.
 
-continuity/design-refs/components/
-  toggle.png.asset.json
-  needs-card.png.asset.json
-  back-button.png.asset.json
-  mic-basic.png.asset.json
-  mic-pulse.png.asset.json
-  basic-button.png.asset.json
-  add-content-card.png.asset.json
-  calendar-bar.png.asset.json
-  reminder-type-cards.png.asset.json
-```
+## System-wide fixes
 
-### 2. Write `continuity/design-refs/README.md`
+1. **Fonts** (family only, weights untouched):
+   - `Georgia, serif` → `"Newsreader", serif` (all h1/h2, italic reassurance).
+   - `Verdana, sans-serif` → `"Inter", system-ui, sans-serif` (body, labels, inputs).
+   - `"Trebuchet MS", sans-serif` → `"Inter", system-ui, sans-serif` (buttons, calendar tabs, sub-section caps).
+2. **Greens** — `#2F8F4E` → `#519D46` everywhere: `onboarding.tsx` `GREEN` const, `.hb-stepper::before` in `styles.css`, `GREEN` export in `src/components/reminder-form.tsx` (fixes carer Add Reminder too).
+3. **Disabled Next button** — `#9CC2A9` → `#C9C4BC` (neutral grey).
+4. **Secondary/Back button** — `borderRadius: 8` → `999`, solid `#FFFFFF`, `1px solid #E0DBD0`. Applies to onboarding Back and carer "View Elder Screen".
+5. **Drop `appearance === "dark"` branches** inside onboarding.tsx only (needs card fill, progress track, etc.). Theme store, Elder, and Carer keep dark mode.
 
-Sections: **How to reference these** (short names → files), **Screens table**, **Components table**, **Best practice**. Each row embeds the image via its CDN URL so it renders inline when you open the doc.
+## Per-screen changes
 
-### 3. Add a one-line link at the top of `continuity/brand-guidelines.md`
+- **S1 Entry** — Get Started `width: 100%`; add italic *"Don't worry — you can change any of this later."* above button.
+- **S2 How It Works** — progress bar height 6→8, track `#E5DFD0`; stepper circles 48→40.
+- **S3 Data** — card `borderRadius` 8→12; disabled Next per system fix.
+- **S4 Needs** — selected fill `#E8F5E9` → `#CBE894` (Light Sage); border + check → `#519D46`.
+- **S5 Review** — avatar 60→72; Edit button pill; toggle off `#888` → `#BBBBB0`; toggle on → `#519D46`.
+- **S6 Carer Portal** — headings/body/tab fonts per system fix; "Add Reminder / Medication" → "Add Reminder"; "View Elder Screen" pill; Add Reminder green auto-fixes via `reminder-form.tsx` swap.
 
-Points at `continuity/design-refs/README.md` so anyone landing on brand guidelines finds the visual refs.
+## Files touched
 
-### 4. Write `continuity/onboarding-audit.md`
+- `src/routes/onboarding.tsx`
+- `src/routes/carer.index.tsx`
+- `src/components/reminder-form.tsx` (GREEN constant)
+- `src/styles.css` (`.hb-stepper::before`)
+- `src/assets/*` — new SVG pointers, old PNG pointers removed
+- Files importing the two old logo pointers (grep and update)
 
-Per-screen sections (Entry, How It Works, Data, Needs, Review, Carer Portal). Each finding tagged `[drift]` or `[match]`, citing the component ref where relevant. Advisory only — no code changes.
+Not touched: `settings-store.tsx`, `GradientBackground.tsx`, Elder screen, theme tokens.
 
-Files touched:
-- create: 15 `.asset.json` pointers under `continuity/design-refs/`
-- create: `continuity/design-refs/README.md`
-- create: `continuity/onboarding-audit.md`
-- edit: `continuity/brand-guidelines.md` (single link at top)
+## Verification
 
-## How to reference later (this is the answer to your question)
-
-**Where the reference lives:** `continuity/design-refs/README.md` — the human-readable index. Open it any time to see all short names and thumbnails.
-
-**How you invoke a reference:** just say the short name in a sentence, e.g.
-- *"Style the Next button like Basic Button"*
-- *"Match the Onboarding Data layout"*
-- *"Use the Mic Pulse animation on the Elder screen"*
-
-**What I do:** open the README, resolve the short name → open the pointer file → view the image at its CDN URL → follow it in the implementation.
-
-**Best practice on your side:**
-- Reference **one thing per instruction** — cleanest signal.
-- Use the **short name**, not "the third image" — names survive across sessions, uploads don't.
-- To update a reference, upload a new version and say *"replace the X reference"* — I re-run the CLI and overwrite the pointer.
-- If a reference is missing something (e.g. hover state), tell me in the README under that row — I read those notes.
+Playwright at `/onboarding` (steps 1–5) and `/carer`, viewport 1280×1800, one screenshot per step, visual-diff against the 6 pinned references. Confirm: Newsreader headings, Inter body, sage `#519D46` accents, pill back buttons, sage-filled needs cards, grey disabled Next, "Add Reminder" label, new SVG logos render.
