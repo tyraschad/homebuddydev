@@ -965,11 +965,13 @@ function ReminderDetailsPopup({
   onClose,
   reminder,
   time,
+  times,
   frequency,
 }: {
   onClose: () => void;
   reminder: { name: string; details?: string; notes?: string; photo?: string; dose?: number; type: ReminderType };
   time: string;
+  times: string[];
   relative: string;
   frequency: string;
 }) {
@@ -984,9 +986,12 @@ function ReminderDetailsPopup({
   }, [onClose]);
 
   const timeStr = formatTimeStr(time);
-  const detailsText = [reminder.dose ? `${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}` : null, reminder.details]
-    .filter(Boolean)
-    .join(" — ");
+  const allTimesStr = (times ?? []).filter(Boolean).map(formatTimeStr).join(", ");
+  const showAllTimes = (times ?? []).filter(Boolean).length > 1;
+  const doseStr = reminder.dose ? `${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}` : "";
+  const isAppointment = reminder.type === "appointment";
+  const locationStr = isAppointment ? (reminder.details ?? "") : "";
+  const detailsStr = !isAppointment && reminder.type !== "medication" ? (reminder.details ?? "") : "";
 
   const textColor = v2 ? "#25483A" : "#000000";
   const iconColor = textColor;
