@@ -548,6 +548,7 @@ function ElderHome() {
             onClose={() => setOpenItemKey(null)}
             reminder={openItem.reminder}
             time={openItem.time}
+            times={openItem.reminder.times}
             relative={formatRelative(openItem.minutes)}
             frequency={frequencyLabel(openItem.reminder)}
           />
@@ -964,11 +965,13 @@ function ReminderDetailsPopup({
   onClose,
   reminder,
   time,
+  times,
   frequency,
 }: {
   onClose: () => void;
   reminder: { name: string; details?: string; notes?: string; photo?: string; dose?: number; type: ReminderType };
   time: string;
+  times: string[];
   relative: string;
   frequency: string;
 }) {
@@ -983,9 +986,12 @@ function ReminderDetailsPopup({
   }, [onClose]);
 
   const timeStr = formatTimeStr(time);
-  const detailsText = [reminder.dose ? `${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}` : null, reminder.details]
-    .filter(Boolean)
-    .join(" — ");
+  const allTimesStr = (times ?? []).filter(Boolean).map(formatTimeStr).join(", ");
+  const showAllTimes = (times ?? []).filter(Boolean).length > 1;
+  const doseStr = reminder.dose ? `${reminder.dose} pill${reminder.dose > 1 ? "s" : ""}` : "";
+  const isAppointment = reminder.type === "appointment";
+  const locationStr = isAppointment ? (reminder.details ?? "") : "";
+  const detailsStr = !isAppointment && reminder.type !== "medication" ? (reminder.details ?? "") : "";
 
   const textColor = v2 ? "#25483A" : "#000000";
   const iconColor = textColor;
@@ -1062,36 +1068,44 @@ function ReminderDetailsPopup({
           </button>
         </div>
 
-        <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: textColor, paddingBottom: 8 }}>
-          {timeStr}
+        <div style={{ height: 1, background: "#D0D0D0", margin: "0 0 12px" }} />
+
+        <div style={{ display: "grid", gap: 8 }}>
+          <LabeledRow label="Time" value={timeStr} textColor={textColor} />
+          {frequency && <LabeledRow label="Frequency" value={frequency} textColor={textColor} />}
+          {showAllTimes && <LabeledRow label="All times" value={allTimesStr} textColor={textColor} />}
+          {doseStr && <LabeledRow label="Dose" value={doseStr} textColor={textColor} />}
+          {locationStr && <LabeledRow label="Location" value={locationStr} textColor={textColor} />}
+          {detailsStr && <LabeledRow label="Details" value={detailsStr} textColor={textColor} />}
         </div>
 
-        {frequency && (
-          <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
-            {frequency}
-          </div>
-        )}
-
-        {detailsText && (
-          <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
-            {detailsText}
-          </div>
-        )}
-
         {reminder.notes && (
-          <div
-            data-readable="true"
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontSize: 16,
-              color: textColor,
-              background: notesBg,
-              borderRadius: 4,
-              padding: 12,
-              marginTop: 12,
-            }}
-          >
-            {reminder.notes}
+          <div style={{ marginTop: 16 }}>
+            <div
+              data-readable="true"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: 14,
+                fontWeight: 700,
+                color: textColor,
+                marginBottom: 4,
+              }}
+            >
+              Notes:
+            </div>
+            <div
+              data-readable="true"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: 16,
+                color: textColor,
+                background: notesBg,
+                borderRadius: 4,
+                padding: 12,
+              }}
+            >
+              {reminder.notes}
+            </div>
           </div>
         )}
 
@@ -1111,6 +1125,25 @@ function ReminderDetailsPopup({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function LabeledRow({ label, value, textColor }: { label: string; value: string; textColor: string }) {
+  return (
+    <div
+      data-readable="true"
+      style={{
+        display: "flex",
+        gap: 8,
+        fontFamily: "Inter, sans-serif",
+        fontSize: 16,
+        color: textColor,
+        lineHeight: 1.4,
+      }}
+    >
+      <span style={{ fontWeight: 700, minWidth: 96 }}>{label}:</span>
+      <span>{value}</span>
     </div>
   );
 }

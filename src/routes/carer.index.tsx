@@ -326,7 +326,7 @@ function CarerPortal() {
           >
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Newsreader, serif", color: theme.text }}>{elder.name || "Elder"}</div>
-              <div style={{ fontSize: 14, color: theme.muted }}>{ageFromDob(elder.dob)}</div>
+              <div style={{ fontSize: 14, color: theme.muted }}>{elder.age != null ? `${elder.age} years old` : ageFromDob(elder.dob)}</div>
             </div>
             {profileOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
           </button>
@@ -1181,6 +1181,7 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
   const [contactErr, setContactErr] = useState<string>("");
   const [deviceDraftDirty, setDeviceDraftDirty] = useState(false);
   const [deviceBlockMsg, setDeviceBlockMsg] = useState("");
+  const [confirmContacts, setConfirmContacts] = useState(false);
   useEffect(() => { if (!deviceDraftDirty) setDeviceBlockMsg(""); }, [deviceDraftDirty]);
 
 
@@ -1212,8 +1213,18 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
     setDraft({ ...draft, contacts: draft.contacts.filter((c) => c.id !== id) });
 
   const onSubmit = () => {
-    if (target === "contacts" && draft.contacts.some((c) => !c.name.trim() || !c.phone.trim())) {
-      setContactErr("Please fill in both name and phone for each contact");
+    if (target === "contacts") {
+      if (draft.contacts.some((c) => !c.name.trim() || !c.phone.trim())) {
+        setContactErr("Please fill in both name and phone for each contact");
+        return;
+      }
+      const bad = draft.contacts.find((c) => c.phone.replace(/\D/g, "").length < 7);
+      if (bad) {
+        setContactErr(`"${bad.phone}" doesn't look like a valid phone number (need at least 7 digits)`);
+        return;
+      }
+      setContactErr("");
+      setConfirmContacts(true);
       return;
     }
     onSave(draft);
@@ -1342,6 +1353,39 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
         }}>Cancel</button>
       </div>
 
+      {confirmContacts && (
+        <Modal onClose={() => setConfirmContacts(false)} width={460}>
+          <h2 style={{ margin: 0, fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 20, paddingRight: 32 }}>
+            Confirm phone contacts
+          </h2>
+          <p style={{ color: theme.muted, marginTop: 6, fontSize: 14 }}>
+            Please double-check these numbers before saving — {elder?.name || "your loved one"} will call them from the elder screen.
+          </p>
+          <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+            {draft.contacts.map((c) => (
+              <div key={c.id} style={{
+                display: "flex", justifyContent: "space-between", gap: 12,
+                padding: "10px 12px", border: buttonBorder, borderRadius: 8,
+              }}>
+                <span style={{ fontWeight: 700 }}>{c.name}</span>
+                <span style={{ fontFamily: "Inter, system-ui, sans-serif" }}>{c.phone}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "grid", gap: 8, marginTop: 20 }}>
+            <button type="button" onClick={() => { setConfirmContacts(false); onSave(draft); }} style={{
+              background: GREEN, color: "#fff", border: "none",
+              height: 44, borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif",
+              fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
+            }}>Confirm &amp; save</button>
+            <button type="button" onClick={() => setConfirmContacts(false)} style={{
+              background: "transparent", color: theme.text, border: buttonBorder,
+              height: 44, borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif",
+              fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
+            }}>Back to edit</button>
+          </div>
+        </Modal>
+      )}
     </Modal>
   );
 }

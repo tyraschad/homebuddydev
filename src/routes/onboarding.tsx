@@ -28,6 +28,7 @@ type OnbData = {
   step: number;
   carerName: string;
   elderName: string;
+  elderAge: string;
   elderPhoto?: string;
   elderNotes: string;
   conditions: Condition[];
@@ -45,6 +46,7 @@ const DEFAULT_DATA: OnbData = {
   step: 1,
   carerName: "",
   elderName: "",
+  elderAge: "",
   elderNotes: "",
   conditions: [],
   settingLargerText: true,
@@ -202,10 +204,12 @@ function Onboarding() {
 
   // ---- Finish ----
   const handleFinish = () => {
+    const ageNum = parseInt(data.elderAge, 10);
     const newElder = {
       id: elder.id || "elder-1",
       name: data.elderName.trim() || "Elder",
       dob: elder.dob || "",
+      age: Number.isFinite(ageNum) && ageNum > 0 ? ageNum : undefined,
       avatar: data.elderPhoto || elder.avatar,
       conditions: data.conditions,
       contacts: [] as Contact[],
@@ -351,6 +355,21 @@ function Onboarding() {
                     </div>
                     <div>
                       <label style={{ display: "block", fontWeight: 700, fontSize: 14, marginBottom: 6 }}>
+                        Their age
+                      </label>
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        max={130}
+                        value={data.elderAge}
+                        onChange={(e) => update({ elderAge: e.target.value.replace(/[^\d]/g, "") })}
+                        placeholder="e.g., 82"
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontWeight: 700, fontSize: 14, marginBottom: 6 }}>
                         Notes (optional)
                       </label>
                       <textarea style={{ ...inputStyle, minHeight: 96, resize: "vertical" }} rows={4}
@@ -438,8 +457,9 @@ function Onboarding() {
                         : <Camera size={24} color={theme.muted} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 20, color: theme.text, fontFamily: "Newsreader, serif" }}>
+                      <div style={{ fontWeight: 700, fontSize: 20, color: theme.text, fontFamily: "Newsreader, Inter, sans-serif" }}>
                         {data.elderName || "—"}
+                        {data.elderAge && <span style={{ fontWeight: 400, fontSize: 16, color: theme.muted, marginLeft: 8 }}>· {data.elderAge} yrs</span>}
                       </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
                         {data.conditions.map((c) => (
@@ -476,6 +496,19 @@ function Onboarding() {
                       <label style={{ display: "block", fontWeight: 700, fontSize: 14, marginBottom: 6 }}>Their name</label>
                       <input style={inputStyle} value={data.elderName}
                         onChange={(e) => update({ elderName: e.target.value })} />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontWeight: 700, fontSize: 14, marginBottom: 6 }}>Their age</label>
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        max={130}
+                        value={data.elderAge}
+                        onChange={(e) => update({ elderAge: e.target.value.replace(/[^\d]/g, "") })}
+                        placeholder="e.g., 82"
+                      />
                     </div>
                     <div>
                       <label style={{ display: "block", fontWeight: 700, fontSize: 14, marginBottom: 6 }}>Notes</label>

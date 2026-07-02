@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   X, Plus, Minus, Pill, Stethoscope, Activity, HelpCircle,
   AlertTriangle, ChevronLeft, ChevronRight,
@@ -140,7 +140,10 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
     setR({ ...r, timesPerDay: n, times });
   };
 
-  const validate = () => {
+  const fieldRefs = useRef<Record<string, HTMLElement | null>>({});
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const computeErrors = (): Record<string, string> => {
     const e: Record<string, string> = {};
     if (!r.name.trim()) e.name = "This field is required";
     if (!r.timesPerDay || r.timesPerDay < 1) e.timesPerDay = "This field is required";
@@ -154,12 +157,35 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
         e.customDays = "Please select at least one day of the week";
       }
     }
+    return e;
+  };
+
+  const isFormValid = useMemo(() => Object.keys(computeErrors()).length === 0, [r]);
+
+  const validate = () => {
+    const e = computeErrors();
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  const FIELD_ORDER = ["name", "timesPerDay", "times", "repeatSchedule", "monthlyDates", "customDays"];
+  const jumpToFirstError = (e: Record<string, string>) => {
+    const first = FIELD_ORDER.find((k) => e[k]);
+    if (!first) return;
+    const el = fieldRefs.current[first];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (first === "name" && nameInputRef.current) {
+        setTimeout(() => nameInputRef.current?.focus(), 250);
+      }
+    }
+  };
+
   const trySave = () => {
-    if (!validate()) return;
+    if (!validate()) {
+      jumpToFirstError(computeErrors());
+      return;
+    }
     if (r.type === "medication" && (r.dose ?? 0) > 3) { setShowDoseWarn(true); return; }
     onSave({ ...r, updatedAt: new Date().toISOString() });
   };
@@ -183,9 +209,10 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
         </div>
 
         <div style={sectionGap}>
-          <div>
+          <div ref={(el) => { fieldRefs.current.name = el; }}>
             <label style={labelStyle}>{nameLabel} <span style={{ color: RED }}>*</span></label>
             <input
+              ref={nameInputRef}
               type="text"
               value={r.name}
               placeholder={namePlaceholder}
@@ -215,13 +242,13 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
             </div>
           )}
 
-          <div>
+          <div ref={(el) => { fieldRefs.current.timesPerDay = el; }}>
             <label style={labelStyle}>Times per day <span style={{ color: RED }}>*</span></label>
             <NumberStepper value={r.timesPerDay} onChange={setTimesCount} min={1} max={8} />
             {errors.timesPerDay && <div style={errStyle}>{errors.timesPerDay}</div>}
           </div>
 
-          <div style={{ display: "grid", gap: 10 }}>
+          <div ref={(el) => { fieldRefs.current.times = el; }} style={{ display: "grid", gap: 10 }}>
             {r.times.map((t, i) => (
               <div key={i}>
                 <label style={labelStyle}>
@@ -235,7 +262,13 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
             {errors.times && <div style={errStyle}>{errors.times}</div>}
           </div>
 
-          <RepeatScheduleField r={r} setR={setR} errors={errors} />
+          <div ref={(el) => {
+            fieldRefs.current.repeatSchedule = el;
+            fieldRefs.current.monthlyDates = el;
+            fieldRefs.current.customDays = el;
+          }}>
+            <RepeatScheduleField r={r} setR={setR} errors={errors} />
+          </div>
 
           <AnnouncementTimesField r={r} setR={setR} />
 
@@ -247,11 +280,19 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
         </div>
 
         <div style={{ display: "grid", gap: 10, marginTop: 20 }}>
-          <button type="button" onClick={trySave} style={{
-            background: GREEN, color: "#fff", border: "none", padding: "12px 18px",
-            borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700,
-            fontSize: 16, cursor: "pointer", width: "100%",
-          }}>Save reminder</button>
+          <button
+            type="button"
+            onClick={trySave}
+            aria-disabled={!isFormValid}
+            title={isFormValid ? undefined : "Fill in the required fields"}
+            style={{
+              background: isFormValid ? GREEN : "#B7C9AB",
+              color: "#fff", border: "none", padding: "12px 18px",
+              borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700,
+              fontSize: 16, cursor: isFormValid ? "pointer" : "not-allowed",
+              opacity: isFormValid ? 1 : 0.85, width: "100%",
+            }}
+          >Save reminder</button>
           <button type="button" onClick={onClose} style={{
             background: "transparent", color: theme.text, border: buttonBorder, padding: "12px 18px",
             borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
