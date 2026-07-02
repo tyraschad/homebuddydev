@@ -204,10 +204,12 @@ function Onboarding() {
 
   // ---- Finish ----
   const handleFinish = () => {
+    const ageNum = parseInt(data.elderAge, 10);
     const newElder = {
       id: elder.id || "elder-1",
       name: data.elderName.trim() || "Elder",
       dob: elder.dob || "",
+      age: Number.isFinite(ageNum) && ageNum > 0 ? ageNum : undefined,
       avatar: data.elderPhoto || elder.avatar,
       conditions: data.conditions,
       contacts: [] as Contact[],
