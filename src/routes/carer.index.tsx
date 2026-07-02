@@ -193,8 +193,8 @@ function CarerPortal() {
     fontSize: 14, cursor: "pointer",
   };
   const btnSecondary: CSSProperties = {
-    background: "#F0F0F0", color: "#000000", border: buttonBorder,
-    padding: "10px 18px", borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif",
+    background: "#FFFFFF", color: "#000000", border: buttonBorder,
+    padding: "10px 18px", borderRadius: 999, fontFamily: "Inter, system-ui, sans-serif",
     fontWeight: 700, fontSize: 14, cursor: "pointer",
   };
 
@@ -529,7 +529,7 @@ function CarerPortal() {
           <button onClick={() => cursor && shiftCursor(view, cursor, setCursor, 1)} style={iconBtn(theme, buttonBorder)}><ChevronRight size={18} /></button>
         </div>
         <button onClick={() => { setPrefillTime(null); setPickCategoryOpen(true); }} style={{ ...btnPrimary, display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <Plus size={18} /> Add Reminder / Medication
+          <Plus size={18} /> Add Reminder
         </button>
       </section>
 
