@@ -1043,7 +1043,7 @@ function ReminderDetailsPopup({
               data-readable="true"
               style={{
                 margin: 0,
-                fontFamily: v2 ? "Newsreader, serif" : "Inter, sans-serif",
+                fontFamily: v2 ? "Newsreader, Inter, sans-serif" : "Inter, sans-serif",
                 fontWeight: 700,
                 fontSize: 24,
                 color: textColor,
