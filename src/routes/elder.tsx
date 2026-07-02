@@ -1128,3 +1128,22 @@ function ReminderDetailsPopup({
     </div>
   );
 }
+
+function LabeledRow({ label, value, textColor }: { label: string; value: string; textColor: string }) {
+  return (
+    <div
+      data-readable="true"
+      style={{
+        display: "flex",
+        gap: 8,
+        fontFamily: "Inter, sans-serif",
+        fontSize: 16,
+        color: textColor,
+        lineHeight: 1.4,
+      }}
+    >
+      <span style={{ fontWeight: 700, minWidth: 96 }}>{label}:</span>
+      <span>{value}</span>
+    </div>
+  );
+}
