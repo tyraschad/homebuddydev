@@ -1181,6 +1181,7 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
   const [contactErr, setContactErr] = useState<string>("");
   const [deviceDraftDirty, setDeviceDraftDirty] = useState(false);
   const [deviceBlockMsg, setDeviceBlockMsg] = useState("");
+  const [confirmContacts, setConfirmContacts] = useState(false);
   useEffect(() => { if (!deviceDraftDirty) setDeviceBlockMsg(""); }, [deviceDraftDirty]);
 
 
