@@ -209,9 +209,10 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
         </div>
 
         <div style={sectionGap}>
-          <div>
+          <div ref={(el) => { fieldRefs.current.name = el; }}>
             <label style={labelStyle}>{nameLabel} <span style={{ color: RED }}>*</span></label>
             <input
+              ref={nameInputRef}
               type="text"
               value={r.name}
               placeholder={namePlaceholder}
@@ -241,13 +242,13 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
             </div>
           )}
 
-          <div>
+          <div ref={(el) => { fieldRefs.current.timesPerDay = el; }}>
             <label style={labelStyle}>Times per day <span style={{ color: RED }}>*</span></label>
             <NumberStepper value={r.timesPerDay} onChange={setTimesCount} min={1} max={8} />
             {errors.timesPerDay && <div style={errStyle}>{errors.timesPerDay}</div>}
           </div>
 
-          <div style={{ display: "grid", gap: 10 }}>
+          <div ref={(el) => { fieldRefs.current.times = el; }} style={{ display: "grid", gap: 10 }}>
             {r.times.map((t, i) => (
               <div key={i}>
                 <label style={labelStyle}>
@@ -261,7 +262,13 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
             {errors.times && <div style={errStyle}>{errors.times}</div>}
           </div>
 
-          <RepeatScheduleField r={r} setR={setR} errors={errors} />
+          <div ref={(el) => {
+            fieldRefs.current.repeatSchedule = el;
+            fieldRefs.current.monthlyDates = el;
+            fieldRefs.current.customDays = el;
+          }}>
+            <RepeatScheduleField r={r} setR={setR} errors={errors} />
+          </div>
 
           <AnnouncementTimesField r={r} setR={setR} />
 
