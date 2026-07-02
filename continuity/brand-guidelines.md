@@ -1,5 +1,7 @@
 # HomeBuddy Brand Guidelines
 
+> Visual references (screen + component screenshots) live in [design-refs/README.md](./design-refs/README.md). Drift report: [onboarding-audit.md](./onboarding-audit.md).
+
 This document is the source of truth for HomeBuddy brand colors, typography, and logo usage. It is split into two parts because the V1 Elder screen follows a separate, WCAG-driven spec from the rest of the app.
 
 ---
