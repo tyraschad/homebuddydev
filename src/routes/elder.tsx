@@ -16,7 +16,7 @@ import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { GradientBackground } from "@/components/GradientBackground";
 import { speak } from "@/lib/talk.functions";
-import whiteLogo from "@/assets/text-logo-white.png.asset.json";
+import whiteLogo from "@/assets/text-logo-white.svg.asset.json";
 
 
 // V1 Elder palette (WCAG): #8F8F8F bg, #000000 text/mic, #6CA24E phone

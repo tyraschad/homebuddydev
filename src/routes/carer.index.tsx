@@ -16,7 +16,7 @@ import {
 } from "@/components/reminder-form";
 import { DeviceListEditor } from "@/components/instruction-context-form";
 import { PortalTour, hasCompletedTour, clearTour, type TourStep } from "@/components/portal-tour";
-import darkGreenLogo from "@/assets/text-logo-dark-green.png.asset.json";
+import darkGreenLogo from "@/assets/text-logo-dark.svg.asset.json";
 import { GradientBackground } from "@/components/GradientBackground";
 
 
@@ -223,7 +223,7 @@ function CarerPortal() {
   return (
     <>
     <main style={{ minHeight: "100vh", background: theme.bg, color: theme.text,
-      fontFamily: "Verdana, sans-serif", lineHeight: 1.5 }}>
+      fontFamily: "Inter, system-ui, sans-serif", lineHeight: 1.5 }}>
       {/* HEADER */}
       <header ref={headerRef} style={headerStyle}>
         <div style={{ justifySelf: "start" }}>
@@ -259,7 +259,7 @@ function CarerPortal() {
 
       {/* Care Plan title block (moved out of header, sits below the divider) */}
       <div style={{ textAlign: "center", padding: "16px", background: panelBg }}>
-        <h1 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 26, color: theme.text }}>
+        <h1 style={{ margin: 0, fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 26, color: theme.text }}>
           {elder.name}'s Care Plan
         </h1>
         <div style={{ fontSize: 14, color: theme.muted, marginTop: 4 }}>{headerDate}</div>
@@ -276,7 +276,7 @@ function CarerPortal() {
             style={{ all: "unset", position: "relative", cursor: "pointer", flexShrink: 0 }}
           >
             <div style={{ width: 60, height: 60, borderRadius: "50%", background: theme.bg, border: buttonBorder,
-              display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Georgia, serif",
+              display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Newsreader, serif",
               fontWeight: 700, fontSize: 24, color: theme.text, overflow: "hidden" }}>
               {elder.avatar ? <img src={elder.avatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : (elder.name.charAt(0) || "?")}
             </div>
@@ -325,7 +325,7 @@ function CarerPortal() {
             style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, flex: 1 }}
           >
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Georgia, serif", color: theme.text }}>{elder.name || "Elder"}</div>
+              <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Newsreader, serif", color: theme.text }}>{elder.name || "Elder"}</div>
               <div style={{ fontSize: 14, color: theme.muted }}>{ageFromDob(elder.dob)}</div>
             </div>
             {profileOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
@@ -342,7 +342,7 @@ function CarerPortal() {
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {elder.conditions.map((c) => (
                     <span key={c} style={{ background: theme.bg, border: buttonBorder, borderRadius: 999,
-                      padding: "4px 12px", fontSize: 12, color: theme.text, fontFamily: "'Trebuchet MS', sans-serif" }}>
+                      padding: "4px 12px", fontSize: 12, color: theme.text, fontFamily: "Inter, system-ui, sans-serif" }}>
                       {c}
                     </span>
                   ))}
@@ -365,7 +365,7 @@ function CarerPortal() {
           onClick={() => setContactsOpen((v) => !v)}
           style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, width: "100%" }}
         >
-          <div style={{ flex: 1, fontWeight: 700, fontSize: 20, fontFamily: "Georgia, serif", color: theme.text }}>
+          <div style={{ flex: 1, fontWeight: 700, fontSize: 20, fontFamily: "Newsreader, serif", color: theme.text }}>
             Contacts
           </div>
           {contactsOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
@@ -424,7 +424,7 @@ function CarerPortal() {
           style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: 16, width: "100%" }}
         >
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Georgia, serif", color: theme.text }}>Instruction Context</div>
+            <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Newsreader, serif", color: theme.text }}>Instruction Context</div>
             <div style={{ fontSize: 14, color: theme.muted }}>
               {elder.devices.length} device{elder.devices.length === 1 ? "" : "s"} added
             </div>
@@ -485,7 +485,7 @@ function CarerPortal() {
                           <div>
                             <div style={{ fontSize: 12, color: theme.muted, marginBottom: 6 }}>Suggested questions</div>
                             {d.questions && d.questions.length > 0 ? (
-                              <ul style={{ margin: 0, paddingLeft: 20, color: theme.text, fontSize: 13, fontFamily: "Verdana, sans-serif", display: "grid", gap: 4 }}>
+                              <ul style={{ margin: 0, paddingLeft: 20, color: theme.text, fontSize: 13, fontFamily: "Inter, system-ui, sans-serif", display: "grid", gap: 4 }}>
                                 {d.questions.map((q, i) => <li key={i}>{q}</li>)}
                               </ul>
                             ) : (
@@ -511,17 +511,17 @@ function CarerPortal() {
               background: view === m ? theme.text : theme.card,
               color: view === m ? theme.card : theme.text,
               border: buttonBorder, padding: "8px 14px", borderRadius: 8, cursor: "pointer",
-              fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+              fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
               textTransform: "capitalize",
             }}>{m}</button>
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button onClick={() => cursor && shiftCursor(view, cursor, setCursor, -1)} style={iconBtn(theme, buttonBorder)}><ChevronLeft size={18} /></button>
-          <span style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, minWidth: 180, textAlign: "center" }}>
+          <span style={{ fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 16, minWidth: 180, textAlign: "center" }}>
             {cursor ? labelForCursor(view, cursor) : ""}
             {view === "day" && isToday && (
-              <span style={{ marginLeft: 8, fontFamily: "Verdana, sans-serif", fontSize: 14, color: GREEN, fontWeight: 700 }}>
+              <span style={{ marginLeft: 8, fontFamily: "Inter, system-ui, sans-serif", fontSize: 14, color: GREEN, fontWeight: 700 }}>
                 — Today
               </span>
             )}
@@ -561,7 +561,7 @@ function CarerPortal() {
         style={{
           position: "fixed", bottom: 16, right: 16, height: 44, padding: "0 20px",
           background: theme.card, color: theme.text, border: cardBorder, borderRadius: 22,
-          fontFamily: "Verdana, sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
+          fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
           boxShadow: "0 4px 12px rgba(0,0,0,0.15)", zIndex: 40,
           opacity: viewingToday ? 0 : 1,
           pointerEvents: viewingToday ? "none" : "auto",
@@ -662,7 +662,7 @@ function CarerPortal() {
         <div style={{
           position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
           background: GREEN, color: "#fff", padding: "10px 18px", borderRadius: 8,
-          fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+          fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
           zIndex: 100,
         }}>{savedToastMsg}</div>
       )}
@@ -673,7 +673,7 @@ function CarerPortal() {
       <style>{`
         input[type="text"], input[type="number"], input[type="time"], input[type="date"], input[type="tel"], textarea, select {
           background: ${theme.bg}; color: ${theme.text}; border: ${inputBorder};
-          border-radius: 8px; padding: 10px 12px; font-family: Verdana, sans-serif; font-size: 16px; width: 100%; box-sizing: border-box;
+          border-radius: 8px; padding: 10px 12px; font-family: Inter, system-ui, sans-serif; font-size: 16px; width: 100%; box-sizing: border-box;
         }
         textarea { min-height: 80px; resize: vertical; }
       `}</style>
@@ -691,7 +691,7 @@ function SubSection({ label, onEdit, children }: { label: string; onEdit: () => 
         display: "flex", justifyContent: "space-between", alignItems: "center",
         marginBottom: 8,
       }}>
-        <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13,
+        <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 13,
           textTransform: "uppercase", color: theme.muted, letterSpacing: 0.5 }}>{label}</div>
         <button type="button" onClick={onEdit} aria-label={`Edit ${label}`} title={`Edit ${label}`}
           style={{ background: "transparent", border: "none", cursor: "pointer", color: theme.text, padding: 4 }}>
@@ -762,7 +762,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   const { theme } = useSettings();
   return (
     <div>
-      <div style={{ fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13,
+      <div style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 13,
         textTransform: "uppercase", color: theme.muted, marginBottom: 6, letterSpacing: 0.5 }}>{label}</div>
       <div style={{ fontSize: 15, color: theme.text }}>{children}</div>
     </div>
@@ -787,7 +787,7 @@ function ReminderBlock({ r, time, onClick, appearance }: {
     <button onClick={(e) => { e.stopPropagation(); onClick(); }} style={{
       display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left",
       background: bg, color: fg, border: `1px solid ${color}`, borderRadius: 4,
-      padding: "6px 8px", cursor: "pointer", fontFamily: "Verdana, sans-serif", fontSize: 13,
+      padding: "6px 8px", cursor: "pointer", fontFamily: "Inter, system-ui, sans-serif", fontSize: 13,
     }}>
       <span style={{ fontWeight: 700, minWidth: 44 }}>{time}</span>
       {iconForType(r.type, 14, color)}
@@ -828,7 +828,7 @@ function DayView({ date, reminders, onOpen, onAdd, theme, appearance, gridLine }
               background: theme.card, cursor: slot.length === 0 ? "pointer" : "default",
             }}>
             <div style={{ color: theme.muted, fontSize: 13, padding: "8px 8px 0 0", textAlign: "right",
-              fontFamily: "'Trebuchet MS', sans-serif" }}>{formatHour(h)}</div>
+              fontFamily: "Inter, system-ui, sans-serif" }}>{formatHour(h)}</div>
             <div style={{ padding: 6, display: "grid", gap: 4, alignContent: "center" }}>
               {slot.map(({ r, t }, i) => (
                 <ReminderBlock key={r.id + t + i} r={r} time={t} onClick={() => onOpen(r)} appearance={appearance} />
@@ -860,17 +860,17 @@ function WeekView({ date, reminders, onOpen, theme, appearance, gridLine }: {
               textAlign: "center", padding: "8px 4px",
               borderLeft: i === 0 ? "none" : `1px solid ${gridLine}`,
               borderBottom: `1px solid ${gridLine}`,
-              fontFamily: "Georgia, serif", fontWeight: 700,
+              fontFamily: "Newsreader, serif", fontWeight: 700,
               background: isTodayCol ? todayBg : "transparent",
             }}>
               {isTodayCol && (
                 <div style={{ fontSize: 10, fontWeight: 700, color: GREEN, textTransform: "uppercase",
-                  letterSpacing: 0.5, fontFamily: "'Trebuchet MS', sans-serif", marginBottom: 2 }}>
+                  letterSpacing: 0.5, fontFamily: "Inter, system-ui, sans-serif", marginBottom: 2 }}>
                   Today
                 </div>
               )}
               <div style={{ fontSize: 14 }}>{d.toLocaleDateString("en-US", { weekday: "short" })}</div>
-              <div style={{ color: theme.muted, fontSize: 13, fontFamily: "Verdana, sans-serif", fontWeight: 400 }}>{d.getDate()}</div>
+              <div style={{ color: theme.muted, fontSize: 13, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 400 }}>{d.getDate()}</div>
             </div>
           );
         })}
@@ -879,7 +879,7 @@ function WeekView({ date, reminders, onOpen, theme, appearance, gridLine }: {
           return (
             <Fragment key={`row-${h}`}>
               <div style={{ color: theme.muted, fontSize: 12, padding: "8px 8px 0 0", textAlign: "right",
-                borderBottom: `1px solid ${gridLine}`, fontFamily: "'Trebuchet MS', sans-serif", minHeight: 60 }}>
+                borderBottom: `1px solid ${gridLine}`, fontFamily: "Inter, system-ui, sans-serif", minHeight: 60 }}>
                 {formatHour(h)}
               </div>
               {days.map((d, di) => {
@@ -938,7 +938,7 @@ function MonthView({ date, reminders, onPickDay, theme, appearance, gridLine }: 
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", fontWeight: 700,
-        fontFamily: "Georgia, serif", textAlign: "center", marginBottom: 1 }}>
+        fontFamily: "Newsreader, serif", textAlign: "center", marginBottom: 1 }}>
         {weekdays.map((w) => (
           <div key={w} style={{ color: theme.muted, fontSize: 13, padding: "6px 0",
             borderBottom: `1px solid ${gridLine}` }}>{w}</div>
@@ -971,7 +971,7 @@ function MonthView({ date, reminders, onPickDay, theme, appearance, gridLine }: 
               {isTodayCell && (
                 <span style={{ position: "absolute", bottom: 4, right: 6, fontSize: 8,
                   fontWeight: 700, color: GREEN, textTransform: "uppercase", letterSpacing: 0.5,
-                  fontFamily: "'Trebuchet MS', sans-serif" }}>today</span>
+                  fontFamily: "Inter, system-ui, sans-serif" }}>today</span>
               )}
             </button>
 
@@ -990,7 +990,7 @@ function ListView({ reminders, onOpen, onEdit, onDelete, theme, appearance, grid
   if (reminders.length === 0) return <div style={{ color: theme.muted, padding: 16 }}>No reminders yet. Add one to get started.</div>;
   const headTd: CSSProperties = {
     padding: "12px", fontSize: 12, fontWeight: 700, textTransform: "uppercase",
-    fontFamily: "'Trebuchet MS', sans-serif", color: theme.text, textAlign: "left",
+    fontFamily: "Inter, system-ui, sans-serif", color: theme.text, textAlign: "left",
     borderBottom: `1px solid ${theme.text}`,
   };
   const bodyTd: CSSProperties = {
@@ -1055,7 +1055,7 @@ function ViewReminderModal({ reminder, onClose, onEdit, onDelete }: {
     <Modal onClose={onClose} width={520}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         {iconForType(reminder.type, 22, TYPE_COLOR[reminder.type])}
-        <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 20 }}>{reminder.name}</h2>
+        <h2 style={{ margin: 0, fontFamily: "Newsreader, serif", fontSize: 20 }}>{reminder.name}</h2>
       </div>
       <div style={{ marginTop: 16, display: "grid", gap: 8 }}>
         <div style={{ fontWeight: 700, fontSize: 16 }}>{reminder.times[0]}</div>
@@ -1072,12 +1072,12 @@ function ViewReminderModal({ reminder, onClose, onEdit, onDelete }: {
       <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
         <button onClick={onDelete} style={{
           background: "transparent", color: RED, border: `2px solid ${RED}`, padding: "10px 16px",
-          borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
+          borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, cursor: "pointer",
           display: "inline-flex", alignItems: "center", gap: 6,
         }}><Trash2 size={16} /> Delete</button>
         <button onClick={onEdit} style={{
           background: theme.text, color: theme.card, border: "none", padding: "10px 16px",
-          borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
+          borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, cursor: "pointer",
           display: "inline-flex", alignItems: "center", gap: 6,
         }}><Edit size={16} /> Edit</button>
       </div>
@@ -1089,16 +1089,16 @@ function ConfirmDelete({ name, onCancel, onConfirm }: { name: string; onCancel: 
   const { theme, buttonBorder } = useSettings();
   return (
     <Modal onClose={onCancel} width={460}>
-      <h3 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 20 }}>Delete "{name}"?</h3>
+      <h3 style={{ margin: 0, fontFamily: "Newsreader, serif", fontSize: 20 }}>Delete "{name}"?</h3>
       <p style={{ color: theme.muted, marginTop: 6 }}>This cannot be undone.</p>
       <div style={{ display: "flex", gap: 10, marginTop: 18, justifyContent: "flex-end" }}>
         <button onClick={onCancel} style={{
           background: "transparent", color: theme.text, border: buttonBorder, padding: "10px 16px",
-          borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
+          borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, cursor: "pointer",
         }}>Cancel</button>
         <button onClick={onConfirm} style={{
           background: RED, color: "#fff", border: "none", padding: "10px 16px",
-          borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
+          borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, cursor: "pointer",
         }}>Delete</button>
       </div>
     </Modal>
@@ -1122,7 +1122,7 @@ function DatePopup({ date, reminders, onClose, onViewFullDay, appearance }: {
     .sort((a, b) => a.t.localeCompare(b.t));
   return (
     <Modal onClose={onClose} width={500}>
-      <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 24, color: theme.text, paddingRight: 32 }}>
+      <h2 style={{ margin: 0, fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 24, color: theme.text, paddingRight: 32 }}>
         {headerStr}
       </h2>
       <div style={{ fontSize: 16, marginTop: 12, marginBottom: 12, color: theme.text }}>
@@ -1160,7 +1160,7 @@ function DatePopup({ date, reminders, onClose, onViewFullDay, appearance }: {
       )}
       <button onClick={onViewFullDay} style={{
         background: GREEN, color: "#fff", border: "none", height: 44, width: "100%",
-        borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700,
+        borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700,
         fontSize: 16, cursor: "pointer", marginTop: 8,
       }}>View full day</button>
     </Modal>
@@ -1185,7 +1185,7 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
 
 
   const labelStyle: CSSProperties = {
-    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
     color: theme.text, display: "block", marginBottom: 6,
   };
 
@@ -1221,7 +1221,7 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
 
   return (
     <Modal onClose={onClose} width={target === "devices" ? 640 : 560}>
-      <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 22, paddingRight: 32 }}>
+      <h2 style={{ margin: 0, fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 22, paddingRight: 32 }}>
         {titles[target]}
       </h2>
 
@@ -1251,7 +1251,7 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCondition(); } }} />
               <button type="button" onClick={addCondition} style={{
                 background: theme.text, color: theme.card, border: "none", borderRadius: 8,
-                padding: "0 14px", cursor: "pointer", fontFamily: "'Trebuchet MS', sans-serif",
+                padding: "0 14px", cursor: "pointer", fontFamily: "Inter, system-ui, sans-serif",
                 fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6,
               }}>
                 <Plus size={16} /> Add
@@ -1290,7 +1290,7 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
             <button type="button" onClick={addContact} style={{
               marginTop: 10, background: "transparent", color: theme.text, border: buttonBorder,
               borderRadius: 8, padding: "8px 14px", cursor: "pointer",
-              fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6,
+              fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6,
             }}>
               <Plus size={16} /> Add contact
             </button>
@@ -1325,7 +1325,7 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
                 aria-disabled={blocked}
                 style={{
                   background: blocked ? "#9CC2A9" : GREEN, color: "#fff", border: "none",
-                  height: 44, borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
+                  height: 44, borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif",
                   fontWeight: 700, fontSize: 16, cursor: blocked ? "not-allowed" : "pointer", width: "100%",
                 }}
               >Save changes</button>
@@ -1337,7 +1337,7 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
         })()}
         <button type="button" onClick={onClose} style={{
           background: "transparent", color: theme.text, border: buttonBorder,
-          height: 44, borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif",
+          height: 44, borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif",
           fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
         }}>Cancel</button>
       </div>

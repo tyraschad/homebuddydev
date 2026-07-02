@@ -16,7 +16,7 @@ export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "HomeBuddy Onboarding" }] }),
 });
 
-const GREEN = "#2F8F4E";
+const GREEN = "#519D46";
 const STORAGE_KEY = "homebuddy.onboarding.v2";
 const TOTAL = 5;
 
@@ -118,7 +118,7 @@ function Onboarding() {
   // ---- Styles ----
   const page: CSSProperties = {
     minHeight: "100vh", background: theme.bg, color: theme.text,
-    fontFamily: "Verdana, sans-serif", lineHeight: 1.5,
+    fontFamily: "Inter, system-ui, sans-serif", lineHeight: 1.5,
     display: "flex", flexDirection: "column",
     position: "relative", zIndex: 1,
   };
@@ -126,25 +126,25 @@ function Onboarding() {
     maxWidth: 880, width: "100%", margin: "0 auto", padding: 24, boxSizing: "border-box",
     flex: 1, display: "flex", flexDirection: "column",
   };
-  const h1: CSSProperties = { fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 28, color: theme.text, margin: "0 0 8px" };
-  const h2: CSSProperties = { fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 20, color: theme.text, margin: "0 0 12px" };
+  const h1: CSSProperties = { fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 28, color: theme.text, margin: "0 0 8px" };
+  const h2: CSSProperties = { fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 20, color: theme.text, margin: "0 0 12px" };
   const muted: CSSProperties = { fontSize: 14, color: theme.muted, lineHeight: 1.5 };
   const small: CSSProperties = { fontSize: 12, color: theme.muted };
   const btnPrimary = (disabled = false): CSSProperties => ({
     background: disabled ? "#9CC2A9" : GREEN, color: "#fff", border: "none",
     height: 48, padding: "0 24px", borderRadius: 8,
-    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16,
+    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16,
     cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.7 : 1,
   });
   const btnSecondary: CSSProperties = {
     background: "transparent", color: theme.text, border: buttonBorder,
     height: 44, padding: "0 20px", borderRadius: 8,
-    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
+    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
   };
   const inputStyle: CSSProperties = {
     width: "100%", boxSizing: "border-box", padding: "10px 12px",
     border: inputBorder, borderRadius: 6, background: theme.card, color: theme.text,
-    fontFamily: "Verdana, sans-serif", fontSize: 14,
+    fontFamily: "Inter, system-ui, sans-serif", fontSize: 14,
   };
   const card: CSSProperties = {
     background: theme.card, border: cardBorder, borderRadius: 8, padding: 16,
@@ -383,7 +383,7 @@ function Onboarding() {
                         background: selected ? (appearance === "dark" ? "#166534" : "#E8F5E9") : theme.card,
                         border: selected ? `2px solid ${GREEN}` : cardBorder,
                         color: theme.text, cursor: "pointer", textAlign: "center",
-                        fontFamily: "Verdana, sans-serif", fontSize: 13, fontWeight: 600,
+                        fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, fontWeight: 600,
                         position: "relative", boxSizing: "border-box",
                       }}>
                       <div>{CONDITION_ICONS[c]}</div>
@@ -433,7 +433,7 @@ function Onboarding() {
                         : <Camera size={20} color={theme.muted} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 20, color: theme.text, fontFamily: "Georgia, serif" }}>
+                      <div style={{ fontWeight: 700, fontSize: 20, color: theme.text, fontFamily: "Newsreader, serif" }}>
                         {data.elderName || "—"}
                       </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
@@ -558,7 +558,7 @@ function HowCard({ icon, title, body, appearance, card, text, muted }: {
         background: appearance === "dark" ? "#3A3A4E" : "#F0F0F0",
         display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12,
       }}>{icon}</div>
-      <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 17, color: text, marginBottom: 6 }}>
+      <div style={{ fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 17, color: text, marginBottom: 6 }}>
         {title}
       </div>
       <div style={{ fontSize: 13, color: muted, lineHeight: 1.4 }}>{body}</div>
@@ -572,11 +572,11 @@ function StepNode({ icon, title, body, text, muted }: {
   return (
     <li className="hb-stepper-item">
       <div style={{
-        width: 48, height: 48, borderRadius: "50%", background: "#2F8F4E",
+        width: 48, height: 48, borderRadius: "50%", background: "#519D46",
         display: "flex", alignItems: "center", justifyContent: "center",
         boxShadow: "0 0 0 4px #fff",
       }}>{icon}</div>
-      <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, color: text, marginTop: 12, marginBottom: 4 }}>
+      <div style={{ fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 16, color: text, marginTop: 12, marginBottom: 4 }}>
         {title}
       </div>
       <div style={{ fontSize: 13, color: muted, lineHeight: 1.4 }}>{body}</div>
@@ -604,7 +604,7 @@ function PhotoField({ label, photo, onPhoto, theme, cardBorder, buttonBorder }: 
         <button type="button" onClick={() => ref.current?.click()} style={{
           border: buttonBorder, background: "transparent", color: theme.text,
           borderRadius: 8, height: 40, padding: "0 16px", cursor: "pointer",
-          fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+          fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
           display: "inline-flex", alignItems: "center", gap: 8,
         }}>
           <Upload size={16} /> {photo ? "Change photo" : "Upload photo"}

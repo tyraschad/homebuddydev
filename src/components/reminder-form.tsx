@@ -6,7 +6,7 @@ import {
 import { useSettings, type Theme } from "@/lib/settings-store";
 import { TYPE_COLOR, TYPE_LABEL, DEFAULT_ANNOUNCEMENT_OFFSETS, type Reminder, type ReminderType } from "@/lib/carer-store";
 
-export const GREEN = "#2F8F4E";
+export const GREEN = "#519D46";
 export const RED = "#C0392B";
 export const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export const WEEKDAY_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -39,7 +39,7 @@ export function ModalShell({ children, onClose, width = 720 }: { children: React
       <div onClick={(e) => e.stopPropagation()} style={{
         background: theme.card, color: theme.text, border: cardBorder, borderRadius: 8,
         width: "90%", maxWidth: width, maxHeight: "90vh", overflowY: "auto", padding: 24, position: "relative",
-        fontFamily: "Verdana, sans-serif", lineHeight: 1.5,
+        fontFamily: "Inter, system-ui, sans-serif", lineHeight: 1.5,
       }}>
         <button onClick={onClose} aria-label="Close" style={{
           position: "absolute", top: 12, right: 12, background: "transparent", border: "none",
@@ -61,7 +61,7 @@ export function CategoryPicker({ onClose, onPick }: { onClose: () => void; onPic
   ];
   return (
     <ModalShell onClose={onClose}>
-      <h2 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 24 }}>What kind of reminder?</h2>
+      <h2 style={{ margin: 0, fontFamily: "Newsreader, serif", fontSize: 24 }}>What kind of reminder?</h2>
       <p style={{ color: theme.muted, marginTop: 6 }}>Pick one to keep things simple.</p>
       <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr", marginTop: 16 }}>
         {options.map((o) => (
@@ -71,7 +71,7 @@ export function CategoryPicker({ onClose, onPick }: { onClose: () => void; onPic
           }}>
             <span style={{ marginTop: 2 }}>{iconForType(o.type, 24, TYPE_COLOR[o.type])}</span>
             <span>
-              <div style={{ fontWeight: 700, fontSize: 18, fontFamily: "Georgia, serif" }}>{TYPE_LABEL[o.type]}</div>
+              <div style={{ fontWeight: 700, fontSize: 18, fontFamily: "Newsreader, serif" }}>{TYPE_LABEL[o.type]}</div>
               <div style={{ fontSize: 14, color: theme.muted }}>{o.sub}</div>
             </span>
           </button>
@@ -126,7 +126,7 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
     background: nameHasError ? (isDark ? theme.card : "#FFEBEE") : inputBg,
     color: theme.text,
     fontSize: 16,
-    fontFamily: "Verdana, sans-serif",
+    fontFamily: "Inter, system-ui, sans-serif",
     outline: "none",
     transition: "border-color 0.2s, box-shadow 0.2s, background 0.2s",
     boxShadow: nameFocused ? "0 2px 4px rgba(0,0,0,0.1)" : "none",
@@ -164,7 +164,7 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
     onSave({ ...r, updatedAt: new Date().toISOString() });
   };
 
-  const labelStyle: CSSProperties = { fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+  const labelStyle: CSSProperties = { fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
     color: theme.text, display: "block", marginBottom: 6 };
   const errStyle: CSSProperties = { color: RED, fontSize: 13, marginTop: 4 };
   const sectionGap: CSSProperties = { display: "grid", gap: 14 };
@@ -177,7 +177,7 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
           {iconForType(r.type, 24, TYPE_COLOR[r.type])}
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "Georgia, serif" }}>{existing ? "Edit" : "New"} {TYPE_LABEL[r.type]}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "Newsreader, serif" }}>{existing ? "Edit" : "New"} {TYPE_LABEL[r.type]}</div>
             <div style={{ fontSize: 14, color: theme.muted }}>Fill in the details below.</div>
           </div>
         </div>
@@ -249,17 +249,17 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
         <div style={{ display: "grid", gap: 10, marginTop: 20 }}>
           <button type="button" onClick={trySave} style={{
             background: GREEN, color: "#fff", border: "none", padding: "12px 18px",
-            borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700,
+            borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700,
             fontSize: 16, cursor: "pointer", width: "100%",
           }}>Save reminder</button>
           <button type="button" onClick={onClose} style={{
             background: "transparent", color: theme.text, border: buttonBorder, padding: "12px 18px",
-            borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
+            borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
           }}>Cancel</button>
           {existing && onDelete && (
             <button type="button" onClick={() => onDelete(r)} style={{
               background: "transparent", color: RED, border: `2px solid ${RED}`, padding: "12px 18px",
-              borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
+              borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
             }}>Delete</button>
           )}
         </div>
@@ -270,7 +270,7 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
           <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
             <AlertTriangle size={28} color="#F59E0B" />
             <div>
-              <h3 style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 20 }}>
+              <h3 style={{ margin: 0, fontFamily: "Newsreader, serif", fontSize: 20 }}>
                 Are you sure you want to prescribe {r.dose} pills?
               </h3>
               <p style={{ color: theme.muted, marginTop: 6 }}>That's a high dose. Please double-check before saving.</p>
@@ -279,11 +279,11 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
           <div style={{ display: "flex", gap: 10, marginTop: 18, justifyContent: "flex-end" }}>
             <button onClick={() => setShowDoseWarn(false)} style={{
               background: "transparent", color: theme.text, border: buttonBorder, padding: "10px 16px",
-              borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
+              borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, cursor: "pointer",
             }}>Cancel</button>
             <button onClick={() => { setShowDoseWarn(false); onSave({ ...r, updatedAt: new Date().toISOString() }); }} style={{
               background: GREEN, color: "#fff", border: "none", padding: "10px 16px",
-              borderRadius: 8, fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, cursor: "pointer",
+              borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, cursor: "pointer",
             }}>Confirm</button>
           </div>
         </ModalShell>
@@ -300,7 +300,7 @@ function RepeatScheduleField({ r, setR, errors }: {
   const offBg = appearance === "dark" ? "#4A4A4A" : "#E0E0E0";
   const accent = GREEN;
   const labelStyle: CSSProperties = {
-    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
     color: theme.text, display: "block", marginBottom: 6,
   };
   const errStyle: CSSProperties = { color: RED, fontSize: 12, marginTop: 6 };
@@ -349,7 +349,7 @@ function RepeatScheduleField({ r, setR, errors }: {
                   color: active ? "#fff" : theme.text,
                   border: active ? `1.5px solid ${accent}` : buttonBorder,
                   borderRadius: 999, padding: "6px 14px", cursor: "pointer",
-                  fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+                  fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
                 }}>{s}</button>
               );
             })}
@@ -367,7 +367,7 @@ function RepeatScheduleField({ r, setR, errors }: {
                       color: active ? "#fff" : theme.text,
                       border: active ? `1.5px solid ${accent}` : buttonBorder,
                       borderRadius: 8, padding: "6px 12px", cursor: "pointer",
-                      fontFamily: "Verdana, sans-serif", fontSize: 14,
+                      fontFamily: "Inter, system-ui, sans-serif", fontSize: 14,
                     }}>{name}</button>
                   );
                 })}
@@ -437,7 +437,7 @@ function MonthlyDatePicker({
         <button type="button" onClick={() => shift(-1)} style={{
           background: "transparent", border: buttonBorder, borderRadius: 8, padding: "4px 8px", cursor: "pointer", color: theme.text,
         }}><ChevronLeft size={16} /></button>
-        <span style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16 }}>{monthLabel}</span>
+        <span style={{ fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 16 }}>{monthLabel}</span>
         <button type="button" onClick={() => shift(1)} style={{
           background: "transparent", border: buttonBorder, borderRadius: 8, padding: "4px 8px", cursor: "pointer", color: theme.text,
         }}><ChevronRight size={16} /></button>
@@ -455,7 +455,7 @@ function MonthlyDatePicker({
             <button key={d} type="button" onClick={() => toggle(d)} style={{
               height: 40, border: active ? `1.5px solid ${accent}` : `1px solid ${grayed}`,
               borderRadius: 4, background: active ? accent : theme.card, color: active ? "#fff" : theme.text,
-              cursor: "pointer", fontFamily: "Verdana, sans-serif", fontSize: 14, fontWeight: active ? 700 : 400,
+              cursor: "pointer", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14, fontWeight: active ? 700 : 400,
             }}>{d}</button>
           );
         })}
@@ -493,7 +493,7 @@ function CustomDayPicker({
           return (
             <label key={d.idx} style={{
               display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer",
-              fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text,
+              fontFamily: "Inter, system-ui, sans-serif", fontSize: 14, color: theme.text,
             }}>
               <span onClick={() => toggle(d.idx)} style={{
                 width: 16, height: 16, borderRadius: 3,
@@ -533,7 +533,7 @@ function AnnouncementTimesField({ r, setR }: { r: Reminder; setR: (r: Reminder) 
   };
   const accent = GREEN;
   const labelStyle: CSSProperties = {
-    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14,
+    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14,
     color: theme.text, display: "block", marginBottom: 8,
   };
   return (
@@ -545,7 +545,7 @@ function AnnouncementTimesField({ r, setR }: { r: Reminder; setR: (r: Reminder) 
           return (
             <label key={o.offset} style={{
               display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer",
-              fontFamily: "Verdana, sans-serif", fontSize: 14, color: theme.text,
+              fontFamily: "Inter, system-ui, sans-serif", fontSize: 14, color: theme.text,
             }}>
               <span onClick={() => toggle(o.offset)} style={{
                 width: 18, height: 18, borderRadius: 4,
