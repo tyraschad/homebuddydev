@@ -126,6 +126,7 @@ export type ElderProfile = {
   id: string;
   name: string;
   dob: string;
+  age?: number;
   avatar?: string;
   conditions: string[];
   contacts: Contact[];
