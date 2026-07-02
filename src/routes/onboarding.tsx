@@ -355,6 +355,21 @@ function Onboarding() {
                     </div>
                     <div>
                       <label style={{ display: "block", fontWeight: 700, fontSize: 14, marginBottom: 6 }}>
+                        Their age
+                      </label>
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        max={130}
+                        value={data.elderAge}
+                        onChange={(e) => update({ elderAge: e.target.value.replace(/[^\d]/g, "") })}
+                        placeholder="e.g., 82"
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontWeight: 700, fontSize: 14, marginBottom: 6 }}>
                         Notes (optional)
                       </label>
                       <textarea style={{ ...inputStyle, minHeight: 96, resize: "vertical" }} rows={4}
