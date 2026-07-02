@@ -280,11 +280,19 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
         </div>
 
         <div style={{ display: "grid", gap: 10, marginTop: 20 }}>
-          <button type="button" onClick={trySave} style={{
-            background: GREEN, color: "#fff", border: "none", padding: "12px 18px",
-            borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700,
-            fontSize: 16, cursor: "pointer", width: "100%",
-          }}>Save reminder</button>
+          <button
+            type="button"
+            onClick={trySave}
+            aria-disabled={!isFormValid}
+            title={isFormValid ? undefined : "Fill in the required fields"}
+            style={{
+              background: isFormValid ? GREEN : "#B7C9AB",
+              color: "#fff", border: "none", padding: "12px 18px",
+              borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700,
+              fontSize: 16, cursor: isFormValid ? "pointer" : "not-allowed",
+              opacity: isFormValid ? 1 : 0.85, width: "100%",
+            }}
+          >Save reminder</button>
           <button type="button" onClick={onClose} style={{
             background: "transparent", color: theme.text, border: buttonBorder, padding: "12px 18px",
             borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
