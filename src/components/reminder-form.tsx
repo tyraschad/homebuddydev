@@ -140,7 +140,10 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
     setR({ ...r, timesPerDay: n, times });
   };
 
-  const validate = () => {
+  const fieldRefs = useRef<Record<string, HTMLElement | null>>({});
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const computeErrors = (): Record<string, string> => {
     const e: Record<string, string> = {};
     if (!r.name.trim()) e.name = "This field is required";
     if (!r.timesPerDay || r.timesPerDay < 1) e.timesPerDay = "This field is required";
@@ -154,12 +157,35 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
         e.customDays = "Please select at least one day of the week";
       }
     }
+    return e;
+  };
+
+  const isFormValid = useMemo(() => Object.keys(computeErrors()).length === 0, [r]);
+
+  const validate = () => {
+    const e = computeErrors();
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  const FIELD_ORDER = ["name", "timesPerDay", "times", "repeatSchedule", "monthlyDates", "customDays"];
+  const jumpToFirstError = (e: Record<string, string>) => {
+    const first = FIELD_ORDER.find((k) => e[k]);
+    if (!first) return;
+    const el = fieldRefs.current[first];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (first === "name" && nameInputRef.current) {
+        setTimeout(() => nameInputRef.current?.focus(), 250);
+      }
+    }
+  };
+
   const trySave = () => {
-    if (!validate()) return;
+    if (!validate()) {
+      jumpToFirstError(computeErrors());
+      return;
+    }
     if (r.type === "medication" && (r.dose ?? 0) > 3) { setShowDoseWarn(true); return; }
     onSave({ ...r, updatedAt: new Date().toISOString() });
   };
