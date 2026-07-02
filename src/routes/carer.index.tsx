@@ -1353,6 +1353,39 @@ function EditSectionModal({ target, elder, onClose, onSave }: {
         }}>Cancel</button>
       </div>
 
+      {confirmContacts && (
+        <Modal onClose={() => setConfirmContacts(false)} width={460}>
+          <h2 style={{ margin: 0, fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 20, paddingRight: 32 }}>
+            Confirm phone contacts
+          </h2>
+          <p style={{ color: theme.muted, marginTop: 6, fontSize: 14 }}>
+            Please double-check these numbers before saving — {elder?.name || "your loved one"} will call them from the elder screen.
+          </p>
+          <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+            {draft.contacts.map((c) => (
+              <div key={c.id} style={{
+                display: "flex", justifyContent: "space-between", gap: 12,
+                padding: "10px 12px", border: buttonBorder, borderRadius: 8,
+              }}>
+                <span style={{ fontWeight: 700 }}>{c.name}</span>
+                <span style={{ fontFamily: "Inter, system-ui, sans-serif" }}>{c.phone}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ display: "grid", gap: 8, marginTop: 20 }}>
+            <button type="button" onClick={() => { setConfirmContacts(false); onSave(draft); }} style={{
+              background: GREEN, color: "#fff", border: "none",
+              height: 44, borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif",
+              fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
+            }}>Confirm &amp; save</button>
+            <button type="button" onClick={() => setConfirmContacts(false)} style={{
+              background: "transparent", color: theme.text, border: buttonBorder,
+              height: 44, borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif",
+              fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
+            }}>Back to edit</button>
+          </div>
+        </Modal>
+      )}
     </Modal>
   );
 }
