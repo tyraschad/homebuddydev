@@ -1068,36 +1068,44 @@ function ReminderDetailsPopup({
           </button>
         </div>
 
-        <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 18, color: textColor, paddingBottom: 8 }}>
-          {timeStr}
+        <div style={{ height: 1, background: "#D0D0D0", margin: "0 0 12px" }} />
+
+        <div style={{ display: "grid", gap: 8 }}>
+          <LabeledRow label="Time" value={timeStr} textColor={textColor} />
+          {frequency && <LabeledRow label="Frequency" value={frequency} textColor={textColor} />}
+          {showAllTimes && <LabeledRow label="All times" value={allTimesStr} textColor={textColor} />}
+          {doseStr && <LabeledRow label="Dose" value={doseStr} textColor={textColor} />}
+          {locationStr && <LabeledRow label="Location" value={locationStr} textColor={textColor} />}
+          {detailsStr && <LabeledRow label="Details" value={detailsStr} textColor={textColor} />}
         </div>
 
-        {frequency && (
-          <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
-            {frequency}
-          </div>
-        )}
-
-        {detailsText && (
-          <div data-readable="true" style={{ fontFamily: "Inter, sans-serif", fontSize: 16, color: textColor, paddingBottom: 12 }}>
-            {detailsText}
-          </div>
-        )}
-
         {reminder.notes && (
-          <div
-            data-readable="true"
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontSize: 16,
-              color: textColor,
-              background: notesBg,
-              borderRadius: 4,
-              padding: 12,
-              marginTop: 12,
-            }}
-          >
-            {reminder.notes}
+          <div style={{ marginTop: 16 }}>
+            <div
+              data-readable="true"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: 14,
+                fontWeight: 700,
+                color: textColor,
+                marginBottom: 4,
+              }}
+            >
+              Notes:
+            </div>
+            <div
+              data-readable="true"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: 16,
+                color: textColor,
+                background: notesBg,
+                borderRadius: 4,
+                padding: 12,
+              }}
+            >
+              {reminder.notes}
+            </div>
           </div>
         )}
 
