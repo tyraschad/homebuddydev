@@ -1,7 +1,7 @@
 import { useEffect, useState, type RefObject } from "react";
 import { useSettings } from "@/lib/settings-store";
 
-const GREEN = "#2F8F4E";
+const GREEN = "#519D46";
 const TOUR_KEY = "homebuddy.tour.completed.v1";
 
 export type TourStep = {
@@ -95,11 +95,11 @@ export function PortalTour({ steps, onClose }: { steps: TourStep[]; onClose: () 
         border: cardBorder,
         borderRadius: 8,
         padding: 16,
-        fontFamily: "Verdana, sans-serif",
+        fontFamily: "Inter, system-ui, sans-serif",
         lineHeight: 1.5,
         boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
       }}>
-        <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, marginBottom: 6 }}>
+        <div style={{ fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 16, marginBottom: 6 }}>
           {step?.title}
         </div>
         <div style={{ fontSize: 14, color: theme.text }}>{step?.body}</div>
@@ -108,12 +108,12 @@ export function PortalTour({ steps, onClose }: { steps: TourStep[]; onClose: () 
           <div style={{ display: "flex", gap: 8 }}>
             <button type="button" onClick={finish} style={{
               background: "transparent", border: "none", color: theme.muted, cursor: "pointer",
-              fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13,
+              fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 13,
             }}>Skip tour</button>
             <button type="button" onClick={next} style={{
               background: GREEN, color: "#fff", border: "none", borderRadius: 8,
               padding: "8px 16px", cursor: "pointer",
-              fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 13,
+              fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 13,
             }}>{idx >= steps.length - 1 ? "Finish" : "Next"}</button>
           </div>
         </div>

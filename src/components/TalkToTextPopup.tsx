@@ -79,7 +79,7 @@ function InlineMicButton({ status, error, onStart, onStop, onReset, disabled }: 
         transform: "translateX(-50%)",
         fontSize: 12,
         color: labelColor,
-        fontFamily: "'Trebuchet MS', sans-serif",
+        fontFamily: "Inter, system-ui, sans-serif",
         whiteSpace: "nowrap",
         pointerEvents: "none",
         lineHeight: 1.2,
