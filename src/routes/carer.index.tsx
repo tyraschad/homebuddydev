@@ -326,7 +326,7 @@ function CarerPortal() {
           >
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Newsreader, serif", color: theme.text }}>{elder.name || "Elder"}</div>
-              <div style={{ fontSize: 14, color: theme.muted }}>{ageFromDob(elder.dob)}</div>
+              <div style={{ fontSize: 14, color: theme.muted }}>{elder.age != null ? `${elder.age} years old` : ageFromDob(elder.dob)}</div>
             </div>
             {profileOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
           </button>
