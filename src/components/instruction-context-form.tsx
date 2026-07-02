@@ -5,7 +5,7 @@ import { useSettings } from "@/lib/settings-store";
 import { cleanQuickActionLabel, type Device } from "@/lib/carer-store";
 import { identifyDevice } from "@/lib/identify-device.functions";
 
-const GREEN = "#2F8F4E";
+const GREEN = "#519D46";
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
 
@@ -48,17 +48,17 @@ export function DeviceListEditor({
   const inputStyle: CSSProperties = {
     width: "100%", boxSizing: "border-box", padding: "10px 12px",
     border: inputBorder, borderRadius: 6, background: theme.card, color: theme.text,
-    fontFamily: "Verdana, sans-serif", fontSize: 14,
+    fontFamily: "Inter, system-ui, sans-serif", fontSize: 14,
   };
   const btnSecondary: CSSProperties = {
     background: "transparent", color: theme.text, border: buttonBorder,
     height: 40, padding: "0 16px", borderRadius: 8,
-    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
+    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
   };
   const btnPrimary: CSSProperties = {
     background: GREEN, color: "#fff", border: "none",
     height: 40, padding: "0 18px", borderRadius: 8,
-    fontFamily: "'Trebuchet MS', sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
+    fontFamily: "Inter, system-ui, sans-serif", fontWeight: 700, fontSize: 14, cursor: "pointer",
   };
   const card: CSSProperties = { background: theme.card, border: cardBorder, borderRadius: 8, padding: 16 };
 
@@ -236,7 +236,7 @@ export function DeviceListEditor({
 
       {devices.length > 0 && (
         <div style={{ marginTop: 16 }}>
-          <h3 style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 15, margin: "0 0 8px", color: theme.text }}>
+          <h3 style={{ fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 15, margin: "0 0 8px", color: theme.text }}>
             Devices added
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
