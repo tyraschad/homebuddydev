@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useMemo, useRef, useState, type CSSProperties } from "react";
 import {
   X, Plus, Minus, Pill, Stethoscope, Activity, HelpCircle,
   AlertTriangle, ChevronLeft, ChevronRight,
