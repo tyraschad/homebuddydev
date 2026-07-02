@@ -28,6 +28,7 @@ type OnbData = {
   step: number;
   carerName: string;
   elderName: string;
+  elderAge: string;
   elderPhoto?: string;
   elderNotes: string;
   conditions: Condition[];
@@ -45,6 +46,7 @@ const DEFAULT_DATA: OnbData = {
   step: 1,
   carerName: "",
   elderName: "",
+  elderAge: "",
   elderNotes: "",
   conditions: [],
   settingLargerText: true,
