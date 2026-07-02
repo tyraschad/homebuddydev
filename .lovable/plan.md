@@ -1,56 +1,68 @@
-## 1. `/elder` — extra padding between mic icon and label (V1 + V2 inline view)
+## Confirmed
 
-**File:** `src/components/TalkToTextPopup.tsx` (inline mic block, lines 930–979)
+1. Short names as proposed ✓
+2. Location: `continuity/design-refs/` ✓
+3. Audit all 6 screens (1–5 onboarding + Carer Portal) ✓
+4. Report only, no code fixes ✓
 
-- Container `gap` (line 931): `16` → `20` (between mic button column and any siblings).
-- Inner button `gap` between the circle and the label (line 938): `14` → `22` (≈+57% — felt right after eyeballing; 5% of 14 is only ~1px, which is invisible. Question below.)
+## What I'll do on Implement
 
-**Question — clarify "5%":**  Are you asking for a literal 5% (≈1px), or "noticeably more breathing room"? Defaulting to a clearly visible bump (`14 → 22`) unless you say otherwise.
+### 1. Upload 15 images as CDN pointers
 
----
+Run `lovable-assets create --file /mnt/user-uploads/<name>.png --filename <slug>.png` for each of the 15 uploads, writing the pointer JSON to:
 
-## 2. `/carer` — toast feedback after adding a phone contact
+```
+continuity/design-refs/screens/
+  01-onboarding-entry.png.asset.json
+  02-onboarding-how-it-works.png.asset.json
+  03-onboarding-data.png.asset.json
+  04-onboarding-needs.png.asset.json
+  05-onboarding-review.png.asset.json
+  06-carer-portal.png.asset.json
 
-**File:** `src/routes/carer.index.tsx`
+continuity/design-refs/components/
+  toggle.png.asset.json
+  needs-card.png.asset.json
+  back-button.png.asset.json
+  mic-basic.png.asset.json
+  mic-pulse.png.asset.json
+  basic-button.png.asset.json
+  add-content-card.png.asset.json
+  calendar-bar.png.asset.json
+  reminder-type-cards.png.asset.json
+```
 
-Today, `savedToast` flips on for every section save and shows a generic "Saved!" message. Tighten the contact path so the user sees a specific confirmation.
+### 2. Write `continuity/design-refs/README.md`
 
-- Add `savedToastMsg` state alongside `savedToast` (line ~639).
-- In `onSave` (lines 636–641), diff `next.contacts.length` against `elder.contacts.length`. If `target === "contacts"` and length increased, set message to `"Contact added"`; if a contact was edited (same length, different content), `"Contact updated"`; else fall back to current `"Saved!"`.
-- The existing toast component (search for `savedToast &&` near line ~645) renders the message — swap the hardcoded label for `savedToastMsg`.
+Sections: **How to reference these** (short names → files), **Screens table**, **Components table**, **Best practice**. Each row embeds the image via its CDN URL so it renders inline when you open the doc.
 
-Result: closing the contact modal pops a green "Contact added" toast for 2s. No new dependency — reuses the toast already on the page.
+### 3. Add a one-line link at the top of `continuity/brand-guidelines.md`
 
----
+Points at `continuity/design-refs/README.md` so anyone landing on brand guidelines finds the visual refs.
 
-## 3. `/carer` — block "Save changes" until the in-progress device form is saved
+### 4. Write `continuity/onboarding-audit.md`
 
-**Files:** `src/components/instruction-context-form.tsx`, `src/routes/carer.index.tsx`
+Per-screen sections (Entry, How It Works, Data, Needs, Review, Carer Portal). Each finding tagged `[drift]` or `[match]`, citing the component ref where relevant. Advisory only — no code changes.
 
-The device modal's footer `Save changes` (carer.index.tsx line 1296) currently fires regardless of whether the user has a half-filled device form open inside `DeviceListEditor`. Wire dirty-state up to the parent.
+Files touched:
+- create: 15 `.asset.json` pointers under `continuity/design-refs/`
+- create: `continuity/design-refs/README.md`
+- create: `continuity/onboarding-audit.md`
+- edit: `continuity/brand-guidelines.md` (single link at top)
 
-**`instruction-context-form.tsx`**
-- Add optional prop `onDirtyChange?: (dirty: boolean) => void`.
-- Compute `dirty = !!(photo || brand.trim() || deviceType.trim() || name.trim() || questions.some(q => q.trim()) || editingId)`.
-- `useEffect(() => { onDirtyChange?.(dirty); }, [dirty])`.
-- Also call `onDirtyChange?.(false)` inside `reset()` (called after Save / Cancel).
+## How to reference later (this is the answer to your question)
 
-**`carer.index.tsx` (EditSectionModal)**
-- Add `const [deviceDraftDirty, setDeviceDraftDirty] = useState(false);`.
-- Pass `onDirtyChange={setDeviceDraftDirty}` to `<DeviceListEditor>` (line 1287).
-- `Save changes` button (line 1296) becomes:
-  - `disabled` styling when `target === "devices" && deviceDraftDirty`: background `#9CC2A9`, cursor `not-allowed`.
-  - `onClick` runs `onSubmit` normally when not blocked; when blocked, shows an inline warning instead of saving.
-- Add `const [deviceBlockMsg, setDeviceBlockMsg] = useState("");`. When blocked-save is clicked, set:
-  `"Finish the device above first — add at least one question, then tap **Save device** to lock it in."`
-  Render the message in red below the button (mirroring `contactErr`). Clear it whenever `deviceDraftDirty` flips back to false.
+**Where the reference lives:** `continuity/design-refs/README.md` — the human-readable index. Open it any time to see all short names and thumbnails.
 
-This guarantees: dirty in-progress device → footer Save is visually disabled and surfaces a clear nudge; clean state → Save works as today.
+**How you invoke a reference:** just say the short name in a sentence, e.g.
+- *"Style the Next button like Basic Button"*
+- *"Match the Onboarding Data layout"*
+- *"Use the Mic Pulse animation on the Elder screen"*
 
----
+**What I do:** open the README, resolve the short name → open the pointer file → view the image at its CDN URL → follow it in the implementation.
 
-## Verification
-
-- `/elder` V1 & V2 inline view: extra vertical space between mic circle and "Tap to Ask a Question" label; recording / transcribing labels unchanged in styling.
-- `/carer` add a phone contact → modal closes → toast reads "Contact added"; edit existing → "Contact updated"; other sections still show "Saved!".
-- `/carer` Edit devices → start typing in a device form (without tapping Save device) → footer Save changes goes muted; clicking it shows the warning message and does not close the modal. After tapping Save device (or Cancel) inside the form, footer Save re-enables and works normally.
+**Best practice on your side:**
+- Reference **one thing per instruction** — cleanest signal.
+- Use the **short name**, not "the third image" — names survive across sessions, uploads don't.
+- To update a reference, upload a new version and say *"replace the X reference"* — I re-run the CLI and overwrite the pointer.
+- If a reference is missing something (e.g. hover state), tell me in the README under that row — I read those notes.
