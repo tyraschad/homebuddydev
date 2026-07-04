@@ -586,6 +586,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
         data: { query, device: null, reminder: null, conditions: elder.conditions, mode: "answer" },
       });
       streamAssistant(answer);
+      setShowGeneralNote(true);
       void playTTS(answer);
     } catch (e) {
       streamAssistant(e instanceof Error ? e.message : "Something went wrong");
