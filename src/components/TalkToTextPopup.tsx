@@ -230,6 +230,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
     quickReplies?: string[];
   } | null>(null);
   const [sending, setSending] = useState(false);
+  const [showGeneralNote, setShowGeneralNote] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [speaking, setSpeaking] = useState(false);
   const [nowTick, setNowTick] = useState(() => Date.now());
@@ -415,7 +416,10 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
     return reminders.find((r) => lower.includes(r.name.toLowerCase())) ?? null;
   };
 
-  const pushUser = (content: string) => setMessages((m) => [...m, { role: "user", content, createdAt: Date.now() }]);
+  const pushUser = (content: string) => {
+    setShowGeneralNote(false);
+    setMessages((m) => [...m, { role: "user", content, createdAt: Date.now() }]);
+  };
 
   const beginGuideSteps = async (label: string, device: Device | null, reminder: Reminder | null, steps: string[]) => {
     if (!steps.length) throw new Error("No steps returned");
@@ -582,6 +586,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
         data: { query, device: null, reminder: null, conditions: elder.conditions, mode: "answer" },
       });
       streamAssistant(answer);
+      setShowGeneralNote(true);
       void playTTS(answer);
     } catch (e) {
       streamAssistant(e instanceof Error ? e.message : "Something went wrong");
@@ -822,6 +827,17 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
                   </div>
                 </div>
               </div>
+              {!guide.device?.photo && (
+                <div style={{
+                  marginTop: 14, padding: "10px 12px",
+                  background: v2 ? "#F5F7F5" : "#F0F0F0",
+                  border: "1px solid #D0D0D0", borderRadius: 8,
+                  fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, lineHeight: 1.5,
+                  color: v2 ? "#6B8E8E" : "#4A4A4A",
+                }}>
+                  The following instructions are based on general information. For specific guidance for your device or appliance, upload an image into the instruction context area of the carer portal.
+                </div>
+              )}
             </div>
           )}
 
@@ -883,6 +899,17 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
           {sending && !guide && (
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#666", fontFamily: "Inter, system-ui, sans-serif", fontSize: 14 }}>
               <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
+            </div>
+          )}
+          {showGeneralNote && !guide && !sending && (
+            <div style={{
+              alignSelf: "stretch", padding: "10px 12px",
+              background: v2 ? "#F5F7F5" : "#F0F0F0",
+              border: "1px solid #D0D0D0", borderRadius: 8,
+              fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, lineHeight: 1.5,
+              color: v2 ? "#6B8E8E" : "#4A4A4A",
+            }}>
+              The following instructions are based on general information. For specific guidance for your device or appliance, upload an image into the instruction context area of the carer portal.
             </div>
           )}
         </div>
