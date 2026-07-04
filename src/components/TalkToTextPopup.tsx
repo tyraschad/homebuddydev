@@ -901,6 +901,17 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
               <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Thinking…
             </div>
           )}
+          {showGeneralNote && !guide && !sending && (
+            <div style={{
+              alignSelf: "stretch", padding: "10px 12px",
+              background: v2 ? "#F5F7F5" : "#F0F0F0",
+              border: "1px solid #D0D0D0", borderRadius: 8,
+              fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, lineHeight: 1.5,
+              color: v2 ? "#6B8E8E" : "#4A4A4A",
+            }}>
+              The following instructions are based on general information. For specific guidance for your device or appliance, upload an image into the instruction context area of the carer portal.
+            </div>
+          )}
         </div>
           );
         })()}
