@@ -127,6 +127,7 @@ function CarerPortal() {
   const [confirmDelete, setConfirmDelete] = useState<Reminder | null>(null);
   const [dayPopup, setDayPopup] = useState<Date | null>(null);
   const [editTarget, setEditTarget] = useState<"conditions" | "notes" | "contacts" | "devices" | null>(null);
+  const [editIdentity, setEditIdentity] = useState<null | { name: string; age: string }>(null);
   const [savedToast, setSavedToast] = useState(false);
   const [savedToastMsg, setSavedToastMsg] = useState("Saved");
 
