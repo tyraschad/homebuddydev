@@ -326,12 +326,25 @@ function CarerPortal() {
             style={{ all: "unset", cursor: "pointer", display: "flex", alignItems: "center", gap: 16, flex: 1 }}
           >
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Newsreader, serif", color: theme.text }}>{elder.name || "Elder"}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ fontWeight: 700, fontSize: 20, fontFamily: "Newsreader, serif", color: theme.text }}>{elder.name || "Elder"}</div>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Edit name and age"
+                  onClick={(e) => { e.stopPropagation(); setEditIdentity({ name: elder.name || "", age: elder.age != null ? String(elder.age) : "" }); }}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); e.preventDefault(); setEditIdentity({ name: elder.name || "", age: elder.age != null ? String(elder.age) : "" }); } }}
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: 4, borderRadius: 6, cursor: "pointer", color: theme.muted }}
+                >
+                  <Edit size={14} />
+                </span>
+              </div>
               <div style={{ fontSize: 14, color: theme.muted }}>{elder.age != null ? `${elder.age} years old` : ageFromDob(elder.dob)}</div>
             </div>
             {profileOpen ? <ChevronUp size={20} color={theme.text} /> : <ChevronDown size={20} color={theme.text} />}
           </button>
         </div>
+
 
 
         {profileOpen && (
