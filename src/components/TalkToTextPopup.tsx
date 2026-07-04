@@ -416,7 +416,10 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
     return reminders.find((r) => lower.includes(r.name.toLowerCase())) ?? null;
   };
 
-  const pushUser = (content: string) => setMessages((m) => [...m, { role: "user", content, createdAt: Date.now() }]);
+  const pushUser = (content: string) => {
+    setShowGeneralNote(false);
+    setMessages((m) => [...m, { role: "user", content, createdAt: Date.now() }]);
+  };
 
   const beginGuideSteps = async (label: string, device: Device | null, reminder: Reminder | null, steps: string[]) => {
     if (!steps.length) throw new Error("No steps returned");
