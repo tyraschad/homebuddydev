@@ -230,6 +230,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
     quickReplies?: string[];
   } | null>(null);
   const [sending, setSending] = useState(false);
+  const [showGeneralNote, setShowGeneralNote] = useState(false);
   const [voiceOn, setVoiceOn] = useState(true);
   const [speaking, setSpeaking] = useState(false);
   const [nowTick, setNowTick] = useState(() => Date.now());
