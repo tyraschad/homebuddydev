@@ -666,6 +666,84 @@ function CarerPortal() {
 
       )}
 
+      {editIdentity && (() => {
+        const trimmedName = editIdentity.name.trim();
+        const ageNum = editIdentity.age.trim() === "" ? null : Number(editIdentity.age);
+        const ageValid = ageNum === null || (Number.isFinite(ageNum) && ageNum >= 0 && ageNum <= 120);
+        const canSave = trimmedName.length > 0 && ageValid;
+        const save = () => {
+          if (!canSave) return;
+          setElder({ ...elder, name: trimmedName, age: ageNum ?? undefined });
+          setEditIdentity(null);
+          setSavedToastMsg("Profile updated");
+          setSavedToast(true);
+          setTimeout(() => setSavedToast(false), 2000);
+        };
+        const inputStyle: CSSProperties = {
+          width: "100%", boxSizing: "border-box", padding: "10px 12px",
+          border: buttonBorder, borderRadius: 8, background: theme.card, color: theme.text,
+          fontFamily: "Inter, system-ui, sans-serif", fontSize: 15,
+        };
+        return (
+          <Modal onClose={() => setEditIdentity(null)} width={420}>
+            <h2 style={{ margin: 0, fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 20, paddingRight: 32, color: theme.text }}>
+              Edit name and age
+            </h2>
+            <div style={{ display: "grid", gap: 12, marginTop: 14 }}>
+              <label style={{ display: "grid", gap: 6, fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, color: theme.muted }}>
+                Name
+                <input
+                  autoFocus
+                  type="text"
+                  value={editIdentity.name}
+                  onChange={(e) => setEditIdentity({ ...editIdentity, name: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === "Enter" && canSave) save(); }}
+                  style={inputStyle}
+                />
+              </label>
+              <label style={{ display: "grid", gap: 6, fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, color: theme.muted }}>
+                Age
+                <input
+                  type="number"
+                  min={0}
+                  max={120}
+                  value={editIdentity.age}
+                  onChange={(e) => setEditIdentity({ ...editIdentity, age: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === "Enter" && canSave) save(); }}
+                  placeholder="Optional"
+                  style={inputStyle}
+                />
+              </label>
+              {!ageValid && (
+                <div style={{ fontSize: 12, color: RED, fontFamily: "Inter, system-ui, sans-serif" }}>
+                  Enter an age between 0 and 120.
+                </div>
+              )}
+            </div>
+            <div style={{ display: "grid", gap: 8, marginTop: 20 }}>
+              <button
+                type="button"
+                onClick={save}
+                aria-disabled={!canSave}
+                style={{
+                  background: canSave ? GREEN : "#B7C9AB", color: "#fff", border: "none",
+                  height: 44, borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif",
+                  fontWeight: 700, fontSize: 16, cursor: canSave ? "pointer" : "not-allowed", width: "100%",
+                }}
+              >
+                Save
+              </button>
+              <button type="button" onClick={() => setEditIdentity(null)} style={{
+                background: "transparent", color: theme.text, border: buttonBorder,
+                height: 44, borderRadius: 8, fontFamily: "Inter, system-ui, sans-serif",
+                fontWeight: 700, fontSize: 16, cursor: "pointer", width: "100%",
+              }}>Cancel</button>
+            </div>
+          </Modal>
+        );
+      })()}
+
+
       <div style={{ display: "flex", justifyContent: "center", padding: "24px 16px 40px" }}>
         <button type="button" onClick={handleResetSetup} style={btnSecondary}>
           Reset setup
