@@ -222,6 +222,7 @@ function Onboarding() {
       devices: [],
     };
     setElder(newElder);
+    resetReminders();
 
     try {
       localStorage.removeItem(STORAGE_KEY);
