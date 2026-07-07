@@ -24,21 +24,42 @@ export function PortalTour({ steps, onClose }: { steps: TourStep[]; onClose: () 
   const { theme, cardBorder, appearance } = useSettings();
   const [idx, setIdx] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [visible, setVisible] = useState(false);
   const step = steps[idx];
 
   useEffect(() => {
+    let cancelled = false;
+    // Fade out while transitioning to the next step
+    setVisible(false);
+
     const measure = () => {
       const el = step?.ref.current;
-      if (!el) { setRect(null); return; }
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      setTimeout(() => setRect(el.getBoundingClientRect()), 250);
+      if (!el || cancelled) return;
+      const r = el.getBoundingClientRect();
+      setRect(r);
+      setVisible(true);
     };
-    measure();
-    window.addEventListener("resize", measure);
-    window.addEventListener("scroll", measure, true);
+
+    const el = step?.ref.current;
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    const t1 = window.setTimeout(measure, 350);
+    // Re-measure once more after scroll fully settles
+    const t2 = window.setTimeout(measure, 700);
+
+    const onResize = () => {
+      const e = step?.ref.current;
+      if (e) setRect(e.getBoundingClientRect());
+    };
+    window.addEventListener("resize", onResize);
+    window.addEventListener("scroll", onResize, true);
     return () => {
-      window.removeEventListener("resize", measure);
-      window.removeEventListener("scroll", measure, true);
+      cancelled = true;
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onResize, true);
     };
   }, [idx, step]);
 
@@ -53,7 +74,6 @@ export function PortalTour({ steps, onClose }: { steps: TourStep[]; onClose: () 
     height: rect.height + pad * 2,
   } : null;
 
-  // Tooltip position: prefer below the element, else above
   const tooltipWidth = Math.min(320, typeof window !== "undefined" ? window.innerWidth - 32 : 320);
   let tooltipTop = 32;
   let tooltipLeft = 16;
@@ -64,10 +84,17 @@ export function PortalTour({ steps, onClose }: { steps: TourStep[]; onClose: () 
     tooltipLeft = Math.max(16, Math.min(window.innerWidth - tooltipWidth - 16, cutout.left));
   }
 
+  const overlayColor = appearance === "dark" ? "rgba(0,0,0,0.75)" : "rgba(0,0,0,0.55)";
+
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 200, pointerEvents: "auto" }}>
-      {/* Overlay using box-shadow to create cutout */}
-      {cutout ? (
+      {/* Fallback dim while we don't yet have a rect */}
+      {!cutout && (
+        <div style={{ position: "fixed", inset: 0, background: overlayColor, transition: "opacity 250ms ease" }} />
+      )}
+
+      {/* Persistent cutout — animates between step positions */}
+      {cutout && (
         <div style={{
           position: "fixed",
           top: cutout.top,
@@ -75,13 +102,11 @@ export function PortalTour({ steps, onClose }: { steps: TourStep[]; onClose: () 
           width: cutout.width,
           height: cutout.height,
           borderRadius: 12,
-          boxShadow: `0 0 0 9999px ${appearance === "dark" ? "rgba(0,0,0,0.75)" : "rgba(0,0,0,0.55)"}`,
+          boxShadow: `0 0 0 9999px ${overlayColor}`,
           border: `2px solid ${GREEN}`,
           pointerEvents: "none",
-          transition: "all 250ms ease",
+          transition: "top 300ms ease, left 300ms ease, width 300ms ease, height 300ms ease, box-shadow 300ms ease",
         }} />
-      ) : (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)" }} />
       )}
 
       {/* Tooltip */}
@@ -98,6 +123,9 @@ export function PortalTour({ steps, onClose }: { steps: TourStep[]; onClose: () 
         fontFamily: "Inter, system-ui, sans-serif",
         lineHeight: 1.5,
         boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(6px)",
+        transition: "top 300ms ease, left 300ms ease, opacity 250ms ease, transform 250ms ease",
       }}>
         <div style={{ fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 16, marginBottom: 6 }}>
           {step?.title}
