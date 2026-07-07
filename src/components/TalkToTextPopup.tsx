@@ -627,6 +627,8 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
     }
   });
 
+  startRecordingRef.current = () => { stopTTS(); void recorder.start(); };
+
   // Auto-submit a pre-recorded message (from /elder voice card) exactly once.
   const initialFiredRef = useRef(false);
   useEffect(() => {
