@@ -235,6 +235,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
   const [speaking, setSpeaking] = useState(false);
   const [nowTick, setNowTick] = useState(() => Date.now());
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playIdRef = useRef(0);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
