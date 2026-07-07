@@ -1017,7 +1017,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
           ) : (
           <div style={{ display: "flex", gap: 12, height: 180 }}>
             <button type="button"
-              onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
+              onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); startRecordingRef.current(); } else if (recorder.status !== "transcribing") startRecordingRef.current(); }}
               disabled={sending || recorder.status === "transcribing"}
               style={{
                 width: "35%", height: "100%",
