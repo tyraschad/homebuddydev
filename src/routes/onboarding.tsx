@@ -236,6 +236,7 @@ function Onboarding() {
     setData({ ...DEFAULT_DATA });
     setResumePrompt(false);
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    resetReminders();
   };
 
   if (!hydrated) return <main style={page} />;
