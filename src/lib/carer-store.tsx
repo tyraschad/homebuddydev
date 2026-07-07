@@ -145,6 +145,7 @@ type Ctx = {
   deleteReminder: (id: string) => void;
   bumpDeviceAccess: (deviceId: string) => void;
   resetAll: () => void;
+  resetReminders: () => void;
 };
 
 const defaultElder: ElderProfile = {
