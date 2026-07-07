@@ -82,7 +82,7 @@ function Onboarding() {
   const buttonBorder = `1px solid ${theme.border}`;
   const inputBorder = `1px solid ${theme.border}`;
   const navigate = useNavigate();
-  const { setElder, elder } = useCarer();
+  const { setElder, elder, resetReminders } = useCarer();
 
   const [data, setData] = useState<OnbData>(DEFAULT_DATA);
   const [hydrated, setHydrated] = useState(false);
@@ -222,6 +222,7 @@ function Onboarding() {
       devices: [],
     };
     setElder(newElder);
+    resetReminders();
 
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -235,6 +236,7 @@ function Onboarding() {
     setData({ ...DEFAULT_DATA });
     setResumePrompt(false);
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    resetReminders();
   };
 
   if (!hydrated) return <main style={page} />;

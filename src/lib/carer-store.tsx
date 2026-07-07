@@ -145,6 +145,7 @@ type Ctx = {
   deleteReminder: (id: string) => void;
   bumpDeviceAccess: (deviceId: string) => void;
   resetAll: () => void;
+  resetReminders: () => void;
 };
 
 const defaultElder: ElderProfile = {
@@ -213,11 +214,19 @@ export function CarerProvider({ children }: { children: ReactNode }) {
     setElderState({ ...defaultElder, conditions: [], contacts: [], notes: "", devices: [], name: "" });
     setRemindersState([]);
   };
+  const resetReminders = () => {
+    try {
+      localStorage.removeItem(REMINDERS_KEY);
+      localStorage.removeItem("carer.reminders"); // legacy
+    } catch {}
+    setRemindersState([]);
+  };
 
   return (
-    <CarerContext.Provider value={{ elder, setElder, reminders, setReminders, addReminder, updateReminder, deleteReminder, bumpDeviceAccess, resetAll }}>
+    <CarerContext.Provider value={{ elder, setElder, reminders, setReminders, addReminder, updateReminder, deleteReminder, bumpDeviceAccess, resetAll, resetReminders }}>
       {children}
     </CarerContext.Provider>
+
   );
 }
 
