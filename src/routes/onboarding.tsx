@@ -82,7 +82,7 @@ function Onboarding() {
   const buttonBorder = `1px solid ${theme.border}`;
   const inputBorder = `1px solid ${theme.border}`;
   const navigate = useNavigate();
-  const { setElder, elder } = useCarer();
+  const { setElder, elder, resetReminders } = useCarer();
 
   const [data, setData] = useState<OnbData>(DEFAULT_DATA);
   const [hydrated, setHydrated] = useState(false);
