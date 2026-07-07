@@ -170,7 +170,7 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
     return Object.keys(e).length === 0;
   };
 
-  const FIELD_ORDER = ["name", "timesPerDay", "times", "repeatSchedule", "monthlyDates", "customDays"];
+  const FIELD_ORDER = ["name", "timesPerDay", "times", "repeatSchedule", "monthlyDates", "customDays", "oneTimeDate"];
   const jumpToFirstError = (e: Record<string, string>) => {
     const first = FIELD_ORDER.find((k) => e[k]);
     if (!first) return;
