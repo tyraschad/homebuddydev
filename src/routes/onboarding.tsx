@@ -76,7 +76,11 @@ const ALL_CONDITIONS: Condition[] = [
 
 
 function Onboarding() {
-  const { theme, cardBorder, buttonBorder, inputBorder, appearance } = useSettings();
+  const { theme, appearance } = useSettings();
+  // Onboarding uses soft borders regardless of high-contrast setting (no hard black outlines).
+  const cardBorder = `1px solid ${theme.border}`;
+  const buttonBorder = `1px solid ${theme.border}`;
+  const inputBorder = `1px solid ${theme.border}`;
   const navigate = useNavigate();
   const { setElder, elder } = useCarer();
 
