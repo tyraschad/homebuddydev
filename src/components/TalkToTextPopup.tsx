@@ -293,10 +293,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
     setSpeaking(false);
   };
 
-  const startRecording = () => {
-    stopTTS();
-    void recorderRef.current?.start();
-  };
+  const startRecordingRef = useRef<() => void>(() => {});
 
   // Stream a string into the last assistant message word-by-word
   const streamAssistant = (full: string) => {
