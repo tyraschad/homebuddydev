@@ -156,6 +156,8 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
       if (r.repeatSchedule === "Custom" && !(r.customDays ?? []).length) {
         e.customDays = "Please select at least one day of the week";
       }
+    } else {
+      if (!r.oneTimeDate) e.oneTimeDate = "Please pick a date";
     }
     return e;
   };
