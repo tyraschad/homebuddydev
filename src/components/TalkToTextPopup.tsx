@@ -235,6 +235,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
   const [speaking, setSpeaking] = useState(false);
   const [nowTick, setNowTick] = useState(() => Date.now());
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playIdRef = useRef(0);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -267,26 +268,32 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
 
   const playTTS = async (textToRead: string) => {
     if (!voiceOn || !textToRead.trim()) return;
+    const myId = ++playIdRef.current;
     try {
       audioRef.current?.pause();
+      audioRef.current = null;
       setSpeaking(true);
       const { audio, mime } = await callSpeak({ data: { text: textToRead } });
+      if (playIdRef.current !== myId) return; // superseded
       const a = new Audio(`data:${mime};base64,${audio}`);
       audioRef.current = a;
-      a.onended = () => setSpeaking(false);
-      a.onerror = () => setSpeaking(false);
+      a.onended = () => { if (playIdRef.current === myId) setSpeaking(false); };
+      a.onerror = () => { if (playIdRef.current === myId) setSpeaking(false); };
       await a.play();
     } catch (e) {
       console.error("TTS failed", e);
-      setSpeaking(false);
+      if (playIdRef.current === myId) setSpeaking(false);
     }
   };
 
   const stopTTS = () => {
+    playIdRef.current++;
     audioRef.current?.pause();
     audioRef.current = null;
     setSpeaking(false);
   };
+
+  const startRecordingRef = useRef<() => void>(() => {});
 
   // Stream a string into the last assistant message word-by-word
   const streamAssistant = (full: string) => {
@@ -619,6 +626,8 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
       inputRef.current?.focus();
     }
   });
+
+  startRecordingRef.current = () => { stopTTS(); void recorder.start(); };
 
   // Auto-submit a pre-recorded message (from /elder voice card) exactly once.
   const initialFiredRef = useRef(false);
@@ -957,7 +966,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
           {inline ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, padding: "8px 0" }}>
               <button type="button"
-                onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing" && !sending) void recorder.start(); }}
+                onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); startRecordingRef.current(); } else if (recorder.status !== "transcribing" && !sending) startRecordingRef.current(); }}
                 disabled={sending || recorder.status === "transcribing"}
                 aria-label={recorder.status === "recording" ? "Tap to stop and send" : "Tap to ask a question"}
                 style={{
@@ -1008,7 +1017,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
           ) : (
           <div style={{ display: "flex", gap: 12, height: 180 }}>
             <button type="button"
-              onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing") void recorder.start(); }}
+              onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); startRecordingRef.current(); } else if (recorder.status !== "transcribing") startRecordingRef.current(); }}
               disabled={sending || recorder.status === "transcribing"}
               style={{
                 width: "35%", height: "100%",

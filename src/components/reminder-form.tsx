@@ -156,6 +156,8 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
       if (r.repeatSchedule === "Custom" && !(r.customDays ?? []).length) {
         e.customDays = "Please select at least one day of the week";
       }
+    } else {
+      if (!r.oneTimeDate) e.oneTimeDate = "Please pick a date";
     }
     return e;
   };
@@ -168,7 +170,7 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
     return Object.keys(e).length === 0;
   };
 
-  const FIELD_ORDER = ["name", "timesPerDay", "times", "repeatSchedule", "monthlyDates", "customDays"];
+  const FIELD_ORDER = ["name", "timesPerDay", "times", "repeatSchedule", "monthlyDates", "customDays", "oneTimeDate"];
   const jumpToFirstError = (e: Record<string, string>) => {
     const first = FIELD_ORDER.find((k) => e[k]);
     if (!first) return;
@@ -378,6 +380,24 @@ function RepeatScheduleField({ r, setR, errors }: {
         </button>
         <span style={{ fontSize: 14, color: theme.muted }}>{repeats ? "Repeats" : "Does not repeat"}</span>
       </div>
+
+      {!repeats && (
+        <div>
+          <div style={labelStyle}>Date</div>
+          <input
+            type="date"
+            value={r.oneTimeDate ?? ""}
+            min={ymd(new Date())}
+            onChange={(e) => setR({ ...r, oneTimeDate: e.target.value })}
+            style={{
+              width: "100%", padding: "10px 12px", borderRadius: 8, border: buttonBorder,
+              background: theme.card, color: theme.text,
+              fontFamily: "Inter, system-ui, sans-serif", fontSize: 14,
+            }}
+          />
+          {errors.oneTimeDate && <div style={errStyle}>{errors.oneTimeDate}</div>}
+        </div>
+      )}
 
       {repeats && (
         <>
