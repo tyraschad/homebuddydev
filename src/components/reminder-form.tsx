@@ -381,6 +381,24 @@ function RepeatScheduleField({ r, setR, errors }: {
         <span style={{ fontSize: 14, color: theme.muted }}>{repeats ? "Repeats" : "Does not repeat"}</span>
       </div>
 
+      {!repeats && (
+        <div>
+          <div style={labelStyle}>Date</div>
+          <input
+            type="date"
+            value={r.oneTimeDate ?? ""}
+            min={ymd(new Date())}
+            onChange={(e) => setR({ ...r, oneTimeDate: e.target.value })}
+            style={{
+              width: "100%", padding: "10px 12px", borderRadius: 8, border: buttonBorder,
+              background: theme.card, color: theme.text,
+              fontFamily: "Inter, system-ui, sans-serif", fontSize: 14,
+            }}
+          />
+          {errors.oneTimeDate && <div style={errStyle}>{errors.oneTimeDate}</div>}
+        </div>
+      )}
+
       {repeats && (
         <>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
