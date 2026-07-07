@@ -268,25 +268,34 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
 
   const playTTS = async (textToRead: string) => {
     if (!voiceOn || !textToRead.trim()) return;
+    const myId = ++playIdRef.current;
     try {
       audioRef.current?.pause();
+      audioRef.current = null;
       setSpeaking(true);
       const { audio, mime } = await callSpeak({ data: { text: textToRead } });
+      if (playIdRef.current !== myId) return; // superseded
       const a = new Audio(`data:${mime};base64,${audio}`);
       audioRef.current = a;
-      a.onended = () => setSpeaking(false);
-      a.onerror = () => setSpeaking(false);
+      a.onended = () => { if (playIdRef.current === myId) setSpeaking(false); };
+      a.onerror = () => { if (playIdRef.current === myId) setSpeaking(false); };
       await a.play();
     } catch (e) {
       console.error("TTS failed", e);
-      setSpeaking(false);
+      if (playIdRef.current === myId) setSpeaking(false);
     }
   };
 
   const stopTTS = () => {
+    playIdRef.current++;
     audioRef.current?.pause();
     audioRef.current = null;
     setSpeaking(false);
+  };
+
+  const startRecording = () => {
+    stopTTS();
+    void recorderRef.current?.start();
   };
 
   // Stream a string into the last assistant message word-by-word
