@@ -107,10 +107,10 @@ export function ReminderForm({ initial, existing, onClose, onSave, onDelete }: {
   const [nameFocused, setNameFocused] = useState(false);
 
   const nameLabel = r.type === "medication" ? "Medication name" : r.type === "appointment" ? "Appointment name" : r.type === "activity" ? "Activity name" : "Reminder name";
-  const namePlaceholder = r.type === "medication" ? "e.g., Aspirin, Eye drops, Insulin"
+  const namePlaceholder = r.type === "medication" ? "e.g., Eye drops, Insulin"
     : r.type === "appointment" ? "e.g., Doctor appointment, Dentist"
     : r.type === "activity" ? "e.g., Morning walk, Call Sarah"
-    : "e.g., Aspirin, Eye drops, Doctor appointment";
+    : "e.g., Eye drops, Doctor appointment";
   const isDark = theme.bg === "#2A2A3E" || theme.bg.toLowerCase().includes("2a2a");
   const inputBorderDefault = isDark ? "#5A5A6E" : "#D0D0D0";
   const inputBg = isDark ? theme.card : "#FFFFFF";
