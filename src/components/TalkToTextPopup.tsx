@@ -966,7 +966,7 @@ export function TalkToTextPopup({ onClose, initialMessage, inline = false }: { o
           {inline ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, padding: "8px 0" }}>
               <button type="button"
-                onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); void recorder.start(); } else if (recorder.status !== "transcribing" && !sending) void recorder.start(); }}
+                onClick={() => { if (recorder.status === "recording") recorder.stop(); else if (recorder.status === "error") { recorder.reset(); startRecordingRef.current(); } else if (recorder.status !== "transcribing" && !sending) startRecordingRef.current(); }}
                 disabled={sending || recorder.status === "transcribing"}
                 aria-label={recorder.status === "recording" ? "Tap to stop and send" : "Tap to ask a question"}
                 style={{
