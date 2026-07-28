@@ -227,7 +227,8 @@ function ElderHome() {
       <main
         style={{
           width: "100%",
-          height: "100vh",
+          height: isMobile ? "auto" : "100vh",
+          minHeight: "100vh",
           background: pageBg,
           padding: isMobile ? (v2 ? 16 : 12) : (v2 ? 38 : 18),
           display: "flex",
@@ -237,7 +238,7 @@ function ElderHome() {
           lineHeight: 1.5,
           position: "relative",
           zIndex: 1,
-          overflow: "hidden",
+          overflow: isMobile ? "visible" : "hidden",
         }}
       >
         <header
