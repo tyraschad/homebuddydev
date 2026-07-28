@@ -463,10 +463,12 @@ function Onboarding() {
                         : <Camera size={24} color={theme.muted} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 20, color: theme.text, fontFamily: "Newsreader, Inter, sans-serif" }}>
+                      <div style={{ fontWeight: 700, fontSize: 20, color: theme.text, fontFamily: "Newsreader, Inter, sans-serif", lineHeight: 1.2, wordBreak: "break-word" }}>
                         {data.elderName || "—"}
-                        {data.elderAge && <span style={{ fontWeight: 400, fontSize: 16, color: theme.muted, marginLeft: 8 }}>· {data.elderAge} yrs</span>}
                       </div>
+                      {data.elderAge && (
+                        <div style={{ fontSize: 13, color: theme.muted, marginTop: 2 }}>{data.elderAge} yrs</div>
+                      )}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
                         {data.conditions.map((c) => (
                           <span key={c} style={{
