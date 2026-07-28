@@ -539,6 +539,39 @@ function ElderHome() {
                   </div>
                 )}
               </div>
+
+              {/* Floating Phone Button */}
+              <button
+                type="button"
+                className="fab-phone"
+                onClick={() => setOverlay("call")}
+                aria-label="Make a call"
+                style={{
+                  position: v2 ? "absolute" : "fixed",
+                  bottom: v2 ? 16 : 28,
+                  right: v2 ? 16 : 28,
+                  width: 88,
+                  height: 88,
+                  borderRadius: "50%",
+                  background: fabBg,
+                  border: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  zIndex: 1000,
+                  boxShadow: v2 ? "0 4px 8px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.2)",
+                  transition: "background 0.2s, box-shadow 0.2s, transform 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+              >
+                <Phone size={52} strokeWidth={2} color={fabIconColor} />
+              </button>
             </div>
           </div>
         </div>
