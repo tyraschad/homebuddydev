@@ -3,6 +3,7 @@ import { ArrowLeft, Accessibility, Volume2, Type } from "lucide-react";
 import { type CSSProperties, type ReactNode } from "react";
 
 import { useSettings } from "@/lib/settings-store";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const Route = createFileRoute("/settings/")({
   component: SettingsPage,
