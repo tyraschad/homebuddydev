@@ -1,67 +1,32 @@
-Move the floating phone button inside the **Today’s Reminders** card on V2 only, positioned 16px from the card’s bottom-right corner.
+## Mobile audit findings (393px)
 
-### What will change
-1. In `src/routes/elder.tsx`, add `position: "relative"` to the Today’s Reminders card container so the moved button can anchor to it.
-2. Move the existing `<button className="fab-phone">` element from its fixed position at the bottom of `<main>` into the Today’s Reminders card.
-3. Make the button’s positioning conditional on `v2`:
-   - **V2:** `position: absolute; bottom: 16; right: 16` (inside the card).
-   - **V1:** keep the existing `position: fixed; bottom: 28; right: 28` global behavior.
-4. Add bottom padding to the reminders list area (`paddingBottom: v2 ? 104 : 0`) so the button never overlaps the last reminder item.
+Captured screenshots at iPhone width. Issues confirmed visually:
 
-### Code preview
-```tsx
-{/* Today's Reminders card */}
-<div
-  style={{
-    background: cardBg,
-    border: cardBorderStyle,
-    borderRadius: cardRadius,
-    padding: 16,
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    minHeight: 0,
-    boxShadow: cardShadow,
-    position: "relative", // anchor for the inner button
-  }}
->
-  <h2 ...>Today&apos;s Reminders</h2>
+**/settings**
+- Header uses a 3-column grid (`1fr auto 1fr`) that squeezes both side buttons: `Back to elder screen` wraps to 3 lines and `Open Carer Portal` wraps to 3 lines.
+- The two-up row (`Reminder Announcements` / `Text Reader`) overflows the viewport horizontally — the `Text Reader` card is clipped off the right edge.
 
-  <div style={{ flex: 1, overflowY: "auto", minHeight: 0, paddingBottom: v2 ? 104 : 0 }}>
-    {/* existing reminders list */}
-  </div>
+**/elder (V2)**
+- Header: `Good Morning, Albert` breaks to 3 lines and crowds the `Settings` label + gear icon in the top-right cluster.
+- `Today's Reminders` card is very short on empty state (just a title + "No reminders scheduled today"), and the floating phone button (absolute-positioned inside the card at bottom-right, 56px) overlaps the empty-state text.
 
-  {/* Floating Phone Button — moved inside the card */}
-  <button
-    type="button"
-    className="fab-phone"
-    onClick={() => setOverlay("call")}
-    aria-label="Make a call"
-    style={{
-      position: v2 ? "absolute" : "fixed",
-      bottom: v2 ? 16 : 28,
-      right: v2 ? 16 : 28,
-      width: 88,
-      height: 88,
-      borderRadius: "50%",
-      background: fabBg,
-      border: "none",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      zIndex: 1000,
-      boxShadow: v2 ? "0 4px 8px rgba(0,0,0,0.1)" : "0 2px 8px rgba(0,0,0,0.2)",
-      transition: "background 0.2s, box-shadow 0.2s, transform 0.2s",
-    }}
-    ...
-  >
-    <Phone size={52} strokeWidth={2} color={fabIconColor} />
-  </button>
-</div>
-```
+## Fixes
 
-### Scope guardrails
-- V1 layout and behavior are untouched.
-- The button still opens the same call overlay.
-- No changes to other cards (clock, ask-a-question) or the overall grid.
+### 1) src/routes/settings.index.tsx — responsive header + stacked toggles
+- Convert header grid from `1fr auto 1fr` to a mobile-friendly layout: on ≤480px, hide the "Back to elder screen" text label and show only the arrow icon (keep aria-label for a11y); shorten the right button label to `Carer Portal` on mobile (full label at ≥481px). Reduce header horizontal padding to 12 on mobile.
+- Change the two-up `Reminder Announcements` / `Text Reader` row from `gridTemplateColumns: "1fr 1fr"` to a single column on ≤480px (stack vertically), keep 2 columns from 481px up.
+- Implement via a small `useIsMobile()` hook already used elsewhere, or a `window.matchMedia` check with `useState + useEffect` in this file if no shared hook exists.
+
+### 2) src/routes/elder.tsx — header + reminders card on mobile
+- Header: on ≤480px shrink the greeting font size (`clamp(20px, 5vw, 32px)` or a mobile branch), and hide the "Settings" text label leaving just the gear icon button (keep aria-label). This gives the greeting enough room to render on 1–2 lines instead of 3.
+- Today's Reminders card empty state: raise the card's `minHeight` on mobile so the floating phone FAB doesn't overlap the empty text. Set `minHeight: v2 ? 200 : undefined` on the card, and keep the existing `paddingBottom: v2 ? 104 : 0` on the scroll area so the FAB always clears content.
+
+### Verification
+After edits, re-run the mobile Playwright capture at 393×800 for `/elder` and `/settings`, view both screenshots, confirm:
+- No horizontal overflow on /settings.
+- Header buttons no longer wrap to 3 lines on either screen.
+- Phone FAB does not overlap "No reminders scheduled today".
+
+### Questions
+1. On /settings mobile, prefer **(a)** icon-only Back + shortened "Carer Portal", or **(b)** keep full text and just reduce font size to fit?
+2. On /elder mobile, is it OK to **hide the "Settings" text** next to the gear icon (icon-only button on mobile)?
