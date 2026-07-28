@@ -16,6 +16,7 @@ import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { GradientBackground } from "@/components/GradientBackground";
 import { speak } from "@/lib/talk.functions";
+import { useIsMobile } from "@/hooks/use-mobile";
 import whiteLogo from "@/assets/text-logo-white.svg.asset.json";
 
 
