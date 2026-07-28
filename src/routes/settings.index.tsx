@@ -20,6 +20,7 @@ const CARD_BORDER = "#E5E5E5";
 
 function SettingsPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const {
     highContrast,
     setHighContrast,
@@ -44,10 +45,10 @@ function SettingsPage() {
       <header
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
+          gridTemplateColumns: "auto 1fr auto",
           alignItems: "center",
-          gap: 16,
-          padding: "16px",
+          gap: isMobile ? 8 : 16,
+          padding: isMobile ? "12px" : "16px",
           minHeight: 60,
           boxSizing: "border-box",
         }}
@@ -55,6 +56,7 @@ function SettingsPage() {
         <button
           type="button"
           onClick={() => navigate({ to: "/elder" })}
+          aria-label="Back to elder screen"
           style={{
             justifySelf: "start",
             display: "inline-flex",
@@ -71,7 +73,7 @@ function SettingsPage() {
           }}
         >
           <ArrowLeft size={24} strokeWidth={2.5} color={WHITE} />
-          <span data-readable="true">Back to elder screen</span>
+          {!isMobile && <span data-readable="true">Back to elder screen</span>}
         </button>
 
         <h1
@@ -80,7 +82,7 @@ function SettingsPage() {
             margin: 0,
             fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
-            fontSize: 28,
+            fontSize: isMobile ? 22 : 28,
             color: WHITE,
             textAlign: "center",
           }}
@@ -97,14 +99,15 @@ function SettingsPage() {
             color: BLACK,
             border: `1px solid ${CARD_BORDER}`,
             borderRadius: 8,
-            padding: "12px 16px",
+            padding: isMobile ? "8px 12px" : "12px 16px",
             cursor: "pointer",
             fontFamily: "Inter, system-ui, sans-serif",
             fontWeight: 700,
-            fontSize: 16,
+            fontSize: isMobile ? 14 : 16,
+            whiteSpace: "nowrap",
           }}
         >
-          Open Carer Portal
+          {isMobile ? "Carer Portal" : "Open Carer Portal"}
         </button>
       </header>
 
@@ -115,7 +118,13 @@ function SettingsPage() {
           on={highContrast}
           onToggle={() => setHighContrast(!highContrast)}
         />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: 12,
+          }}
+        >
           <SettingCard
             icon={<Volume2 size={24} strokeWidth={2} color={BLACK} />}
             label="Reminder Announcements"
