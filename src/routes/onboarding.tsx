@@ -132,8 +132,8 @@ function Onboarding() {
     maxWidth: 880, width: "100%", margin: "0 auto", padding: 24, boxSizing: "border-box",
     flex: 1, display: "flex", flexDirection: "column",
   };
-  const h1: CSSProperties = { fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 28, color: theme.text, margin: "0 0 8px" };
-  const h2: CSSProperties = { fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: 20, color: theme.text, margin: "0 0 12px" };
+  const h1: CSSProperties = { fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: "clamp(22px, 5.5vw, 28px)", lineHeight: 1.2, color: theme.text, margin: "0 0 8px" };
+  const h2: CSSProperties = { fontFamily: "Newsreader, serif", fontWeight: 700, fontSize: "clamp(18px, 4.6vw, 20px)", lineHeight: 1.25, color: theme.text, margin: "0 0 12px" };
   const muted: CSSProperties = { fontSize: 14, color: theme.muted, lineHeight: 1.5 };
   const small: CSSProperties = { fontSize: 12, color: theme.muted };
   const btnPrimary = (disabled = false): CSSProperties => ({
@@ -463,10 +463,12 @@ function Onboarding() {
                         : <Camera size={24} color={theme.muted} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 20, color: theme.text, fontFamily: "Newsreader, Inter, sans-serif" }}>
+                      <div style={{ fontWeight: 700, fontSize: 20, color: theme.text, fontFamily: "Newsreader, Inter, sans-serif", lineHeight: 1.2, wordBreak: "break-word" }}>
                         {data.elderName || "—"}
-                        {data.elderAge && <span style={{ fontWeight: 400, fontSize: 16, color: theme.muted, marginLeft: 8 }}>· {data.elderAge} yrs</span>}
                       </div>
+                      {data.elderAge && (
+                        <div style={{ fontSize: 13, color: theme.muted, marginTop: 2 }}>{data.elderAge} yrs</div>
+                      )}
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
                         {data.conditions.map((c) => (
                           <span key={c} style={{
