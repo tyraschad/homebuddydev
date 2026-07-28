@@ -229,7 +229,7 @@ function ElderHome() {
           width: "100%",
           height: "100vh",
           background: pageBg,
-          padding: v2 ? 38 : 18,
+          padding: isMobile ? (v2 ? 16 : 12) : (v2 ? 38 : 18),
           display: "flex",
           flexDirection: "column",
           boxSizing: "border-box",
