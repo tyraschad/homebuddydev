@@ -388,7 +388,7 @@ function ElderHome() {
                 Today's Reminders
               </h2>
 
-              <div style={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
+              <div style={{ flex: 1, overflowY: "auto", minHeight: 0, paddingBottom: v2 ? 104 : 0 }}>
                 {items.length === 0 ? (
                   <p
                     data-readable="true"
