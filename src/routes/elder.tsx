@@ -371,6 +371,7 @@ function ElderHome() {
                 flexDirection: "column",
                 minHeight: 0,
                 boxShadow: cardShadow,
+                position: "relative",
               }}
             >
               <h2
