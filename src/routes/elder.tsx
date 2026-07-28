@@ -245,28 +245,30 @@ function ElderHome() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "12px 16px",
+            gap: 12,
+            padding: isMobile ? "8px 4px" : "12px 16px",
             marginBottom: 16,
             flexShrink: 0,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 8 : 12, minWidth: 0, flex: 1 }}>
             <img
               src={whiteLogo.url}
               alt="HomeBuddy"
-              style={{ display: "block", height: 32, width: "auto" }}
+              style={{ display: "block", height: isMobile ? 24 : 32, width: "auto", flexShrink: 0 }}
             />
             <h1
               data-readable="true"
               style={{
                 fontFamily: headerFont,
                 fontWeight: 400,
-                fontSize: v2 ? 24 : 20,
+                fontSize: isMobile ? 18 : (v2 ? 24 : 20),
                 color: headerTextColor,
                 margin: 0,
-                lineHeight: 1,
+                lineHeight: 1.15,
                 textShadow: headerTextShadow,
                 fontStyle: v2 ? "italic" : "normal",
+                minWidth: 0,
               }}
             >
               {greet}, {elder.name || "Albert"}
@@ -274,6 +276,7 @@ function ElderHome() {
           </div>
           <Link
             to="/settings"
+            aria-label="Settings"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -283,12 +286,14 @@ function ElderHome() {
               fontWeight: 700,
               fontSize: 16,
               textDecoration: "none",
+              flexShrink: 0,
             }}
           >
-            <span data-readable="true">Settings</span>
-            <Settings size={28} strokeWidth={2} color={headerTextColor} />
+            {!isMobile && <span data-readable="true">Settings</span>}
+            <Settings size={isMobile ? 24 : 28} strokeWidth={2} color={headerTextColor} />
           </Link>
         </header>
+
 
         <div
           style={{
