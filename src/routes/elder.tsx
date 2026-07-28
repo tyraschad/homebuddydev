@@ -376,7 +376,7 @@ function ElderHome() {
                 flex: 1,
                 display: "flex",
                 flexDirection: "column",
-                minHeight: 0,
+                minHeight: isMobile && v2 ? 220 : 0,
                 boxShadow: cardShadow,
                 position: "relative",
               }}
