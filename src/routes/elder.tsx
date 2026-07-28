@@ -16,6 +16,7 @@ import { useCarer, DEFAULT_ANNOUNCEMENT_OFFSETS, type ReminderType } from "@/lib
 import { TalkToTextPopup } from "@/components/TalkToTextPopup";
 import { GradientBackground } from "@/components/GradientBackground";
 import { speak } from "@/lib/talk.functions";
+import { useIsMobile } from "@/hooks/use-mobile";
 import whiteLogo from "@/assets/text-logo-white.svg.asset.json";
 
 
@@ -218,6 +219,7 @@ function ElderHome() {
   const completedItems = items.filter((i) => i.completed);
   const upcomingItems = items.filter((i) => !i.completed).slice(0, 3);
   const [showCompleted, setShowCompleted] = useState(false);
+  const isMobile = useIsMobile();
 
   return (
     <>
@@ -225,9 +227,10 @@ function ElderHome() {
       <main
         style={{
           width: "100%",
-          height: "100vh",
+          height: isMobile ? "auto" : "100vh",
+          minHeight: "100vh",
           background: pageBg,
-          padding: v2 ? 38 : 18,
+          padding: isMobile ? (v2 ? 16 : 12) : (v2 ? 38 : 18),
           display: "flex",
           flexDirection: "column",
           boxSizing: "border-box",
@@ -235,7 +238,7 @@ function ElderHome() {
           lineHeight: 1.5,
           position: "relative",
           zIndex: 1,
-          overflow: "hidden",
+          overflow: isMobile ? "visible" : "hidden",
         }}
       >
         <header
@@ -243,28 +246,30 @@ function ElderHome() {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "12px 16px",
+            gap: 12,
+            padding: isMobile ? "8px 4px" : "12px 16px",
             marginBottom: 16,
             flexShrink: 0,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 8 : 12, minWidth: 0, flex: 1 }}>
             <img
               src={whiteLogo.url}
               alt="HomeBuddy"
-              style={{ display: "block", height: 32, width: "auto" }}
+              style={{ display: "block", height: isMobile ? 24 : 32, width: "auto", flexShrink: 0 }}
             />
             <h1
               data-readable="true"
               style={{
                 fontFamily: headerFont,
                 fontWeight: 400,
-                fontSize: v2 ? 24 : 20,
+                fontSize: isMobile ? 18 : (v2 ? 24 : 20),
                 color: headerTextColor,
                 margin: 0,
-                lineHeight: 1,
+                lineHeight: 1.15,
                 textShadow: headerTextShadow,
                 fontStyle: v2 ? "italic" : "normal",
+                minWidth: 0,
               }}
             >
               {greet}, {elder.name || "Albert"}
@@ -272,6 +277,7 @@ function ElderHome() {
           </div>
           <Link
             to="/settings"
+            aria-label="Settings"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -281,12 +287,14 @@ function ElderHome() {
               fontWeight: 700,
               fontSize: 16,
               textDecoration: "none",
+              flexShrink: 0,
             }}
           >
-            <span data-readable="true">Settings</span>
-            <Settings size={28} strokeWidth={2} color={headerTextColor} />
+            {!isMobile && <span data-readable="true">Settings</span>}
+            <Settings size={isMobile ? 24 : 28} strokeWidth={2} color={headerTextColor} />
           </Link>
         </header>
+
 
         <div
           style={{
@@ -369,7 +377,7 @@ function ElderHome() {
                 flex: 1,
                 display: "flex",
                 flexDirection: "column",
-                minHeight: 0,
+                minHeight: isMobile && v2 ? 220 : 0,
                 boxShadow: cardShadow,
                 position: "relative",
               }}
